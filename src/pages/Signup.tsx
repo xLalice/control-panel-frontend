@@ -1,14 +1,17 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { register as signup } from "../api/api";
+import { useNavigate } from "react-router-dom";
 
 export type SignupFormData = {
-  email: string,
-  password: string,
-  confirmPassword: string,
-  name: string
-}
+  email: string;
+  password: string;
+  confirmPassword: string;
+  name: string;
+};
 
 const signupSchema = yup.object().shape({
   name: yup.string().min(6, "Name must be at least 6 characters").required("Name is required"),
@@ -28,10 +31,18 @@ const Signup = () => {
   } = useForm({
     resolver: yupResolver(signupSchema),
   });
+  const navigate = useNavigate();
 
   const onSubmit = async (data: SignupFormData) => {
+    try {
     const response = await signup(data);
-    
+    if (response.status === 201) {
+      toast.success("User registered successfully!");
+      navigate("/login");
+    }
+  } catch (error: any) {
+    toast.error(error.message); 
+  }
   };
 
   return (
