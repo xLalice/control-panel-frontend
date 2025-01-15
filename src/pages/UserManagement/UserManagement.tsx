@@ -58,10 +58,10 @@ function UserManagementPage() {
   const onSubmit = async (data: UserFormData) => {
     if (editingUserId) {
       try {
-        const updatedUser = await updateUser(editingUserId, data);
+        const response = await updateUser(editingUserId, data);
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
-            user.id === editingUserId ? updatedUser : user
+            user.id === editingUserId ? response.updatedUser : user
           )
         );
         toast.success("User updated successfully!");
