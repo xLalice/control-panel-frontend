@@ -1,7 +1,10 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { login } from "../api/api";
+import { useNavigate } from "react-router-dom";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -21,18 +24,22 @@ const Login = () => {
   } = useForm({
     resolver: yupResolver(loginSchema),
   });
+  const navigate = useNavigate();
 
   const onSubmit = async (data: LoginFormData) => {
-    const response = await login(data);
-    if (response.status === 200){
-      
+    try {
+      const response = await login(data);
+      toast.success("Logged in successfully");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message); // Display the error message from the API
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
-        <h2 className="text-10xl font-bold text-center text-gray-700">Login</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-700">Login</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6">
           <div className="mb-4">
             <label className="block mb-2 text-sm font-medium text-gray-600">Email</label>

@@ -12,23 +12,22 @@ const apiClient = axios.create({
 });
 
 export const register = async (data: SignupFormData) => {
-    try {
-      const response = await apiClient.post('/register', data);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
-    }
-  };
-  
+  try {
+    const response = await apiClient.post('/auth/register', data);
+    return response;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Registration failed');
+  }
+};
 
-  export const login = async (data: LoginFormData) => {
-    try {
-      const response = await apiClient.post('/login', data);
-      return response.data; 
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Login failed');
-    }
-  };
+export const login = async (data: LoginFormData) => {
+  try {
+    const response = await apiClient.post('/auth/login', data);
+    return response;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Login failed');
+  }
+};
   
 
   export const logout = async () => {
