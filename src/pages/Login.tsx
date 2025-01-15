@@ -28,7 +28,7 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login(data);
+      await login(data);
       toast.success("Logged in successfully");
       navigate("/");
     } catch (error: any) {
