@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { fetchLead } from "../../api/api";
 import { TAB_NAMES } from "../../constants/constants";
 
@@ -12,7 +11,6 @@ const LeadsTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<string>("Manufacturer"); // Default tab
-  const [tabs, setTabs] = useState<string[]>(TAB_NAMES); // Dynamic tabs
 
   // Fetch leads for the selected sheet
   const fetchLeads = async (sheetName: string) => {
@@ -44,7 +42,7 @@ const LeadsTable = () => {
       <h2 className="text-2xl font-bold mb-6 text-black">Leads Dashboard</h2>
 
       <div className="mb-6 flex flex-wrap gap-2">
-        {tabs.map((tab) => (
+        {TAB_NAMES.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
