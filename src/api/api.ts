@@ -63,3 +63,12 @@ export const deleteUser = async (id: string) => {
     throw new Error(error.response?.data?.message || "Deleting user failed");
   }
 };
+
+export const fetchLead = async (sheetName: string) => {
+  try{
+    const response = await apiClient.get(`/sales/leads/${sheetName}`);
+    return response.data;
+  } catch (error: any){
+    throw new Error(error.response?.data?.message || "Fetching leads failed")
+  }
+}
