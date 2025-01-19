@@ -1,0 +1,1 @@
+export const TAB_NAMES = ["Manufacturer", "Construction Database", "PCAB ONLINE", "DATABASE-NCR Reference"];
