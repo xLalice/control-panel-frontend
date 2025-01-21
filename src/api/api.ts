@@ -72,3 +72,12 @@ export const fetchLead = async (sheetName: string) => {
     throw new Error(error.response?.data?.message || "Fetching leads failed")
   }
 }
+
+export const fetchSheetNames = async () => {
+  try{
+    const response = await apiClient.get(`/sales/sheets`);
+    return response.data.sheetNames;
+  } catch(error: any){
+    throw new Error(error.response?.data?.message || "Fetching sheet names failed");
+  }
+}
