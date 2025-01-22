@@ -1,6 +1,22 @@
 import { useEffect, useState, useRef } from "react";
 import { fetchLead, fetchSheetNames, updateLead } from "../../api/api";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Search } from "lucide-react";
+
+function useDebounce<T>(value: T, delay: number): [T] {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return [debouncedValue];
+}
 
 type SheetName =
   | "Manufacturer"
@@ -30,6 +46,8 @@ const LeadsTable = () => {
     originalValue: string;
   } | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch] = useDebounce(searchQuery, 500);
   const editInputRef = useRef<HTMLInputElement>(null);
 
   const columnPriority: Record<SheetName, string[]> = {
@@ -100,12 +118,17 @@ const LeadsTable = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab) fetchLeads(activeTab);
-  }, [activeTab]);
+    if (activeTab) {
+      fetchLeads(activeTab, debouncedSearch);
+    }
+  }, [activeTab, debouncedSearch]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -118,21 +141,31 @@ const LeadsTable = () => {
   useEffect(() => {
     if (editingCell) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [editingCell, editValue]);
 
-  const fetchLeads = async (sheetName: string, isRefresh = false) => {
+  const fetchLeads = async (sheetName: string, search?: string) => {
     try {
-      setLoading(true); // Show loading spinner when switching tabs
-      const response = await fetchLead(sheetName);
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      if (search && search.trim()) {  // Only add search if it's not empty
+        queryParams.append("search", search);
+      }
+  
+      // Log the query parameters for debugging
+      console.log('Search query:', search);
+      console.log('Query params:', queryParams.toString());
+      
+      const response = await fetchLead(sheetName, queryParams.toString());
       setLeads(response.leads || []);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch leads");
       setLeads([]);
     } finally {
-      setLoading(false); // Hide loading spinner after data is fetched
+      setLoading(false);
     }
   };
 
@@ -157,7 +190,7 @@ const LeadsTable = () => {
       : [];
 
   const handleRefresh = () => {
-    fetchLeads(activeTab, true);
+    fetchLeads(activeTab, debouncedSearch);
   };
 
   const nonRegionTabs = sheetNames.filter(
@@ -180,11 +213,11 @@ const LeadsTable = () => {
   const handleCellClick = (row: number, column: string, value: string) => {
     // Don't allow editing if already editing another cell
     if (editingCell) return;
-    
+
     setEditingCell({ row, column, originalValue: value });
     setEditValue(value);
   };
- 
+
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       // Cancel editing and revert to original value
@@ -201,7 +234,7 @@ const LeadsTable = () => {
     try {
       const updatedLeads = [...leads];
       const lead = updatedLeads[editingCell.row];
-      
+
       // Only proceed if the value has actually changed
       if (editValue !== editingCell.originalValue) {
         // Update the UI immediately for better UX
@@ -210,15 +243,16 @@ const LeadsTable = () => {
 
         // Attempt to save to backend
         await updateLead(activeTab, lead.id, {
-          [editingCell.column]: editValue
+          [editingCell.column]: editValue,
         });
       }
     } catch (error) {
       // If save fails, revert the change
       const updatedLeads = [...leads];
-      updatedLeads[editingCell.row][editingCell.column] = editingCell.originalValue;
+      updatedLeads[editingCell.row][editingCell.column] =
+        editingCell.originalValue;
       setLeads(updatedLeads);
-      
+
       setError("Failed to save changes. Please try again.");
     } finally {
       setEditingCell(null);
@@ -227,12 +261,13 @@ const LeadsTable = () => {
   };
 
   const handleClickOutside = (e: MouseEvent) => {
-    if (editInputRef.current && !editInputRef.current.contains(e.target as Node)) {
+    if (
+      editInputRef.current &&
+      !editInputRef.current.contains(e.target as Node)
+    ) {
       handleSaveEdit();
     }
   };
-
-  
 
   return (
     <div className="p-6 bg-black/5 rounded-xl shadow-lg">
@@ -299,6 +334,21 @@ const LeadsTable = () => {
               ))}
             </div>
           )}
+        </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-black/10 
+                                     focus:outline-none focus:ring-2 focus:ring-amber-500
+                                     w-64 pr-10"
+          />
+          <Search
+            className="absolute right-3 top-1/2 -translate-y-1/2 
+                                         text-black/30 h-5 w-5"
+          />
         </div>
       </div>
 
