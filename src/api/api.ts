@@ -1,6 +1,12 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
 
+interface UpdateLeadParams {
+  [key: string]: string;
+}
+
+
+
 const baseURL = `${import.meta.env.VITE_API_URL}/api/`;
 
 const apiClient = axios.create({
@@ -81,3 +87,18 @@ export const fetchSheetNames = async () => {
     throw new Error(error.response?.data?.message || "Fetching sheet names failed");
   }
 }
+
+export const updateLead = async (
+  sheetName: string,
+  leadId: string,
+  updates: UpdateLeadParams
+): Promise<void> => {
+  try{
+    const encodedSheetName = encodeURIComponent(sheetName);
+    const response = await apiClient.patch(`/sales/leads/${encodedSheetName}/${leadId}`, updates)
+    return response.data;
+  } catch (error: any){
+    throw new Error(error.response?.data?.message || "Updating lead failed");
+  }
+
+};
