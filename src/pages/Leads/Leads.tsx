@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchLead, fetchSheetNames } from "../../api/api";
+import { fetchLead, fetchSheetNames, updateLead } from "../../api/api";
 import { Loader2, AlertCircle } from "lucide-react";
 
 type SheetName =
@@ -10,14 +10,27 @@ type SheetName =
   | "NCR"
   | `REGION ${string}`;
 
+// Define the Lead type based on all possible columns
+interface Lead {
+  id: string;
+  [key: string]: string; // Allow any string key with string value
+}
+
 const LeadsTable = () => {
-  const [leads, setLeads] = useState([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [sheetNames, setSheetNames] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [editingCell, setEditingCell] = useState<{
+    row: number;
+    column: string;
+    originalValue: string;
+  } | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const columnPriority: Record<SheetName, string[]> = {
     Manufacturer: [
@@ -91,24 +104,23 @@ const LeadsTable = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
-
     if (isDropdownOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
-    } else {
-      document.removeEventListener("mousedown", handleOutsideClick);
     }
-
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isDropdownOpen]);
+
+  useEffect(() => {
+    if (editingCell) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [editingCell, editValue]);
 
   const fetchLeads = async (sheetName: string, isRefresh = false) => {
     try {
@@ -164,6 +176,63 @@ const LeadsTable = () => {
       </div>
     );
   }
+
+  const handleCellClick = (row: number, column: string, value: string) => {
+    // Don't allow editing if already editing another cell
+    if (editingCell) return;
+    
+    setEditingCell({ row, column, originalValue: value });
+    setEditValue(value);
+  };
+ 
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      // Cancel editing and revert to original value
+      setEditingCell(null);
+      setEditValue("");
+    } else if (e.key === "Enter") {
+      handleSaveEdit();
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingCell) return;
+
+    try {
+      const updatedLeads = [...leads];
+      const lead = updatedLeads[editingCell.row];
+      
+      // Only proceed if the value has actually changed
+      if (editValue !== editingCell.originalValue) {
+        // Update the UI immediately for better UX
+        lead[editingCell.column] = editValue;
+        setLeads(updatedLeads);
+
+        // Attempt to save to backend
+        await updateLead(activeTab, lead.id, {
+          [editingCell.column]: editValue
+        });
+      }
+    } catch (error) {
+      // If save fails, revert the change
+      const updatedLeads = [...leads];
+      updatedLeads[editingCell.row][editingCell.column] = editingCell.originalValue;
+      setLeads(updatedLeads);
+      
+      setError("Failed to save changes. Please try again.");
+    } finally {
+      setEditingCell(null);
+      setEditValue("");
+    }
+  };
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (editInputRef.current && !editInputRef.current.contains(e.target as Node)) {
+      handleSaveEdit();
+    }
+  };
+
+  
 
   return (
     <div className="p-6 bg-black/5 rounded-xl shadow-lg">
@@ -240,7 +309,7 @@ const LeadsTable = () => {
         </div>
       )}
 
-<div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
@@ -261,16 +330,33 @@ const LeadsTable = () => {
             </thead>
             <tbody className="divide-y divide-black/10">
               {leads.map((lead, index) => (
-                <tr
-                  key={index}
-                  className="transition-colors hover:bg-amber-50"
-                >
-                  {orderedColumns.map((key) => (
+                <tr key={index} className="transition-colors hover:bg-amber-50">
+                  {orderedColumns.map((key, colIndex) => (
                     <td
                       key={key}
-                      className="px-4 py-3 text-sm text-black/80 whitespace-nowrap"
+                      className={`px-4 py-3 text-sm text-black/80 whitespace-nowrap ${
+                        editingCell?.row === index && editingCell.column === key
+                          ? "p-0"
+                          : "cursor-pointer hover:bg-amber-50"
+                      }`}
+                      onClick={() => handleCellClick(index, key, lead[key])}
                     >
-                      {lead[key] || "-"}
+                      {editingCell?.row === index &&
+                      editingCell.column === key ? (
+                        <input
+                          ref={editInputRef}
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={handleEditKeyDown}
+                          className="w-full h-full px-4 py-3 border-2 border-amber-500 rounded-none focus:outline-none focus:ring-0"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="block w-full truncate">
+                          {lead[key] || "-"}
+                        </span>
+                      )}
                     </td>
                   ))}
                 </tr>
