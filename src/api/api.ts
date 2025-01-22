@@ -70,14 +70,14 @@ export const deleteUser = async (id: string) => {
   }
 };
 
-export const fetchLead = async (sheetName: string) => {
-  try{
-    const response = await apiClient.get(`/sales/leads/${sheetName}`);
+export const fetchLead = async (sheetName: string, queryParams: string) => {
+  try {
+    const response = await apiClient.get(`/sales/leads/${sheetName}?${queryParams}`);
     return response.data;
-  } catch (error: any){
-    throw new Error(error.response?.data?.message || "Fetching leads failed")
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Fetching leads failed");
   }
-}
+};
 
 export const fetchSheetNames = async () => {
   try{
