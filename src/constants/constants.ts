@@ -1,1 +1,0 @@
-export const TAB_NAMES = ["Manufacturer", "Construction Database", "Batching Plant Database", "PCAB ONLINE", "DATABASE-NCR Reference"];
