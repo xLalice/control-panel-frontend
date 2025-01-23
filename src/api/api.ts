@@ -34,7 +34,7 @@ export const logout = async () => {
   }
 };
 
-export const fetchUsers = async () => {
+export const fetchUsers = async (): Promise<any> => {
   try {
     const response = await apiClient.get("/admin/users");
     return response;

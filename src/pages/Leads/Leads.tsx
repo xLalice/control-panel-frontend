@@ -1,6 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchLead, fetchSheetNames, updateLead } from "../../api/api";
-import { Loader2, AlertCircle, Search } from "lucide-react";
+import {
+  fetchLead,
+  fetchSheetNames,
+  updateLead,
+  fetchUsers,
+} from "../../api/api";
+import { Loader2, AlertCircle, Search, Filter, X } from "lucide-react";
+import { User } from "../../types";
 
 function useDebounce<T>(value: T, delay: number): [T] {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -53,6 +59,10 @@ const LeadsTable = () => {
   const [endDate, setEndDate] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const editSelectRef = useRef<HTMLSelectElement>(null);
+  const [users, setUsers] = useState<string[]>([]);
+
+  const LEAD_STATUSES = ["New", "InProgress", "Converted", "Closed"];
 
   const columnPriority: Record<SheetName, string[]> = {
     Manufacturer: [
@@ -123,9 +133,16 @@ const LeadsTable = () => {
 
   useEffect(() => {
     if (activeTab) {
-      fetchLeads(activeTab, debouncedSearch, status,  startDate, endDate);
+      fetchLeads(
+        activeTab,
+        debouncedSearch,
+        status,
+        startDate,
+        endDate,
+        assignedTo
+      );
     }
-  }, [activeTab, debouncedSearch, startDate, endDate, status]);
+  }, [activeTab, debouncedSearch, startDate, endDate, status, assignedTo]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -150,24 +167,39 @@ const LeadsTable = () => {
     }
   }, [editingCell, editValue]);
 
+  useEffect(() => {
+    const getUserNames = async () => {
+      try {
+        const response = await fetchUsers();
+        setUsers(response.data.map((user: User) => user.name));
+      } catch (error) {
+        console.error("Failed to fetch users", error);
+      }
+    };
+
+    getUserNames();
+  }, []);
+
   const fetchLeads = async (
     sheetName: string,
     search: string = "",
     status: string = "",
     startDate: string = "",
-    endDate: string = ""
+    endDate: string = "",
+    assignedTo: string = ""
   ) => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-  
+
       if (search.trim()) queryParams.append("search", search);
       if (startDate) queryParams.append("startDate", startDate);
       if (status) queryParams.append("status", status);
       if (endDate) queryParams.append("endDate", endDate);
-  
+      if (assignedTo) queryParams.append("assignedTo", assignedTo);
+
       console.log("Query params:", queryParams.toString());
-  
+
       const response = await fetchLead(sheetName, queryParams.toString());
       setLeads(response.leads || []);
       setError("");
@@ -271,9 +303,12 @@ const LeadsTable = () => {
   };
 
   const handleClickOutside = (e: MouseEvent) => {
+    // Check both input and select refs
     if (
-      editInputRef.current &&
-      !editInputRef.current.contains(e.target as Node)
+      (editInputRef.current &&
+        !editInputRef.current.contains(e.target as Node)) ||
+      (editSelectRef.current &&
+        !editSelectRef.current.contains(e.target as Node))
     ) {
       handleSaveEdit();
     }
@@ -288,118 +323,187 @@ const LeadsTable = () => {
 
   return (
     <div className="p-6 bg-black/5 rounded-xl shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-black">Leads Dashboard</h2>
+      <div className="flex justify-between items-center mb-8 pb-4 border-b border-black/10">
+        <div>
+          <h2 className="text-3xl font-bold text-black/90 mb-2">
+            Leads Dashboard
+          </h2>
+          <p className="text-black/60">
+            Manage and track your leads across different databases
+          </p>
+        </div>
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="px-4 py-2 rounded-lg font-medium transition-all duration-200 
-          bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 
+            bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 shadow-md hover:shadow-lg"
         >
           {isRefreshing ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Refresh"
+            "Refresh Leads"
           )}
         </button>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        {/* Non-Region Tabs */}
-        {nonRegionTabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === tab
-                ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                : "bg-black/5 text-black/70 hover:bg-black/10"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-
-        {/* Region Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              isDropdownOpen
-                ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                : "bg-black/5 text-black/70 hover:bg-black/10"
-            }`}
-          >
-            Regions
-          </button>
-
-          {isDropdownOpen && (
-            <div className="absolute mt-2 w-48 bg-white border border-black/10 shadow-lg rounded-lg">
-              {regionTabs.map((region) => (
-                <button
-                  key={region}
-                  onClick={() => {
-                    setActiveTab(region);
-                    setIsDropdownOpen(false); // Close dropdown after selection
-                  }}
-                  className={`w-full text-left px-4 py-2 transition-all duration-200 hover:bg-amber-50 ${
-                    activeTab === region ? "bg-amber-100" : ""
-                  }`}
-                >
-                  {region}
-                </button>
-              ))}
+      <div className="mb-6 bg-black/5 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-black/70">
+              <Filter className="h-5 w-5" />
+              <span className="font-medium">Filters</span>
             </div>
-          )}
-        </div>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-black/10 
-                                     focus:outline-none focus:ring-2 focus:ring-amber-500
-                                     w-64 pr-10"
-          />
-          <Search
-            className="absolute right-3 top-1/2 -translate-y-1/2 
-                                         text-black/30 h-5 w-5"
-          />
-        </div>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">All Statuses</option>
-          <option value="New">New</option>
-          <option value="InProgress">In Progress</option>
-          <option value="Converted">Converted</option>
-          <option value="Closed">Closed</option>
-        </select>
-        <select
-          value={assignedTo}
-          onChange={(e) => setAssignedTo(e.target.value)}
-        >
-          <option value="">All Users</option>
-          <option value="John">John</option>
-          <option value="Jane">Jane</option>
-        </select>
-        <input
-          type="date"
-          value={startDate}
-          onChange={handleDateChange(setStartDate)}
-        />
-        <input
-          type="date"
-          value={endDate}
-          onChange={handleDateChange(setEndDate)}
-        />
-      </div>
+            {/* Clear filters button */}
+            {(searchQuery || status || assignedTo || startDate || endDate) && (
+              <button 
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatus("");
+                  setAssignedTo("");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="flex items-center gap-1 text-black/60 hover:text-black/90 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span className="text-sm">Clear Filters</span>
+              </button>
+            )}
+          </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-800 rounded-lg flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          <span>{error}</span>
+          <div className="grid grid-cols-4 gap-4">
+            {/* Search Input */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search leads..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-black/20 
+                focus:outline-none focus:ring-2 focus:ring-amber-500
+                placeholder-black/50"
+              />
+              <Search
+                className="absolute right-3 top-1/2 -translate-y-1/2 
+                text-black/40 h-5 w-5"
+              />
+            </div>
+
+            {/* Status Dropdown */}
+            <select 
+              value={status} 
+              onChange={(e) => setStatus(e.target.value)}
+              className="px-4 py-2.5 rounded-lg border border-black/20 
+              focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">All Statuses</option>
+              {LEAD_STATUSES.map((statusOption) => (
+                <option key={statusOption} value={statusOption}>
+                  {statusOption}
+                </option>
+              ))}
+            </select>
+
+            {/* Assigned To Dropdown */}
+            <select 
+              value={assignedTo} 
+              onChange={(e) => setAssignedTo(e.target.value)}
+              className="px-4 py-2.5 rounded-lg border border-black/20 
+              focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">All Users</option>
+              {users.map((userName) => (
+                <option key={userName} value={userName}>
+                  {userName}
+                </option>
+              ))}
+            </select>
+
+            {/* Date Range */}
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={handleDateChange(setStartDate)}
+                className="w-full px-4 py-2.5 rounded-lg border border-black/20 
+                focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="Start Date"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={handleDateChange(setEndDate)}
+                className="w-full px-4 py-2.5 rounded-lg border border-black/20 
+                focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="End Date"
+              />
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Tabs Section */}
+        <div className="mb-6 flex gap-2">
+          {/* Non-Region Tabs */}
+          {nonRegionTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 
+              ${
+                activeTab === tab
+                  ? "bg-amber-500 text-white shadow-md"
+                  : "bg-black/5 text-black/70 hover:bg-black/10"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+
+          {/* Region Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200 
+              ${
+                isDropdownOpen
+                  ? "bg-amber-500 text-white shadow-md"
+                  : "bg-black/5 text-black/70 hover:bg-black/10"
+              }`}
+            >
+              Regions
+              <span className="text-xs bg-black/10 px-2 py-0.5 rounded">
+                {regionTabs.length}
+              </span>
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute z-10 mt-2 w-56 bg-white border border-black/10 shadow-lg rounded-lg overflow-hidden">
+                {regionTabs.map((region) => (
+                  <button
+                    key={region}
+                    onClick={() => {
+                      setActiveTab(region);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 transition-all duration-200 
+                    hover:bg-amber-50 ${
+                      activeTab === region ? "bg-amber-100 text-black" : "text-black/80"
+                    }`}
+                  >
+                    {region}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Error Handling */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-lg flex items-center gap-3 border border-red-200">
+            <AlertCircle className="h-6 w-6 text-red-500" />
+            <span className="font-medium">{error}</span>
+          </div>
+        )}
 
       <div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
         {loading ? (
@@ -423,7 +527,7 @@ const LeadsTable = () => {
             <tbody className="divide-y divide-black/10">
               {leads.map((lead, index) => (
                 <tr key={index} className="transition-colors hover:bg-amber-50">
-                  {orderedColumns.map((key, colIndex) => (
+                  {orderedColumns.map((key) => (
                     <td
                       key={key}
                       className={`px-4 py-3 text-sm text-black/80 whitespace-nowrap ${
@@ -434,7 +538,24 @@ const LeadsTable = () => {
                       onClick={() => handleCellClick(index, key, lead[key])}
                     >
                       {editingCell?.row === index &&
-                      editingCell.column === key ? (
+                      editingCell.column === key &&
+                      key === "status" ? (
+                        <select
+                          ref={editSelectRef}
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={handleSaveEdit}
+                          className="w-full h-full px-4 py-3 border-2 border-amber-500 rounded-none focus:outline-none focus:ring-0"
+                          autoFocus
+                        >
+                          {LEAD_STATUSES.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      ) : editingCell?.row === index &&
+                        editingCell.column === key ? (
                         <input
                           ref={editInputRef}
                           type="text"
