@@ -47,6 +47,10 @@ const LeadsTable = () => {
   } | null>(null);
   const [editValue, setEditValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [status, setStatus] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const editInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,9 +123,9 @@ const LeadsTable = () => {
 
   useEffect(() => {
     if (activeTab) {
-      fetchLeads(activeTab, debouncedSearch);
+      fetchLeads(activeTab, debouncedSearch, status,  startDate, endDate);
     }
-  }, [activeTab, debouncedSearch]);
+  }, [activeTab, debouncedSearch, startDate, endDate, status]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -146,18 +150,24 @@ const LeadsTable = () => {
     }
   }, [editingCell, editValue]);
 
-  const fetchLeads = async (sheetName: string, search?: string) => {
+  const fetchLeads = async (
+    sheetName: string,
+    search: string = "",
+    status: string = "",
+    startDate: string = "",
+    endDate: string = ""
+  ) => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-      if (search && search.trim()) {  // Only add search if it's not empty
-        queryParams.append("search", search);
-      }
   
-      // Log the query parameters for debugging
-      console.log('Search query:', search);
-      console.log('Query params:', queryParams.toString());
-      
+      if (search.trim()) queryParams.append("search", search);
+      if (startDate) queryParams.append("startDate", startDate);
+      if (status) queryParams.append("status", status);
+      if (endDate) queryParams.append("endDate", endDate);
+  
+      console.log("Query params:", queryParams.toString());
+  
       const response = await fetchLead(sheetName, queryParams.toString());
       setLeads(response.leads || []);
       setError("");
@@ -269,6 +279,13 @@ const LeadsTable = () => {
     }
   };
 
+  const handleDateChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setter(value);
+    };
+
   return (
     <div className="p-6 bg-black/5 rounded-xl shadow-lg">
       <div className="flex justify-between items-center mb-6">
@@ -350,6 +367,31 @@ const LeadsTable = () => {
                                          text-black/30 h-5 w-5"
           />
         </div>
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="">All Statuses</option>
+          <option value="New">New</option>
+          <option value="InProgress">In Progress</option>
+          <option value="Converted">Converted</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <select
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+        >
+          <option value="">All Users</option>
+          <option value="John">John</option>
+          <option value="Jane">Jane</option>
+        </select>
+        <input
+          type="date"
+          value={startDate}
+          onChange={handleDateChange(setStartDate)}
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={handleDateChange(setEndDate)}
+        />
       </div>
 
       {error && (
