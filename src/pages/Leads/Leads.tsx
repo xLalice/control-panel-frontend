@@ -6,14 +6,9 @@ import {
   fetchUsers,
 } from "../../api/api";
 import { Loader2, AlertCircle, Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { User } from "../../types";
+import { User, Lead, Pagination } from "../../types";
+import { LEAD_STATUSES, columnPriority } from "../constants";
 
-interface Pagination {
-  currentPage: number;
-  totalPages: number;
-  totalLeads: number;
-  pageSize: number;
-}
 function useDebounce<T>(value: T, delay: number): [T] {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -28,20 +23,6 @@ function useDebounce<T>(value: T, delay: number): [T] {
   }, [value, delay]);
 
   return [debouncedValue];
-}
-
-type SheetName =
-  | "Manufacturer"
-  | "Construction Database"
-  | "Batching Plant Database"
-  | "PCAB ONLINE"
-  | "NCR"
-  | `REGION ${string}`;
-
-// Define the Lead type based on all possible columns
-interface Lead {
-  id: string;
-  [key: string]: string; // Allow any string key with string value
 }
 
 const LeadsTable = () => {
@@ -70,56 +51,13 @@ const LeadsTable = () => {
     totalLeads: 0,
     pageSize: 20,
   });
+  const [sortBy, setSortBy] = useState<{ field: string; direction: "asc" | "desc" }>({
+    field: "createdAt", // Default sorting field
+    direction: "desc", // Default sorting direction
+  });
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const editInputRef = useRef<HTMLInputElement>(null);
   const editSelectRef = useRef<HTMLSelectElement>(null);
-
-  const LEAD_STATUSES = ["New", "InProgress", "Converted", "Closed"];
-
-  const columnPriority: Record<SheetName, string[]> = {
-    Manufacturer: [
-      "Company Name",
-      "Contact or landline",
-      "Email",
-      "Location",
-      "Website",
-    ],
-    "Construction Database": [
-      "Company Name",
-      "Email",
-      "Region",
-      "Category",
-      "Address",
-    ],
-    "Batching Plant Database": [
-      "Name",
-      "Email",
-      "Contact Number",
-      "Region",
-      "Kind",
-    ],
-    "PCAB ONLINE": [
-      "Name Of Firm",
-      "Contact Person",
-      "Email",
-      "Contact Number",
-      "License Number",
-      "Region",
-    ],
-    NCR: [
-      "Name Of Firm",
-      "License Number",
-      "Region",
-      "Category",
-      "Principal Classification",
-      "Type",
-      "CFY",
-      "Valid From",
-      "Valid To",
-      "Reg.For Gov.Infra.Projects",
-    ],
-  };
-
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -163,6 +101,7 @@ const LeadsTable = () => {
     status,
     assignedTo,
     pagination.currentPage,
+    sortBy, // Add sortBy to dependencies
   ]);
 
   useEffect(() => {
@@ -213,7 +152,7 @@ const LeadsTable = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-
+  
       if (search.trim()) queryParams.append("search", search);
       if (startDate) queryParams.append("startDate", startDate);
       if (status) queryParams.append("status", status);
@@ -221,9 +160,13 @@ const LeadsTable = () => {
       if (assignedTo) queryParams.append("assignedTo", assignedTo);
       queryParams.append("page", page.toString());
       queryParams.append("limit", "20"); // Default page size
-
+  
+      // Add sorting parameters
+      queryParams.append("sortBy", sortBy.field);
+      queryParams.append("sortDirection", sortBy.direction);
+  
       console.log("Query params:", queryParams.toString());
-
+  
       const response = await fetchLead(sheetName, queryParams.toString());
       setLeads(response.leads || []);
       setPagination(
@@ -432,6 +375,36 @@ const LeadsTable = () => {
             />
           </div>
 
+          <div className="flex items-center gap-2">
+  {/* Sorting Field Dropdown */}
+  <select
+    value={sortBy.field}
+    onChange={(e) =>
+      setSortBy((prev) => ({ ...prev, field: e.target.value }))
+    }
+    className="px-4 py-2.5 rounded-lg border border-black/20 
+      focus:outline-none focus:ring-2 focus:ring-amber-500"
+  >
+    <option value="createdAt">Created At</option>
+    <option value="Company Name">Company Name</option>
+    <option value="Name">Name</option>
+    <option value="Name of Firm">Name of Firm</option>
+  </select>
+
+  {/* Sorting Direction Buttons */}
+    <button
+      onClick={() =>
+        setSortBy((prev) => ({
+          ...prev,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        }))
+      }
+      className="p-2 rounded-lg hover:bg-black/10"
+    >
+      {sortBy.direction === "asc" ? "↑" : "↓"}
+    </button>
+  </div>
+
           {/* Status Dropdown */}
           <select
             value={status}
@@ -454,7 +427,8 @@ const LeadsTable = () => {
             className="px-4 py-2.5 rounded-lg border border-black/20 
               focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
-            <option value="">All Users</option>
+            <option value="All">All Users</option>
+            <option value="Unassigned">Unassigned</option>
             {users.map((userName) => (
               <option key={userName} value={userName}>
                 {userName}
@@ -627,7 +601,7 @@ const LeadsTable = () => {
                 ))}
               </tbody>
             </table>
-            <div className="flex items-center justify-between px-4 py-3 bg-black/5">
+            <div className="w-full flex items-center justify-between px-4 py-3 bg-black/5">
               <div className="text-sm text-black/60">
                 Showing {(pagination.currentPage - 1) * pagination.pageSize + 1}{" "}
                 -{" "}
