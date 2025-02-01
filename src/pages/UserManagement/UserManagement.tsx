@@ -1,31 +1,21 @@
 import { useState, useEffect } from "react";
 import { fetchUsers, addUser, deleteUser, updateUser } from "../../api/api";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { toast } from "react-toastify";
-import { User } from "../../types";
+import { Edit2, Trash2, Plus } from "lucide-react";
 
-type UserFormData = Omit<User, "id">;
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
-const schema = yup
-  .object({
-    name: yup.string().required("Name is required"),
-    email: yup
-      .string()
-      .email("Invalid email address")
-      .required("Email is required"),
-    password: yup
-      .string()
-      .required("Password is required")
-      .min(6, "Password must be at least 6 characters"),
-    confirmPassword: yup
-      .string()
-      .oneOf([yup.ref("password")], "Passwords must match")
-      .required("Confirm Password is required"),
-    role: yup.string().required("Role is required"),
-  })
-  .required();
+interface UserFormData {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}
 
 function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -36,9 +26,7 @@ function UserManagementPage() {
     reset,
     setValue,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
+  } = useForm<UserFormData>();
 
   useEffect(() => {
     async function fetchData() {
@@ -47,260 +35,240 @@ function UserManagementPage() {
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
-        toast.error("Failed to fetch users.");
       }
     }
-
     fetchData();
   }, []);
 
-  // Handle adding/updating a user
   const onSubmit = async (data: UserFormData) => {
     if (editingUserId) {
       try {
         const response = await updateUser(editingUserId, data);
-        setUsers((prevUsers) =>
+        setUsers((prevUsers: User[]) =>
           prevUsers.map((user) =>
             user.id === editingUserId ? response.updatedUser : user
           )
         );
-        toast.success("User updated successfully!");
         setEditingUserId(null);
         reset();
       } catch (error) {
-        toast.error("Error updating user.");
         console.error("Error updating user:", error);
       }
     } else {
       try {
         const response = await addUser(data);
-        setUsers((prevUsers) => [...prevUsers, response.newUser]);
-        toast.success("User added successfully!");
+        setUsers((prevUsers: User[]) => [...prevUsers, response.newUser]);
         reset();
       } catch (error) {
-        toast.error("Error adding user.");
         console.error("Error adding user:", error);
       }
     }
   };
 
-  // Handle editing a user
   const handleEditUser = (user: User) => {
     setEditingUserId(user.id);
-    // Pre-fill the form with the user's data
     setValue("name", user.name);
     setValue("email", user.email);
-    setValue("password", ""); // Do not prefill password for security
+    setValue("password", "");
     setValue("role", user.role);
   };
 
-  // Handle deleting a user
   const handleDeleteUser = async (id: string) => {
     try {
       await deleteUser(id);
-      setUsers(users.filter((user) => user.id !== id));
-      toast.success("User deleted successfully!");
+      setUsers((prevUsers: User[]) => 
+        prevUsers.filter((user) => user.id !== id)
+      );
     } catch (error) {
-      toast.error("Error deleting user.");
       console.error("Error deleting user:", error);
     }
   };
 
-  // Cancel editing
   const handleCancelEdit = () => {
     setEditingUserId(null);
-    reset(); // Clear form
+    reset();
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-gray-800 text-center">
-        User Management
-      </h1>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-black">User Management</h1>
+          <div className="h-1 w-20 bg-yellow-500"></div>
+        </div>
 
-      {/* Add/Edit User Form */}
-      <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          {editingUserId ? "Edit User" : "Add New User"}
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              placeholder="Enter name"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              {...register("name")}
-            />
-            {errors.name && (
-              <span className="text-sm text-red-500">
-                {errors.name.message}
-              </span>
-            )}
+        {/* Form Section */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-semibold text-black flex items-center gap-2">
+              {editingUserId ? (
+                <>
+                  <Edit2 className="w-6 h-6 text-yellow-500" />
+                  Edit User
+                </>
+              ) : (
+                <>
+                  <Plus className="w-6 h-6 text-yellow-500" />
+                  Add New User
+                </>
+              )}
+            </h2>
           </div>
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Enter email"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              {...register("email")}
-            />
-            {errors.email && (
-              <span className="text-sm text-red-500">
-                {errors.email.message}
-              </span>
-            )}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-yellow-500 focus:border-yellow-500"
+                  placeholder="Enter name"
+                  {...register("name")}
+                />
+                {errors.name && (
+                  <span className="text-red-500 text-sm mt-1">
+                    {errors.name.message}
+                  </span>
+                )}
+              </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Enter password"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              {...register("password")}
-            />
-            {errors.password && (
-              <span className="text-sm text-red-500">
-                {errors.password.message}
-              </span>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-yellow-500 focus:border-yellow-500"
+                  placeholder="Enter email"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <span className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </span>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              placeholder="Re-enter password"
-              className="w-full p-3 border rounded-lg shadow-sm focus:ring-indigo-500"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <span className="text-red-500 text-sm">
-                {errors.confirmPassword.message}
-              </span>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-yellow-500 focus:border-yellow-500"
+                  placeholder="Enter password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <span className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </span>
+                )}
+              </div>
 
-          <div>
-            <label
-              htmlFor="role"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Role
-            </label>
-            <select
-              id="role"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              {...register("role")}
-            >
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-              <option value="SALES">Sales</option>
-              <option value="MARKETING">Marketing</option>
-              <option value="LOGISTICS">Logistics</option>
-              <option value="ACCOUNTING">Accounting</option>
-            </select>
-            {errors.role && (
-              <span className="text-sm text-red-500">
-                {errors.role.message}
-              </span>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role
+                </label>
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-yellow-500 focus:border-yellow-500"
+                  {...register("role")}
+                >
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="SALES">Sales</option>
+                  <option value="MARKETING">Marketing</option>
+                  <option value="LOGISTICS">Logistics</option>
+                  <option value="ACCOUNTING">Accounting</option>
+                </select>
+                {errors.role && (
+                  <span className="text-red-500 text-sm mt-1">
+                    {errors.role.message}
+                  </span>
+                )}
+              </div>
+            </div>
 
-          <div className="space-y-3">
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg shadow hover:bg-indigo-700 transition duration-300"
-            >
-              {editingUserId ? "Update User" : "Add User"}
-            </button>
-            {editingUserId && (
+            <div className="flex gap-4">
               <button
-                type="button"
-                onClick={handleCancelEdit}
-                className="w-full bg-gray-600 text-white py-3 rounded-lg shadow hover:bg-gray-700 transition duration-300"
+                type="submit"
+                className="flex-1 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors duration-200"
               >
-                Cancel
+                {editingUserId ? "Update User" : "Add User"}
               </button>
-            )}
-          </div>
-        </form>
-      </div>
+              {editingUserId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
 
-      {/* User Table */}
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-          Users List
-        </h2>
-        <table className="w-full border-collapse border border-gray-200 rounded-lg overflow-hidden">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user, index) => (
-              <tr
-                key={user.id}
-                className={`${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                } border-t border-gray-200`}
-              >
-                <td className="px-6 py-4 text-gray-700">{user.name}</td>
-                <td className="px-6 py-4 text-gray-700">{user.email}</td>
-                <td className="px-6 py-4 text-gray-700">{user.role}</td>
-                <td className="px-6 py-4 flex space-x-4">
-                  <button
-                    onClick={() => handleEditUser(user)}
-                    className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition duration-300"
+        {/* Users Table */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-semibold text-black">Users List</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="border-t border-gray-100 hover:bg-gray-50"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(user.id)}
-                    className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition duration-300"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    <td className="px-6 py-4 text-gray-800">{user.name}</td>
+                    <td className="px-6 py-4 text-gray-800">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="p-2 text-gray-600 hover:text-yellow-500 transition-colors duration-200"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="p-2 text-gray-600 hover:text-red-500 transition-colors duration-200"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -17,6 +17,17 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+apiClient.interceptors.response.use(
+  (response) => response, // Pass through successful responses
+  (error) => {
+    if (error.response?.status === 403) {
+      // Redirect to login if the response status is 403 (Forbidden)
+      window.location.href = "/login";
+    }
+    return Promise.reject(error); // Propagate other errors
+  }
+);
+
 export const login = async (data: LoginFormData) => {
   try {
     const response = await apiClient.post("/auth/login", data);
@@ -28,7 +39,7 @@ export const login = async (data: LoginFormData) => {
 
 export const logout = async () => {
   try {
-    await apiClient.post("/logout");
+    await apiClient.post("/auth/logout");
   } catch (error: any) {
     throw new Error("Logout failed");
   }
@@ -102,3 +113,14 @@ export const updateLead = async (
   }
 
 };
+
+
+// Marketing
+export const fetchFacebookOverview = async () => {
+  try {
+    const facebookData = await apiClient.get("/marketing/facebook/overview");
+    return facebookData.data;
+  } catch(error: any){
+    throw new Error(error.response?.data?.message || "Fetching facebook overview failed");
+  }
+}
