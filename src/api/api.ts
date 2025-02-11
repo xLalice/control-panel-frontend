@@ -1,9 +1,6 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
-
-interface UpdateLeadParams {
-  [key: string]: string;
-}
+import { UpdateLeadParams } from "@/types";
 
 
 
