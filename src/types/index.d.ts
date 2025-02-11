@@ -58,3 +58,7 @@ export interface MetricTrend {
   shares: number;
   reach: number;
 }
+
+interface UpdateLeadParams {
+  [key: string]: string;
+}
