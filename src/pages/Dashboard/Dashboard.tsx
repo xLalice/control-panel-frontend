@@ -9,16 +9,54 @@ import {
   BarElement,
 } from "chart.js";
 import { Doughnut, Bar } from "react-chartjs-2";
-import { Bell } from "lucide-react";
+import { 
+  Bell, 
+  Menu,
+  Home,
+  Users,
+  DollarSign,
+  Megaphone,
+  Package,
+  ChevronDown,
+  BarChart,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../../assets/logo.png";
 import { toast } from "react-toastify";
 import { useAuth } from "@/contexts/AuthContext";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Logo from "../../assets/logo.png"
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 type MenuItems = {
-  [key: string]: {name: string, route: string}[];
+  [key: string]: {
+    name: string;
+    route: string;
+    icon: React.ReactNode;
+  }[];
 };
 
 const App: React.FC = () => {
@@ -27,15 +65,13 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-  // Menu items and their associated features
   const menuItems: MenuItems = {
     Dashboard: [],
-    Admin: [{name :"User Management", route: "/admin/user-management" }],
-    Sales: [{name: "Leads", route: "/sales/leads"}],
-    Marketing: [{name: "Campaigns", route: "/marketing/campaigns"}],
-    Logistics: [{name: "Inventory", route: "/logistics/inventory"}],
+    Admin: [{ name: "User Management", route: "/admin/user-management", icon: <Users className="h-4 w-4" /> }],
+    Sales: [{ name: "Leads", route: "/sales/leads", icon: <DollarSign className="h-4 w-4" /> }],
+    Marketing: [{ name: "Campaigns", route: "/marketing/campaigns", icon: <Megaphone className="h-4 w-4" /> }],
+    Logistics: [{ name: "Inventory", route: "/logistics/inventory", icon: <Package className="h-4 w-4" /> }],
+    Reports: [{ name: "View Reports", route: "/reports", icon: <BarChart className="h-4 w-4" /> }],
   };
 
   const handleMenuClick = (menu: string) => {
@@ -43,23 +79,21 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-   try {
-    await logout();
-    toast.success("Logged out successfully");
-    navigate("/login")
-   } catch(error){
-    toast.error("Logout failed");
-   }
+    try {
+      await logout();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Logout failed");
+    }
+  };
 
-  }
-
-  // Sample data for charts
   const doughnutData = {
     labels: ["Sales", "Marketing", "Logistics"],
     datasets: [
       {
         data: [300, 200, 100],
-        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+        backgroundColor: ["#22c55e", "#eab308", "#ef4444"],
       },
     ],
   };
@@ -70,110 +104,150 @@ const App: React.FC = () => {
       {
         label: "Revenue",
         data: [1200, 1900, 3000, 2500, 3200],
-        backgroundColor: "#007BFF",
+        backgroundColor: "#3b82f6",
       },
     ],
   };
 
-  return (
-    <div className="flex">
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <aside className="bg-black text-white w-64 fixed h-screen flex-shrink-0">
-          <div className="p-4 flex justify-between items-center">
-            <img src={Logo} alt="" />
-            
-          </div>
-          <nav className="space-y-2">
-            {Object.keys(menuItems).map((menu) => (
-              <div key={menu}>
-                <button
-                  onClick={() => handleMenuClick(menu)}
-                  className={`block w-full text-left px-4 py-2 hover:bg-gray-700 ${
-                    activeMenu === menu ? "bg-gray-700" : ""
-                  }`}
-                >
-                  {menu}
-                </button>
-                {activeMenu === menu && (
-                  <ul className="ml-6 space-y-1 mt-2">
-                    {menuItems[menu].map((feature) => (
-                      <li
-                        key={feature.name}
-                        className="text-sm bg-gray-800 px-4 py-2 rounded hover:bg-gray-700"
-                        onClick={() => navigate(feature.route)}
-                      >
-                        {feature.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+  const Sidebar = () => (
+    <div className="h-screen border-r bg-background">
+      <div className="p-4 flex justify-between items-center border-b bg-black">
+        <img src={Logo} alt="Company Logo" className=" w-full" />
+      </div>
+      <nav className="space-y-1 p-2 ">
+        {Object.keys(menuItems).map((menu) => (
+          <div key={menu} className="space-y-1">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => handleMenuClick(menu)}
+            >
+              <Home className="h-4 w-4 mr-2" />
+              {menu}
+              {menuItems[menu].length > 0 && (
+                <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${
+                  activeMenu === menu ? "transform rotate-180" : ""
+                }`} />
+              )}
+            </Button>
+            {activeMenu === menu && menuItems[menu].length > 0 && (
+              <div className="pl-4 space-y-1">
+                {menuItems[menu].map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate(item.route)}
+                  >
+                    {item.icon}
+                    <span className="ml-2">{item.name}</span>
+                  </Button>
+                ))}
               </div>
-            ))}
-          </nav>
-        </aside>
-      )}
+            )}
+          </div>
+        ))}
+      </nav>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Mobile Sidebar */}
+      <Sheet>
+        <SheetTrigger asChild className="lg:hidden">
+          <Button variant="ghost" size="icon" className="ml-2">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-64">
+          <Sidebar />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block w-64">
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
-      <div className={`flex-1 ${sidebarOpen ? "ml-64" : ""}`}>
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between bg-black text-yellow-500 px-6 py-4">
-          <button onClick={toggleSidebar} className="text-white">
-            {sidebarOpen ? "Close" : "Open"} Menu
-          </button>
+        <header className="h-14 border-b bg-background flex items-center justify-between px-4">
+          <h1 className="text-lg font-semibold">Welcome Back</h1>
           <div className="flex items-center space-x-4">
-            <Bell className="h-6 w-6 cursor-pointer" />
-            <button className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600" onClick={() => handleLogout()}>
-              Logout
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>New message received</DropdownMenuItem>
+                <DropdownMenuItem>Sales target achieved</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handleLogout}>Logout</Button>
           </div>
         </header>
 
-        {/* Content Area */}
-        <div className="p-6 space-y-6 overflow-auto">
-          {/* Chart Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="text-lg font-bold mb-4">Department Distribution</h3>
-              <Doughnut data={doughnutData} />
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="text-lg font-bold mb-4">Monthly Revenue</h3>
-              <Bar data={barData} />
-            </div>
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-auto p-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Department Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Doughnut data={doughnutData} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Bar data={barData} />
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Table Section */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-lg font-bold mb-4">Recent Transactions</h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="px-4 py-2">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="px-4 py-2">2025-01-26</td>
-                  <td className="px-4 py-2">Purchase Order #123</td>
-                  <td className="px-4 py-2">₱15,000</td>
-                </tr>
-                <tr className="bg-gray-50">
-                  <td className="px-4 py-2">2025-01-25</td>
-                  <td className="px-4 py-2">Invoice #456</td>
-                  <td className="px-4 py-2">₱22,500</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2">2025-01-24</td>
-                  <td className="px-4 py-2">Salary Payment</td>
-                  <td className="px-4 py-2">₱50,000</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>2025-01-26</TableCell>
+                    <TableCell>Purchase Order #123</TableCell>
+                    <TableCell>₱15,000</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>2025-01-25</TableCell>
+                    <TableCell>Invoice #456</TableCell>
+                    <TableCell>₱22,500</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>2025-01-24</TableCell>
+                    <TableCell>Salary Payment</TableCell>
+                    <TableCell>₱50,000</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     </div>
   );
