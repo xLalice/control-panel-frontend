@@ -62,3 +62,12 @@ export interface MetricTrend {
 interface UpdateLeadParams {
   [key: string]: string;
 }
+
+export interface Report {
+  id: string;
+  date: Date;
+  location: string;
+  department: string;
+  taskDetails: string;
+  reportedBy: string;
+}

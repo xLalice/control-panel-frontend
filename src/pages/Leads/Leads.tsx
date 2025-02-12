@@ -8,22 +8,9 @@ import {
 import { Loader2, AlertCircle, Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { User, Lead, Pagination } from "../../types";
 import { LEAD_STATUSES, columnPriority } from "../constants";
+import { useDebounce } from "../../hooks/useDebounce";
 
-function useDebounce<T>(value: T, delay: number): [T] {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return [debouncedValue];
-}
 
 const LeadsTable = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
