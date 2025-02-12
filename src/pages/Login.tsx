@@ -1,11 +1,12 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { login } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -28,7 +29,13 @@ const Login = () => {
   } = useForm({
     resolver: yupResolver(loginSchema),
   });
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) navigate("/dashboard");
+  }, [isAuthenticated, navigate]);
+  
 
   const onSubmit = async (data: LoginFormData) => {
     try {
