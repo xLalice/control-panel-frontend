@@ -12,8 +12,8 @@ import { Doughnut, Bar } from "react-chartjs-2";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.png";
-import { logout } from "@/api/api";
 import { toast } from "react-toastify";
+import { useAuth } from "@/contexts/AuthContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -43,7 +44,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
    try {
-    const response = await logout();
+    await logout();
     toast.success("Logged out successfully");
     navigate("/login")
    } catch(error){

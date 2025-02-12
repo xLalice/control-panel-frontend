@@ -34,7 +34,7 @@ export default function ReportsPage() {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>Add New Report</Button>
+            <Button className="bg-yellow-500">Add New Report</Button>
           </DialogTrigger>
           <DialogContent>
             <ReportForm onAdd={handleAdd} />

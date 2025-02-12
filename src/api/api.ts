@@ -32,6 +32,16 @@ export const login = async (data: LoginFormData) => {
   }
 };
 
+export const verify = async (): Promise<{authenticated: boolean}> => {
+  try {
+    const response: {authenticated: boolean} = await apiClient.post("/auth/verify");
+    return response
+  } catch (error: any) {
+    throw new Error("Verify failed");
+  }
+};
+
+
 export const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
@@ -39,6 +49,8 @@ export const logout = async () => {
     throw new Error("Logout failed");
   }
 };
+
+// ----------------- API Functions -----------------
 
 export const fetchUsers = async (): Promise<any> => {
   try {
