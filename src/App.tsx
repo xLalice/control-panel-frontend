@@ -5,6 +5,7 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
+import ReportsPage from "./pages/Reports/Reports";
 const App = () => {
   return (
     <Router>
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/admin/user-management" element={<UserManagementPage />} />
         <Route path="/sales/leads" element={<LeadsTable />} />
         <Route path="/marketing/social-media" element={<SocialMediaDashboard />} />
+        <Route path="/reports" element={<ReportsPage />} />
       </Routes>
     </Router>
   );
