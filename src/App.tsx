@@ -13,16 +13,24 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
 import ReportsPage from "./pages/Reports/Reports";
+import PricingTable from "./pages/Pricing/PricingTable";
+import AdminPricing from "./pages/Pricing/AdminPricing"; 
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Loader } from "./components/ui/Loader";
 
 const AppContent = () => {
   const location = useLocation();
-  const isAuthenticated = useAuth().isAuthenticated;
+  const {isAuthenticated, isLoading} = useAuth();
+  
 
   // Define pages where the Header should be visible
   const showHeader = !["/", "/login", "/dashboard"].includes(location.pathname);
+
+  if (isLoading) {
+    return Loader(isLoading);
+  }
 
   return (
     <>
@@ -55,9 +63,10 @@ const AppContent = () => {
             element={<SocialMediaDashboard />}
           />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/pricing" element={<PricingTable />} /> 
+          <Route path="/admin/pricing" element={<AdminPricing />} /> 
         </Route>
 
-        {/* Redirect unknown routes */}
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
