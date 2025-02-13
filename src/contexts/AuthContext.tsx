@@ -4,6 +4,7 @@ import { login as loginApi, logout as logoutApi } from "@/api/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean; 
   login: (data: { email: string; password: string }) => Promise<void>; // ✅ Fixed Type
   logout: () => void;
 }
@@ -12,13 +13,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
 
   const checkAuth = async () => {
     try {
+      setIsLoading(true);
       const response: { authenticated: boolean } = await verify();
+      console.log("Verify response:", response); // Add this
       setIsAuthenticated(response.authenticated);
+      console.log("isAuthenticated set to:", response.authenticated); // Add this
     } catch (error) {
+      console.log("Verify error:", error); // Add this
       setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

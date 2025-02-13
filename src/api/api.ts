@@ -32,10 +32,10 @@ export const login = async (data: LoginFormData) => {
   }
 };
 
-export const verify = async (): Promise<{authenticated: boolean}> => {
+export const verify = async (): Promise<{ authenticated: boolean }> => {
   try {
-    const response: {authenticated: boolean} = await apiClient.post("/auth/verify");
-    return response
+    const response = await apiClient.get("/auth/verify");
+    return response.data;
   } catch (error: any) {
     throw new Error("Verify failed");
   }
@@ -180,5 +180,65 @@ export const deleteReport = async (id: string) => {
     await apiClient.delete(`/reports/${id}`);
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Deleting report failed");
+  }
+};
+
+// Pricing API
+export const getAllPrices = async () => {
+  try {
+    const response = await apiClient.get("/prices");
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error fetching prices");
+  }
+};
+
+export const getPriceByCategory = async (category: string) => {
+  try {
+    const response = await apiClient.get(`/prices/${category}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error fetching prices by category");
+  }
+};
+
+export const addPrice = async (priceData: {
+  productId: string;
+  price: number;
+  unit: string;
+  updatedBy: string;
+}) => {
+  try {
+    const response = await apiClient.post("/prices", priceData);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error adding price");
+  }
+};
+
+export const updatePrice = async (id: string, priceData: { price: number; updatedBy: string }) => {
+  try {
+    const response = await apiClient.put(`/prices/${id}`, priceData);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error updating price");
+  }
+};
+
+export const deletePrice = async (id: string) => {
+  try {
+    const response = await apiClient.delete(`/prices/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error deleting price");
+  }
+};
+
+export const getPriceHistory = async (productId: string) => {
+  try {
+    const response = await apiClient.get(`/price-history/${productId}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Error fetching price history");
   }
 };
