@@ -13,17 +13,18 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
 import ReportsPage from "./pages/Reports/Reports";
-import PricingTable from "./pages/Pricing/PricingTable";
-import AdminPricing from "./pages/Pricing/AdminPricing"; 
+import PricingDashboard from "./pages/Pricing/Pricing";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Loader } from "./components/ui/Loader";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const {isAuthenticated, isLoading} = useAuth();
-  
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Define pages where the Header should be visible
   const showHeader = !["/", "/login", "/dashboard"].includes(location.pathname);
@@ -63,8 +64,7 @@ const AppContent = () => {
             element={<SocialMediaDashboard />}
           />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/pricing" element={<PricingTable />} /> 
-          <Route path="/admin/pricing" element={<AdminPricing />} /> 
+          <Route path="/pricing" element={<PricingDashboard />} />
         </Route>
 
         <Route
@@ -78,11 +78,13 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
