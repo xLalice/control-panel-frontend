@@ -58,7 +58,7 @@ const AppContent = () => {
             path="/admin/user-management"
             element={<UserManagementPage />}
           />
-          <Route path="/sales/leads" element={<LeadsTable />} />
+          <Route path="/leads" element={< LeadsTable />} />
           <Route
             path="/marketing/social-media"
             element={<SocialMediaDashboard />}

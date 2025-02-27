@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchUsers, addUser, deleteUser, updateUser } from "../../api/api";
 import {
   Card,
@@ -40,7 +41,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Edit2, Trash2, Plus, Users } from "lucide-react";
+import { Edit2, Trash2, Plus, Users, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 interface User {
@@ -66,42 +67,60 @@ const roleColors: Record<string, { bg: string; text: string }> = {
 };
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<User[]>([]);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   const form = useForm<UserFormData>();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetchUsers();
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    }
-    fetchData();
-  }, []);
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const response = await fetchUsers();
+      return response.data;
+    },
+  });
 
-  const onSubmit = async (data: UserFormData) => {
-    try {
-      if (editingUserId) {
-        const response = await updateUser(editingUserId, data);
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === editingUserId ? response.updatedUser : user
-          )
-        );
-      } else {
-        const response = await addUser(data);
-        setUsers((prevUsers) => [...prevUsers, response.newUser]);
-      }
+  const addUserMutation = useMutation({
+    mutationFn: addUser,
+    onSuccess: (response) => {
+      queryClient.setQueryData<User[]>(["users"], (oldData = []) => [
+        ...oldData,
+        response.newUser,
+      ]);
+      setIsDialogOpen(false);
+      form.reset();
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UserFormData }) =>
+      updateUser(id, data),
+    onSuccess: (response) => {
+      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
+        oldData.map((user) =>
+          user.id === editingUserId ? response.updatedUser : user
+        )
+      );
       setIsDialogOpen(false);
       setEditingUserId(null);
       form.reset();
-    } catch (error) {
-      console.error("Error saving user:", error);
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
+        oldData.filter((user) => user.id !== deletedId)
+      );
+    },
+  });
+
+  const onSubmit = async (data: UserFormData) => {
+    if (editingUserId) {
+      updateUserMutation.mutate({ id: editingUserId, data });
+    } else {
+      addUserMutation.mutate(data);
     }
   };
 
@@ -120,14 +139,22 @@ export default function UserManagementPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteUser = async (id: string) => {
-    try {
-      await deleteUser(id);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-    } catch (error) {
-      console.error("Error deleting user:", error);
-    }
+  const handleDeleteUser = (id: string) => {
+    deleteUserMutation.mutate(id);
   };
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card className="p-6">
+          <CardTitle className="text-red-600 mb-2">Error</CardTitle>
+          <CardDescription>
+            There was an error loading the users. Please try again later.
+          </CardDescription>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -138,8 +165,17 @@ export default function UserManagementPage() {
             Manage your organization's user accounts and permissions.
           </p>
         </div>
-        <Button onClick={handleAddNew} className="gap-2">
-          <Plus className="h-4 w-4" /> Add User
+        <Button 
+          onClick={handleAddNew} 
+          className="gap-2"
+          disabled={addUserMutation.isPending}
+        >
+          {addUserMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
+          Add User
         </Button>
       </div>
 
@@ -164,39 +200,59 @@ export default function UserManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`${roleColors[user.role]?.bg} ${
-                        roleColors[user.role]?.text
-                      }`}
-                    >
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                users.map((user: User) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`${roleColors[user.role]?.bg} ${
+                          roleColors[user.role]?.text
+                        }`}
+                      >
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditUser(user)}
+                          disabled={updateUserMutation.isPending}
+                        >
+                          {updateUserMutation.isPending && 
+                           updateUserMutation.variables?.id === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Edit2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={deleteUserMutation.isPending}
+                        >
+                          {deleteUserMutation.isPending && 
+                           deleteUserMutation.variables === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -291,10 +347,17 @@ export default function UserManagementPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
+                  disabled={addUserMutation.isPending || updateUserMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button 
+                  type="submit"
+                  disabled={addUserMutation.isPending || updateUserMutation.isPending}
+                >
+                  {(addUserMutation.isPending || updateUserMutation.isPending) ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
                   {editingUserId ? "Update User" : "Add User"}
                 </Button>
               </div>
