@@ -1,3 +1,16 @@
-.w-full {
-    width: 100%;
-}
+
+
+/* You can add this to your global CSS file if you have one */
+.selected-row {
+    position: relative;
+  }
+  
+  .selected-row::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: #3b82f6; /* or your theme's primary color */
+  }

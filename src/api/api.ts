@@ -55,7 +55,7 @@ export const logout = async () => {
 export const fetchUsers = async (): Promise<any> => {
   try {
     const response = await apiClient.get("/admin/users");
-    return response;
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Fetching users failed");
   }
