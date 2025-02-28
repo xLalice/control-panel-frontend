@@ -59,14 +59,13 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
   const [isNewCompany, setIsNewCompany] = useState(!isEditMode);
   const queryClient = useQueryClient();
 
-  // Optimized queries with select to transform data
   const { data: users = [] } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const response = await apiClient.get("/admin/users");
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000, 
   });
 
   const { data: companies = [] } = useQuery({
@@ -75,7 +74,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
       const response = await apiClient.get("/leads/companies");
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000, 
   });
 
   const defaultValues = isEditMode
@@ -83,8 +82,8 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
         companyId: lead.company?.id || "",
         companyName: lead.company?.name || "",
         contactPerson: lead.contactPerson || "",
-        email: lead.company?.email || "",
-        phone: lead.company?.phone || "",
+        email: lead.company?.email || lead.email || "",
+        phone: lead.company?.phone || lead.phone || "",
         status: lead.status || "New",
         industry: lead.industry || "",
         region: lead.region || "",

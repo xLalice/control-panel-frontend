@@ -8,6 +8,8 @@ export interface Lead {
   id: string;
   companyId: string;
   company: Company;
+  email: string;
+  phone: string;
   contactPerson: string;
   status: LeadStatus;
   source: string;
