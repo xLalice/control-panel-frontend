@@ -45,10 +45,12 @@ import {
   MessageSquare,
   DollarSign,
   X,
+  BarChart,
 } from "lucide-react";
 import { format } from "date-fns";
 import LeadForm from "./LeadForm";
-import {toast} from "react-toastify";
+import LeadDetailSkeleton from "./skeletons/LeadDetailSkeleton";
+import { toast } from "react-toastify";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -121,7 +123,7 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
     },
     onError: (error) => {
       console.error("Error updating status:", error);
-      toast.error("Failed to update lead status. Please try again."); 
+      toast.error("Failed to update lead status. Please try again.");
     },
   });
 
@@ -168,88 +170,13 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
 
   if (isLeadLoading) {
     return (
-      <div className="fixed inset-y-20 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 bg-white shadow-xl z-30 
+      <div
+        className="fixed inset-y-20 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 bg-white shadow-xl z-30 
                    transform transition-transform duration-300 ease-in-out
-                   overflow-y-auto">
+                   overflow-y-auto"
+      >
         <div className="p-6 space-y-6">
-          {/* Header Skeleton */}
-          <div className="flex justify-between items-center">
-            <div className="h-8 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              aria-label="Close panel"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          {/* Action Buttons Skeleton */}
-          <div className="flex gap-2">
-            <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
-            <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
-          </div>
-          
-          {/* Tabs Skeleton */}
-          <div className="border-b">
-            <div className="flex gap-4">
-              <div className="h-9 bg-gray-200 rounded-md w-24 animate-pulse"></div>
-              <div className="h-9 bg-gray-200 rounded-md w-32 animate-pulse"></div>
-            </div>
-          </div>
-          
-          {/* Details Card Skeleton */}
-          <Card>
-            <CardHeader>
-              <div className="h-6 bg-gray-200 rounded-md w-32 animate-pulse mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded-md w-64 animate-pulse"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-6">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={`left-${i}`} className="flex items-start gap-2">
-                      <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
-                      <div className="w-full">
-                        <div className="h-4 bg-gray-200 rounded-md w-24 animate-pulse mb-2"></div>
-                        <div className="h-5 bg-gray-200 rounded-md w-36 animate-pulse"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Right Column */}
-                <div className="space-y-6">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={`right-${i}`} className="flex items-start gap-2">
-                      <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
-                      <div className="w-full">
-                        <div className="h-4 bg-gray-200 rounded-md w-24 animate-pulse mb-2"></div>
-                        <div className="h-5 bg-gray-200 rounded-md w-36 animate-pulse"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <Separator className="my-6" />
-              
-              {/* Notes Skeleton */}
-              <div className="flex items-start gap-2">
-                <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
-                <div className="w-full">
-                  <div className="h-4 bg-gray-200 rounded-md w-16 animate-pulse mb-2"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded-md w-full animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded-md w-11/12 animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded-md w-3/4 animate-pulse"></div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <LeadDetailSkeleton onClose={onClose} />
         </div>
       </div>
     );
@@ -292,8 +219,6 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
       return date.toString();
     }
   };
-
-  // Activity Timeline Skeleton
   const ActivityTimelineSkeleton = () => (
     <div className="space-y-6">
       {[1, 2, 3].map((i) => (
@@ -315,7 +240,6 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
 
   return (
     <div className="">
-      {/* Semi-transparent overlay for mobile */}
       <div
         className="fixed inset-0 bg-black/20 z-20 md:hidden"
         onClick={onClose}
@@ -354,8 +278,8 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
               <Pencil className="h-4 w-4 mr-2" /> Edit
             </Button>
 
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               size="sm"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
@@ -427,6 +351,16 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
                             Industry
                           </p>
                           <p>{lead.industry || "N/A"}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <BarChart className="h-5 w-5 text-gray-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">
+                            Lead Score
+                          </p>
+                          <p>{lead.leadScore || "N/A"}</p>
                         </div>
                       </div>
                     </div>
@@ -522,6 +456,8 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
                           <p>{lead.source || "N/A"}</p>
                         </div>
                       </div>
+
+                      
                     </div>
                   </div>
 
@@ -600,7 +536,6 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
             </TabsContent>
           </Tabs>
 
-          {/* Edit Lead Form Dialog */}
           {isEditDialogOpen && (
             <LeadForm
               lead={lead}
@@ -613,13 +548,16 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
             />
           )}
 
-          {/* Delete Confirmation Dialog */}
-          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this lead? This action cannot be undone.
+                  Are you sure you want to delete this lead? This action cannot
+                  be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

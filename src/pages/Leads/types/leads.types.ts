@@ -89,6 +89,7 @@ export interface LeadFormData {
   source: string;
   notes: string;
   assignedToId: string;
+  leadScore: number;
 }
 
 export interface LeadFormProps {
