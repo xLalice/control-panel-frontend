@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LeadStatus } from "./constants/constants";
 import { Lead, Filters } from "./types/leads.types";
 import { apiClient, fetchUsers } from "@/api/api";
@@ -243,7 +244,6 @@ const LeadsTable = () => {
         </Button>
       ),
     },
-    
   ];
 
   const table = useReactTable({
@@ -267,16 +267,33 @@ const LeadsTable = () => {
   const handleRowClick = (leadId: string) => {
     setSelectedLeadId(leadId);
     setIsDetailOpen(true);
-    // If you want to support deep linking, you could update URL with query params here
-    // window.history.pushState({}, '', `?leadId=${leadId}`);
+    window.history.pushState({}, "", `?leadId=${leadId}`);
   };
-  
-  // Handler for panel close
+
   const handleDetailClose = () => {
     setIsDetailOpen(false);
-    // Optional: update URL to remove the query param
-    // window.history.pushState({}, '', window.location.pathname);
+    window.history.pushState({}, "", window.location.pathname);
   };
+
+  // Skeleton table row component
+  const SkeletonTableRow = () => (
+    <TableRow className="animate-pulse">
+      {columns.map((_, index) => (
+        <TableCell key={index}>
+          <Skeleton className="h-6 w-full" />
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+
+  // Skeleton filter inputs
+  const SkeletonFilters = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
 
   return (
     <div className="relative">
@@ -284,63 +301,66 @@ const LeadsTable = () => {
         <CardHeader>
           <CardTitle>Leads</CardTitle>
           <LeadForm onSuccess={() => {}} />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Input
-              placeholder="Search leads..."
-              {...register("search")}
-              className="w-full"
-            />
+          
+          {usersLoading ? (
+            <SkeletonFilters />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Input
+                placeholder="Search leads..."
+                {...register("search")}
+                className="w-full"
+              />
 
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(LeadStatus).map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(LeadStatus).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
 
-            <Controller
-              control={control}
-              name="assignedTo"
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Assigned To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem key="unassigned" value="unassigned">
-                      Unassigned
-                    </SelectItem>
-                    {usersLoading ? (
-                      <SelectItem value="loading" disabled>
-                        Loading...
+              <Controller
+                control={control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Assigned To" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem key="unassigned" value="unassigned">
+                        Unassigned
                       </SelectItem>
-                    ) : (
-                      users.map((user: User) => (
+                      {users.map((user: User) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.name}
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          <div className={`rounded-md border transition-opacity duration-200 ${isDetailOpen ? 'md:opacity-100 opacity-50' : 'opacity-100'}`}>
+          <div
+            className={`rounded-md border transition-opacity duration-200 ${
+              isDetailOpen ? "md:opacity-100 opacity-50" : "opacity-100"
+            }`}
+          >
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -358,23 +378,24 @@ const LeadsTable = () => {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      Loading...
-                    </TableCell>
-                  </TableRow>
+                  // Skeleton loading state
+                  Array.from({ length: PAGE_SIZE }).map((_, index) => (
+                    <SkeletonTableRow key={`skeleton-${index}`} />
+                  ))
                 ) : table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       className="cursor-pointer hover:bg-gray-50"
                       onClick={() => handleRowClick(row.original.id)}
-                      data-state={row.original.id === selectedLeadId ? "selected" : undefined}
+                      data-state={
+                        row.original.id === selectedLeadId ? "selected" : undefined
+                      }
                       style={{
-                        backgroundColor: row.original.id === selectedLeadId ? "rgba(0,0,0,0.04)" : undefined
+                        backgroundColor:
+                          row.original.id === selectedLeadId
+                            ? "rgba(0,0,0,0.04)"
+                            : undefined,
                       }}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -402,38 +423,52 @@ const LeadsTable = () => {
           </div>
 
           <div className="flex items-center justify-between space-x-2 py-4">
-            <div className="flex-1 text-sm text-muted-foreground">
-              {leadsData?.total || 0} total leads
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <div className="flex items-center justify-center text-sm font-medium">
-                Page {page} of {Math.ceil((leadsData?.total || 0) / PAGE_SIZE)}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={
-                  !leadsData || page >= Math.ceil(leadsData.total / PAGE_SIZE)
-                }
-              >
-                Next
-              </Button>
-            </div>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-5 w-32" />
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex-1 text-sm text-muted-foreground">
+                  {leadsData?.total || 0} total leads
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(page - 1)}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center justify-center text-sm font-medium">
+                    Page {page} of{" "}
+                    {Math.ceil((leadsData?.total || 0) / PAGE_SIZE)}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(page + 1)}
+                    disabled={
+                      !leadsData ||
+                      page >= Math.ceil(leadsData.total / PAGE_SIZE)
+                    }
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Replace the old modal with the slide-in panel */}
-      <LeadDetailPanel 
+      <LeadDetailPanel
         leadId={selectedLeadId}
         isOpen={isDetailOpen && !!selectedLeadId}
         onClose={handleDetailClose}

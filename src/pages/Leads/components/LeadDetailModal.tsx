@@ -61,7 +61,6 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Handle ESC key to close panel
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -169,9 +168,88 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
 
   if (isLeadLoading) {
     return (
-      <div className="fixed inset-y-0 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 bg-white shadow-xl z-30 p-6 overflow-y-auto">
-        <div className="flex justify-center items-center h-64">
-          Loading lead details...
+      <div className="fixed inset-y-20 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 bg-white shadow-xl z-30 
+                   transform transition-transform duration-300 ease-in-out
+                   overflow-y-auto">
+        <div className="p-6 space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="h-8 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              aria-label="Close panel"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          
+          {/* Action Buttons Skeleton */}
+          <div className="flex gap-2">
+            <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
+            <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
+          </div>
+          
+          {/* Tabs Skeleton */}
+          <div className="border-b">
+            <div className="flex gap-4">
+              <div className="h-9 bg-gray-200 rounded-md w-24 animate-pulse"></div>
+              <div className="h-9 bg-gray-200 rounded-md w-32 animate-pulse"></div>
+            </div>
+          </div>
+          
+          {/* Details Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="h-6 bg-gray-200 rounded-md w-32 animate-pulse mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded-md w-64 animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={`left-${i}`} className="flex items-start gap-2">
+                      <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
+                      <div className="w-full">
+                        <div className="h-4 bg-gray-200 rounded-md w-24 animate-pulse mb-2"></div>
+                        <div className="h-5 bg-gray-200 rounded-md w-36 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={`right-${i}`} className="flex items-start gap-2">
+                      <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
+                      <div className="w-full">
+                        <div className="h-4 bg-gray-200 rounded-md w-24 animate-pulse mb-2"></div>
+                        <div className="h-5 bg-gray-200 rounded-md w-36 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <Separator className="my-6" />
+              
+              {/* Notes Skeleton */}
+              <div className="flex items-start gap-2">
+                <div className="h-5 w-5 bg-gray-300 rounded-full animate-pulse"></div>
+                <div className="w-full">
+                  <div className="h-4 bg-gray-200 rounded-md w-16 animate-pulse mb-2"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded-md w-full animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded-md w-11/12 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded-md w-3/4 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -214,6 +292,26 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
       return date.toString();
     }
   };
+
+  // Activity Timeline Skeleton
+  const ActivityTimelineSkeleton = () => (
+    <div className="space-y-6">
+      {[1, 2, 3].map((i) => (
+        <div key={`activity-${i}`} className="flex">
+          <div className="mr-4 flex flex-col items-center">
+            <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
+            <div className="h-24 w-px bg-gray-200"></div>
+          </div>
+          <div className="pb-8 w-full">
+            <div className="h-4 bg-gray-200 rounded-md w-32 animate-pulse mb-2"></div>
+            <div className="h-5 bg-gray-200 rounded-md w-48 animate-pulse mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-64 animate-pulse mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-40 animate-pulse"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="">
@@ -452,9 +550,7 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
                 </CardHeader>
                 <CardContent>
                   {isActivitiesLoading ? (
-                    <div className="py-4 text-center">
-                      Loading activities...
-                    </div>
+                    <ActivityTimelineSkeleton />
                   ) : activities.length > 0 ? (
                     <div className="space-y-4">
                       {activities.map((activity: ActivityLog) => (
