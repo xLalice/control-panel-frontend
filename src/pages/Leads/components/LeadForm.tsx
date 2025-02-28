@@ -37,11 +37,7 @@ import {
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { LeadStatus } from "../constants/constants";
 import { Plus, Check, ChevronsUpDown } from "lucide-react";
-import {
-  Company,
-  LeadFormData,
-  LeadFormProps,
-} from "../types/leads.types";
+import { Company, LeadFormData, LeadFormProps } from "../types/leads.types";
 import { apiClient } from "@/api/api";
 import { User } from "@/types";
 import {
@@ -65,7 +61,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
       const response = await apiClient.get("/admin/users");
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: companies = [] } = useQuery({
@@ -74,7 +70,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
       const response = await apiClient.get("/leads/companies");
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 5 * 60 * 1000,
   });
 
   const defaultValues = isEditMode
@@ -88,6 +84,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
         industry: lead.industry || "",
         region: lead.region || "",
         estimatedValue: lead.estimatedValue?.toString() || "",
+        leadScore: lead.leadScore || 0,
         source: lead.source || "",
         notes: lead.notes || "",
         assignedToId: lead.assignedTo?.id || "",
@@ -102,6 +99,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
         industry: "",
         region: "",
         estimatedValue: "",
+        leadScore: 0,
         source: "",
         notes: "",
         assignedToId: "",
@@ -111,7 +109,6 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
     defaultValues,
   });
 
-  // Reset form when switching between create and edit modes
   useEffect(() => {
     if (isEditMode) {
       form.reset(defaultValues);
@@ -126,6 +123,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
         estimatedValue: data.estimatedValue
           ? parseFloat(data.estimatedValue)
           : null,
+        leadScore: data.leadScore ? data.leadScore : null,
       };
 
       if (isEditMode) {
@@ -159,7 +157,6 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
     }
   };
 
-  // Get selected company name for display
   const selectedCompanyId = form.watch("companyId");
   const selectedCompany = companies.find(
     (c: Company) => c.id === selectedCompanyId
@@ -168,7 +165,6 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
     ? selectedCompany.name
     : "Select company";
 
-  // Filter companies based on search query
   const filteredCompanies =
     searchQuery.trim() === ""
       ? companies
@@ -198,7 +194,6 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                 checked={isNewCompany}
                 onChange={() => {
                   setIsNewCompany(!isNewCompany);
-                  // Clear opposite field when switching modes
                   if (isNewCompany) {
                     form.setValue("companyName", "");
                   } else {
@@ -407,9 +402,40 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               name="estimatedValue"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estimated Value</FormLabel>
+                  <FormLabel>Estimated Value (₱)</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        ₱
+                      </span>
+                      <Input type="number" className="pl-8" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="leadScore"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Lead Score (0-100)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      onChange={(e) =>
+                        field.onChange(e.target.valueAsNumber || null)
+                      }
+                      value={
+                        field.value === null || field.value === undefined
+                          ? ""
+                          : field.value
+                      }
+                      min="0"
+                      max="100"
+                      placeholder="Enter score from 0-100"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
