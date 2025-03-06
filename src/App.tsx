@@ -13,7 +13,7 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
 import ReportsPage from "./pages/Reports/Reports";
-import ProductManagementSystem from "./pages/Pricing/Pricing";
+import ProductManagementSystem from "./pages/Products/Products";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";

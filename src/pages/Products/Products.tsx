@@ -106,8 +106,10 @@ const ProductManagementSystem = () => {
 
   const filteredProducts = products.filter((product) => {
     const selectedCategory = TAB_TO_CATEGORY_MAP[activeTab];
+    console.log(selectedCategory);
     const matchesCategory =
       !selectedCategory || product.category === selectedCategory;
+      console.log(matchesCategory);
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
@@ -166,7 +168,7 @@ const ProductManagementSystem = () => {
         <h1 className="text-3xl font-bold">Product Management</h1>
         <Button
           onClick={() => setIsAddDialogOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-yellow-500 hover:bg-yellow-800"
         >
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
         </Button>
@@ -195,8 +197,8 @@ const ProductManagementSystem = () => {
       >
         <TabsList className="mb-6">
           <TabsTrigger value="all">All Products</TabsTrigger>
-          <TabsTrigger value="aggregates">Aggregates</TabsTrigger>
-          <TabsTrigger value="heavy-equipment">Heavy Equipment</TabsTrigger>
+          <TabsTrigger value="aggregate">Aggregate</TabsTrigger>
+          <TabsTrigger value="heavy equipment">Heavy Equipment</TabsTrigger>
           <TabsTrigger value="steel">Steel Products</TabsTrigger>
         </TabsList>
 
@@ -210,7 +212,7 @@ const ProductManagementSystem = () => {
           />
         </TabsContent>
 
-        <TabsContent value="aggregates" className="mt-0">
+        <TabsContent value="aggregate" className="mt-0">
           <ProductTable
             products={sortedProducts}
             onEdit={openEditDialog}
@@ -220,7 +222,7 @@ const ProductManagementSystem = () => {
           />
         </TabsContent>
 
-        <TabsContent value="heavy-equipment" className="mt-0">
+        <TabsContent value="heavy equipment" className="mt-0">
           <ProductTable
             products={sortedProducts}
             onEdit={openEditDialog}

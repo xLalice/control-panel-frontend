@@ -2,7 +2,7 @@ import axios from "axios";
 import { LoginFormData } from "../pages/Login";
 import { UpdateLeadParams } from "@/types";
 import { error } from "console";
-import { Product } from "@/pages/Pricing/types";
+import { Product } from "@/pages/Products/types";
 
 const baseURL = `${import.meta.env.VITE_API_URL}/api/`;
 
