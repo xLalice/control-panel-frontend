@@ -1,28 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Added useEffect import
+import { useQuery } from "@tanstack/react-query";
 import ReportsTable from "./components/ReportsTable";
 import ReportForm from "./components/ReportForm";
 import FilterBar from "./components/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetchReports } from "@/api/api";
 import { Report } from "@/types";
 
 export default function ReportsPage() {
-  const [originalReports, setOriginalReports] = useState<Report[]>([]);
-  const [reports, setReports] = useState<Report[]>([]);
-  const [allUsers, setAllUsers] = useState<string[]>([]);
+  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [open, setOpen] = useState(false);
 
+  const { data: reports = [], isLoading } = useQuery<Report[], Error>({
+    queryKey: ["reports"],
+    queryFn: fetchReports,
+  });
+
   useEffect(() => {
-    fetchReports().then((data: Report[]) => {
-      setOriginalReports(data);
-      setReports(data);
-      setAllUsers([...new Set(data.map((r) => r.reportedBy))]);
-    });
-  }, []);
+    setFilteredReports(reports);
+  }, [reports]);
+
+  const allUsers = [...new Set(reports.map((r: Report) => r.reportedBy))];
 
   const handleAdd = (newReport: Report) => {
-    setReports([...reports, newReport]);
+    setFilteredReports([...filteredReports, newReport]);
     setOpen(false);
   };
 
@@ -30,8 +33,11 @@ export default function ReportsPage() {
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold">Reports Module</h1>
       <div className="flex justify-between">
-        <FilterBar setReports={setReports} allReports={originalReports} allUsers={allUsers} />
-
+        <FilterBar 
+          setReports={setFilteredReports} 
+          allReports={reports} 
+          allUsers={allUsers} 
+        />
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-yellow-500">Add New Report</Button>
@@ -41,7 +47,15 @@ export default function ReportsPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <ReportsTable reports={reports} setReports={setReports} />
+      
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      ) : (
+        <ReportsTable reports={filteredReports} setReports={setFilteredReports} />
+      )}
     </div>
   );
 }

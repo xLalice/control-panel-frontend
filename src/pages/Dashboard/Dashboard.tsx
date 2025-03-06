@@ -9,15 +9,13 @@ import {
   BarElement,
 } from "chart.js";
 import { Doughnut, Bar } from "react-chartjs-2";
-import { 
-  Bell, 
+import {
+  Bell,
   Menu,
-  Home,
   Users,
   DollarSign,
   Megaphone,
   Package,
-  ChevronDown,
   BarChart,
   Tag,
   Calculator,
@@ -25,7 +23,7 @@ import {
   Shield,
   ShoppingCart,
   ClipboardList,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -33,11 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,13 +48,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Logo from "../../assets/logo.png"
+import Logo from "../../assets/logo.png";
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
-
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
 const App: React.FC = () => {
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -70,118 +69,102 @@ const App: React.FC = () => {
     icon: JSX.Element;
     roles?: string[];
   }
-  
-  const menuItems: Record<string, MenuItem[]> = {
-    Dashboard: [
-      {
-        name: "Dashboard",
-        route: "/dashboard",
-        icon: <BarChart className="h-4 w-4" />,
-        roles: ["base"] // Everyone has access to dashboard
-      }
-    ],
-    Admin: [
-      {
-        name: "User Management",
-        route: "/admin/user-management",
-        icon: <Users className="h-4 w-4" />,
-        roles: ["admin"]
-      }
-    ],
-    Sales: [
-      {
-        name: "Leads",
-        route: "/sales/leads",
-        icon: <DollarSign className="h-4 w-4" />,
-        roles: ["sales", "admin"]
-      }
-    ],
-    Marketing: [
-      {
-        name: "Plans & Budget",
-        route: "/marketing/plans",
-        icon: <Megaphone className="h-4 w-4" />,
-        roles: ["marketing", "admin"]
-      },
-      {
-        name: "Calendar",
-        route: "/marketing/calendar",
-        icon: <Calendar className="h-4 w-4" />,
-        roles: ["marketing", "admin"]
-      }
-    ],
-    Logistics: [
-      {
-        name: "Inventory",
-        route: "/logistics/inventory",
-        icon: <Package className="h-4 w-4" />,
-        roles: ["logistics", "admin"]
-      }
-    ],
-    Reports: [
-      {
-        name: "View Reports",
-        route: "/reports",
-        icon: <BarChart className="h-4 w-4" />,
-        roles: ["reports-viewer", "admin"]
-      }
-    ],
-    "Price List": [
-      {
-        name: "Pricing",
-        route: "/pricing",
-        icon: <Tag className="h-4 w-4" />,
-        roles: ["pricing-manager", "admin"]
-      }
-    ],
-    Accounting: [
-      {
-        name: "Incoming/Outgoing Account",
-        route: "/accounting/accounts",
-        icon: <Calculator className="h-4 w-4" />,
-        roles: ["accounting", "admin"]
-      }
-    ],
-    HR: [
-      {
-        name: "Human Resources",
-        route: "/hr/people",
-        icon: <UserCircle className="h-4 w-4" />,
-        roles: ["hr", "admin"]
-      }
-    ],
-    Officers: [
-      {
-        name: "Management",
-        route: "/officers/management",
-        icon: <Shield className="h-4 w-4" />,
-        roles: ["officer", "admin"]
-      }
-    ],
-    Purchasing: [
-      {
-        name: "Purchase Orders",
-        route: "/purchasing",
-        icon: <ShoppingCart className="h-4 w-4" />,
-        roles: ["purchasing", "admin"]
-      }
-    ],
-    Procurement: [
-      {
-        name: "Procurement Management",
-        route: "/procurement",
-        icon: <ClipboardList className="h-4 w-4" />,
-        roles: ["procurement", "admin"]
-      } 
-    ]
-  };
 
-  const handleMenuClick = (menu: string) => {
-    setActiveMenu((prev) => (prev === menu ? null : menu));
-  };
+  const menuItems: MenuItem[] = [
+    {
+      name: "Dashboard",
+      route: "/dashboard",
+      icon: <BarChart className="h-4 w-4" />,
+      roles: ["base"],
+    },
+
+    {
+      name: "User Management",
+      route: "/admin/user-management",
+      icon: <Users className="h-4 w-4" />,
+      roles: ["admin"],
+    },
+
+    {
+      name: "Leads",
+      route: "/sales/leads",
+      icon: <DollarSign className="h-4 w-4" />,
+      roles: ["sales", "admin"],
+    },
+
+    {
+      name: "Plans & Budget",
+      route: "/marketing/plans",
+      icon: <Megaphone className="h-4 w-4" />,
+      roles: ["marketing", "admin"],
+    },
+    {
+      name: "Calendar",
+      route: "/marketing/calendar",
+      icon: <Calendar className="h-4 w-4" />,
+      roles: ["marketing", "admin"],
+    },
+
+    {
+      name: "Inventory",
+      route: "/logistics/inventory",
+      icon: <Package className="h-4 w-4" />,
+      roles: ["logistics", "admin"],
+    },
+
+    {
+      name: "View Reports",
+      route: "/reports",
+      icon: <BarChart className="h-4 w-4" />,
+      roles: ["reports-viewer", "admin"],
+    },
+
+    {
+      name: "Pricing",
+      route: "/pricing",
+      icon: <Tag className="h-4 w-4" />,
+      roles: ["pricing-manager", "admin"],
+    },
+
+    {
+      name: "Incoming/Outgoing Account",
+      route: "/accounting/accounts",
+      icon: <Calculator className="h-4 w-4" />,
+      roles: ["accounting", "admin"],
+    },
+
+    {
+      name: "Human Resources",
+      route: "/hr/people",
+      icon: <UserCircle className="h-4 w-4" />,
+      roles: ["hr", "admin"],
+    },
+
+    {
+      name: "Management",
+      route: "/officers/management",
+      icon: <Shield className="h-4 w-4" />,
+      roles: ["officer", "admin"],
+    },
+
+    {
+      name: "Purchase Orders",
+      route: "/purchasing",
+      icon: <ShoppingCart className="h-4 w-4" />,
+      roles: ["purchasing", "admin"],
+    },
+
+    {
+      name: "Procurement Management",
+      route: "/procurement",
+      icon: <ClipboardList className="h-4 w-4" />,
+      roles: ["procurement", "admin"],
+    },
+  ];
+
 
   const handleNavigation = (route: string) => {
-    if (route.startsWith('http')) {
+    if (route.startsWith("http")) {
       window.location.href = route;
     } else {
       navigate(route);
@@ -225,45 +208,27 @@ const App: React.FC = () => {
         <img src={Logo} alt="Company Logo" className=" w-full" />
       </div>
       <nav className="space-y-1 p-2 ">
-        {Object.keys(menuItems).map((menu) => (
-          <div key={menu} className="space-y-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => handleMenuClick(menu)}
-            >
-              <Home className="h-4 w-4 mr-2" />
-              {menu}
-              {menuItems[menu].length > 0 && (
-                <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${
-                  activeMenu === menu ? "transform rotate-180" : ""
-                }`} />
-              )}
-            </Button>
-            {activeMenu === menu && menuItems[menu].length > 0 && (
-              <div className="pl-4 space-y-1">
-                {menuItems[menu].map((item) => (
-                  <Button
-                    key={item.name}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => handleNavigation(item.route)}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.name}</span>
-                  </Button>
-                ))}
-              </div>
-            )}
+        {
+          <div className="pl-4 space-y-1">
+            {menuItems.map((item) => (
+              <Button
+                key={item.name}
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => handleNavigation(item.route)}
+              >
+                {item.icon}
+                <span className="ml-2">{item.name}</span>
+              </Button>
+            ))}
           </div>
-        ))}
+        }
       </nav>
     </div>
   );
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Mobile Sidebar */}
       <Sheet>
         <SheetTrigger asChild className="lg:hidden">
           <Button variant="ghost" size="icon" className="ml-2">
