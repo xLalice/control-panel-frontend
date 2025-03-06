@@ -1,161 +1,305 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
-  SortingState,
-} from "@tanstack/react-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Equipment, Steel, Aggregate } from "@/types";
-import EquipmentView from "./components/EquipmentView";
-import SteelView from "./components/SteelView";
-import AggregateView from "./components/AggregatesView";
-import { apiClient } from "@/api/api";
+import { toast } from "react-toastify";
+import {
+  PlusCircle,
+  Search,
+  RefreshCw
+} from "lucide-react";
+import { ProductTable } from "./components/ProductTable"; // Add this import
+import {
+  Product,
+  DEFAULT_PRODUCT,
+  TAB_TO_CATEGORY_MAP,
+  FormProduct,
+} from "./types";
+import {
+  addProduct,
+  deleteProduct,
+  fetchProducts,
+  updateProduct,
+} from "@/api/api";
+import { ProductFormFields } from "./components/ProductFormFields";
 
+const ProductManagementSystem = () => {
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+  const [newProduct, setNewProduct] = useState<FormProduct>({
+    ...DEFAULT_PRODUCT,
+  });
+  const [sortField, setSortField] = useState<keyof Product>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-export interface TableViewProps<T> {
-  data: T[];
-  sorting: SortingState;
-  setSorting: React.Dispatch<React.SetStateAction<SortingState>>;
-}
-
-
-// Main Dashboard Component
-const PricingDashboard = () => {
-  const [selectedCategory, setSelectedCategory] = useState("equipment");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
-
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ["items", selectedCategory],
-    queryFn: async () => {
-      const response = await apiClient(`/prices/${selectedCategory}`);
-      return response.data;
-    },
+  const {
+    data: products = [],
+    isLoading,
+    refetch,
+  } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
   });
 
-  const filteredItems = items.filter((item: Equipment | Steel | Aggregate) => {
-    if (selectedCategory === "steel") {
-      const steelItem = item as Steel;
-      return (
-        steelItem.size.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        steelItem.grade.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const handleSort = (field: keyof Product) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      const equipmentItem = item as Equipment;
-      return equipmentItem.name.toLowerCase().includes(searchTerm.toLowerCase());
-    }
-  });
-
-  const renderCategoryView = () => {
-    switch (selectedCategory) {
-      case "equipment":
-        return (
-          <EquipmentView
-            data={filteredItems}
-            sorting={sorting}
-            setSorting={setSorting}
-          />
-        );
-      case "steel":
-        return (
-          <SteelView
-            data={filteredItems}
-            sorting={sorting}
-            setSorting={setSorting}
-          />
-        );
-      case "aggregates":
-        return (
-          <AggregateView
-            data={filteredItems}
-            sorting={sorting}
-            setSorting={setSorting}
-          />
-        );
-      default:
-        return (
-          <EquipmentView
-            data={filteredItems}
-            sorting={sorting}
-            setSorting={setSorting}
-          />
-        );
+      setSortField(field);
+      setSortDirection("asc");
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const addMutation = useMutation({
+    mutationFn: (product: Omit<Product, "id">) => addProduct(product),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product added successfully");
+      setIsAddDialogOpen(false);
+      resetNewProduct();
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to add product: ${error.message}`);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated successfully");
+      setIsEditDialogOpen(false);
+      setEditingProduct(null);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update product: ${error.message}`);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product deleted successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete product: ${error.message}`);
+    },
+  });
+
+  const filteredProducts = products.filter((product) => {
+    const selectedCategory = TAB_TO_CATEGORY_MAP[activeTab];
+    const matchesCategory =
+      !selectedCategory || product.category === selectedCategory;
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false);
+    return matchesCategory && matchesSearch;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const aValue = a[sortField] ?? "";
+    const bValue = b[sortField] ?? "";
+
+    if (aValue === bValue) return 0;
+
+    const comparison = String(aValue).localeCompare(String(bValue));
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.category) {
+      toast.error("Product name and category are required");
+      return;
+    }
+
+    addMutation.mutate(newProduct as Omit<Product, "id">);
+  };
+
+  const handleUpdateProduct = () => {
+    if (editingProduct) {
+      if (!editingProduct.name || !editingProduct.category) {
+        toast.error("Product name and category are required");
+        return;
+      }
+
+      updateMutation.mutate(editingProduct);
+    }
+  };
+
+  const handleDeleteProduct = (id: string | number) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      deleteMutation.mutate(String(id));
+    }
+  };
+
+  const resetNewProduct = () => {
+    setNewProduct({ ...DEFAULT_PRODUCT });
+  };
+
+  const openEditDialog = (product: Product) => {
+    setEditingProduct(product);
+    setIsEditDialogOpen(true);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md">
-        <div className="p-4">
-          <h2 className="text-xl font-bold mb-4">Categories</h2>
-          <nav className="space-y-2">
-            <button
-              onClick={() => setSelectedCategory("equipment")}
-              className={`w-full text-left px-4 py-2 rounded ${
-                selectedCategory === "equipment"
-                  ? "bg-blue-100 text-blue-700"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              Equipment
-            </button>
-            <button
-              onClick={() => setSelectedCategory("steel")}
-              className={`w-full text-left px-4 py-2 rounded ${
-                selectedCategory === "steel"
-                  ? "bg-blue-100 text-blue-700"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              Steel
-            </button>
-            <button
-              onClick={() => setSelectedCategory("aggregates")}
-              className={`w-full text-left px-4 py-2 rounded ${
-                selectedCategory === "aggregates"
-                  ? "bg-blue-100 text-blue-700"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              Aggregates
-            </button>
-          </nav>
-        </div>
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Product Management</h1>
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
+        </Button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {selectedCategory.charAt(0).toUpperCase() +
-                selectedCategory.slice(1)}{" "}
-              Pricing
-            </CardTitle>
-            <div className="flex gap-4 mt-4">
-              <Input
-                placeholder="Search items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center items-center h-32">
-                Loading...
-              </div>
-            ) : (
-              renderCategoryView()
-            )}
-          </CardContent>
-        </Card>
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Button variant="outline" onClick={() => refetch()} title="Refresh">
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </div>
+
+      <Tabs
+        defaultValue="all"
+        value={activeTab}
+        onValueChange={handleTabChange}
+      >
+        <TabsList className="mb-6">
+          <TabsTrigger value="all">All Products</TabsTrigger>
+          <TabsTrigger value="aggregates">Aggregates</TabsTrigger>
+          <TabsTrigger value="heavy-equipment">Heavy Equipment</TabsTrigger>
+          <TabsTrigger value="steel">Steel Products</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="mt-0">
+          <ProductTable
+            products={sortedProducts}
+            onEdit={openEditDialog}
+            onDelete={handleDeleteProduct}
+            isLoading={isLoading}
+            onSort={handleSort}
+          />
+        </TabsContent>
+
+        <TabsContent value="aggregates" className="mt-0">
+          <ProductTable
+            products={sortedProducts}
+            onEdit={openEditDialog}
+            onDelete={handleDeleteProduct}
+            isLoading={isLoading}
+            onSort={handleSort}
+          />
+        </TabsContent>
+
+        <TabsContent value="heavy-equipment" className="mt-0">
+          <ProductTable
+            products={sortedProducts}
+            onEdit={openEditDialog}
+            onDelete={handleDeleteProduct}
+            isLoading={isLoading}
+            onSort={handleSort}
+          />
+        </TabsContent>
+
+        <TabsContent value="steel" className="mt-0">
+          <ProductTable
+            products={sortedProducts}
+            onEdit={openEditDialog}
+            onDelete={handleDeleteProduct}
+            isLoading={isLoading}
+            onSort={handleSort}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+            <DialogDescription>
+              Fill in the details to add a new product to your inventory.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ProductFormFields product={newProduct} setProduct={setNewProduct} isEdit={false}/>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddProduct} disabled={addMutation.isPending}>
+              {addMutation.isPending ? "Adding..." : "Add Product"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+            <DialogDescription>
+              Update the details of the selected product.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingProduct && (
+            <ProductFormFields
+              product={editingProduct!}
+              setProduct={(updatedProduct) =>
+                setEditingProduct(updatedProduct as Product)
+              }
+              isEdit={true}
+            />
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateProduct}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-export default PricingDashboard;
+export default ProductManagementSystem;

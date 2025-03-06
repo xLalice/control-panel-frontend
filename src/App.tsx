@@ -13,7 +13,7 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
 import ReportsPage from "./pages/Reports/Reports";
-import PricingDashboard from "./pages/Pricing/Pricing";
+import ProductManagementSystem from "./pages/Pricing/Pricing";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -64,7 +64,7 @@ const AppContent = () => {
             element={<SocialMediaDashboard />}
           />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/pricing" element={<PricingDashboard />} />
+          <Route path="/pricing" element={<ProductManagementSystem />} />
         </Route>
 
         <Route

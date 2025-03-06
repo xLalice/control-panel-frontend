@@ -1,6 +1,8 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
 import { UpdateLeadParams } from "@/types";
+import { error } from "console";
+import { Product } from "@/pages/Pricing/types";
 
 const baseURL = `${import.meta.env.VITE_API_URL}/api/`;
 
@@ -183,34 +185,44 @@ export const deleteReport = async (id: string) => {
   }
 };
 
-// Pricing API
-export const getAggregates = async () => {
-  const response = await apiClient.get("/aggregates");
-  return response.data;
-};
-
-
-export const getEquipment = async () => {
-  const response = await apiClient.get("/prices/equipment");
-  return response.data;
+// Products
+export const fetchProducts = async () => {
+  try {
+    const response = await apiClient.get("/products");
+    return response.data
+  } catch(err: any){
+    console.error(err);
+    throw new Error(err.response?.data?.message || "Fetching products failed");
+  }
 }
 
-export const getSteelPrices = async () => {
-  const response = await apiClient.get("/steel");
+
+export const addProduct = async (product: Omit<Product, 'id'>): Promise<Product> => {
+ try {
+  const response = await apiClient.post("/products", product);
   return response.data;
+ } catch(err:any){
+  console.error(err);
+  throw new Error(err.response?.data?.message || "Creating product failed");
+ }
 };
 
-export const getPriceHistory = async (productId: string) => {
-  const response = await apiClient.get(`/prices/${productId}/history`);
-  return response.data;
+export const updateProduct = async (product: Product): Promise<Product> => {
+  try {
+    const response = await apiClient.put(`/products/${product.id}`, product);
+    return response.data;
+  } catch(err: any){
+    console.error(err);
+    throw new Error(err.response?.data?.message || "Updating product failed");
+  }
 };
 
-export const getPriceAnalytics = async (productId: string) => {
-  const response = await apiClient.get(`/prices/${productId}/analytics`);
-  return response.data;
+export const deleteProduct = async (id: string): Promise<void> => {
+  try{
+    const response = await apiClient.delete(`/products/${id}`);
+    return response.data;
+  } catch(err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.message || "Deleting product failed");
+  }
 };
-
-export const updatePrice = async (productId: string, priceData: any) => {
-  const response = await apiClient.put(`/prices/${productId}`, priceData);
-  return response.data;
-}
