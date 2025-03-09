@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -24,6 +24,7 @@ import {
   ShoppingCart,
   ClipboardList,
   Calendar,
+  Mail
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -77,7 +78,12 @@ const App: React.FC = () => {
       icon: <BarChart className="h-4 w-4" />,
       roles: ["base"],
     },
-
+    {
+      name: "Inquiries",
+      route: "/inquiries",
+      icon: <Mail className="h-4 w-4" />,
+      roles: ["base"],
+    },
     {
       name: "User Management",
       route: "/admin/user-management",

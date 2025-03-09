@@ -19,6 +19,7 @@ import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Loader } from "./components/ui/Loader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const AppContent = () => {
           />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/pricing" element={<ProductManagementSystem />} />
+          <Route path="/inquiries" element={<InquiryManagement />} />
         </Route>
 
         <Route
