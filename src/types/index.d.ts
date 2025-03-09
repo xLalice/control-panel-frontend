@@ -8,8 +8,34 @@ export interface User {
 
 export interface Lead {
   id: string;
-  [key: string]: string;
+  companyId: string;
+  company: Company;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  status: LeadStatus;
+  source: string;
+  subSource?: string;
+  campaign?: string;
+  assignedToId?: string;
+  assignedTo?: User;
+  createdById: string;
+  createdBy: User;
+  notes?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  lastContactDate?: Date | string;
+  estimatedValue?: number;
+  leadScore?: number;
+  contactHistory: ContactHistory[];
+  inquiries: Inquiry[];
+  industry?: string;
+  region?: string;
+  referredBy?: string;
+  followUpDate?: Date | string;
+  activityLog: ActivityLog[];
 }
+
 
 export interface Pagination {
   currentPage: number;
@@ -71,4 +97,17 @@ export interface Report {
   taskDetails: string;
   reportedBy: string;
 }
+
+export interface Company {
+  id: string;
+  name: string;
+  industry?: string;
+  region?: string;
+  email?: string;
+  phone?: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  leads: Lead[];
+}
+
 

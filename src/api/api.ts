@@ -1,8 +1,18 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
 import { UpdateLeadParams } from "@/types";
-import { error } from "console";
 import { Product } from "@/pages/Products/types";
+import { InquiryFilterParams, PaginatedResponse, Inquiry, UpdateInquiryDto, CreateInquiryDto, InquiryStatistics, ConversionResult } from "@/pages/Inquiry/types";
+
+export interface QuoteDetails {
+  basePrice: number;
+  deliveryFee?: number;
+  discount?: number;
+  taxes?: number;
+  totalPrice: number;
+  validUntil?: Date;
+  notes?: string;
+}
 
 const baseURL = `${import.meta.env.VITE_API_URL}/api/`;
 
@@ -224,5 +234,191 @@ export const deleteProduct = async (id: string): Promise<void> => {
   } catch(err: any) {
     console.error(err);
     throw new Error(err.response?.data?.message || "Deleting product failed");
+  }
+};
+
+// Inquiries
+export const getInquiries = async (params: InquiryFilterParams): Promise<PaginatedResponse<Inquiry>> => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.status) queryParams.append('status', params.status);
+    if (params.source) queryParams.append('source', params.source);
+    if (params.productType) queryParams.append('productType', params.productType);
+    if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.startDate) queryParams.append('startDate', params.startDate.toString());
+    if (params.endDate) queryParams.append('endDate', params.endDate.toString());
+    
+    const response = await apiClient.get(`/inquiries?${queryParams.toString()}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching inquiries failed");
+  }
+};
+
+// Get a single inquiry by ID
+export const getInquiryById = async (id: string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.get(`/inquiries/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching inquiry failed");
+  }
+};
+
+
+export interface InquiryContactResponse {
+  exists: boolean;
+  lead?: {
+    id: string;
+    companyId: string;
+    contactPerson?: string;
+    email?: string;
+    phone?: string;
+    status: string;
+    company?: {
+      id: string;
+      name: string;
+    };
+    contactHistory?: {
+      id: string;
+      method: string;
+      summary: string;
+      outcome?: string;
+      timestamp: Date;
+    }[];
+  };
+  company?: {
+    id: string;
+    name: string;
+  };
+}
+
+
+// Check if customer exists
+export const checkCustomerExists = async (params: { 
+  email?: string;
+  phoneNumber?: string;
+  companyName?: string;
+}): Promise<InquiryContactResponse> => {
+  try {
+    const response = await apiClient.post('/inquiries/check-customer', params);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Checking customer existence failed");
+  }
+};
+
+// Create a new inquiry
+export const createInquiry = async (inquiry: CreateInquiryDto): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post('/inquiries', inquiry);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Creating inquiry failed");
+  }
+};
+
+// Update an existing inquiry
+export const updateInquiry = async (id: string, inquiry: UpdateInquiryDto): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.put(`/inquiries/${id}`, inquiry);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Updating inquiry failed");
+  }
+};
+
+// Create a quote for an inquiry
+export const createQuote = async (id: string, quoteDetails: QuoteDetails): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/quote`, quoteDetails);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Creating quote failed");
+  }
+};
+
+// Approve an inquiry
+export const approveInquiry = async (id: string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/approve`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Approving inquiry failed");
+  }
+};
+
+// Schedule an inquiry
+export const scheduleInquiry = async (id: string, scheduledDate: Date | string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/schedule`, { scheduledDate });
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Scheduling inquiry failed");
+  }
+};
+
+// Fulfill an inquiry
+export const fulfillInquiry = async (id: string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/fulfill`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fulfilling inquiry failed");
+  }
+};
+
+// Delete an inquiry
+export const deleteInquiry = async (id: string): Promise<void> => {
+  try {
+    const response = await apiClient.delete(`/inquiries/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Deleting inquiry failed");
+  }
+};
+
+// Get inquiry statistics
+export const getInquiryStatistics = async (
+  startDate?: string | Date, 
+  endDate?: string | Date
+): Promise<InquiryStatistics> => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (startDate) queryParams.append('startDate', startDate.toString());
+    if (endDate) queryParams.append('endDate', endDate.toString());
+    
+    const response = await apiClient.get(`/inquiries/stats/overview?${queryParams.toString()}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching inquiry statistics failed");
+  }
+};
+
+// Convert inquiry to lead
+export const convertInquiryToLead = async (id: string): Promise<ConversionResult> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/convert-to-lead`);
+    return response.data.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Converting inquiry to lead failed");
   }
 };
