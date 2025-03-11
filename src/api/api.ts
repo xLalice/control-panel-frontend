@@ -3,7 +3,8 @@ import { LoginFormData } from "../pages/Login";
 import { UpdateLeadParams } from "@/types";
 import { Product } from "@/pages/Products/types";
 import { InquiryFilterParams, PaginatedResponse, Inquiry, UpdateInquiryDto, CreateInquiryDto, InquiryStatistics, ConversionResult } from "@/pages/Inquiry/types";
-
+import { Document, DocumentCategory } from "@/pages/Documents/types";
+import { Attendance, DTRSettings, AllowedIP } from "@/pages/Attendance/types";
 export interface QuoteDetails {
   basePrice: number;
   deliveryFee?: number;
@@ -421,4 +422,167 @@ export const convertInquiryToLead = async (id: string): Promise<ConversionResult
     console.error(err);
     throw new Error(err.response?.data?.error || "Converting inquiry to lead failed");
   }
+};
+
+export const getCategories = async (): Promise<DocumentCategory[]> => {
+  try {
+    const response = await apiClient.get(`/documents/categories`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching categories failed");
+  }
+};
+
+export const createCategory = async (data: { name: string; description?: string }): Promise<DocumentCategory> => {
+  try {
+    const response = await apiClient.post(`/documents/categories`, data);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Creating category failed");
+  }
+};
+
+export const updateCategory = async (id: number, data: { name?: string; description?: string }): Promise<DocumentCategory> => {
+  try {
+    const response = await apiClient.put(`/documents/categories/${id}`, data);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Updating category failed");
+  }
+};
+
+export const deleteCategory = async (id: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/documents/categories/${id}`);
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Deleting category failed");
+  }
+};
+
+// Documents API
+export const getDocuments = async (categoryId?: number): Promise<Document[]> => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (categoryId) queryParams.append('categoryId', categoryId.toString());
+
+    const response = await apiClient.get(`/documents?${queryParams.toString()}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching documents failed");
+  }
+};
+
+export const getDocumentById = async (id: number): Promise<Document> => {
+  try {
+    const response = await apiClient.get(`/documents/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Fetching document failed");
+  }
+};
+
+export const uploadDocument = async (formData: FormData): Promise<Document> => {
+  try {
+    const response = await apiClient.post(`/documents/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Uploading document failed");
+  }
+};
+
+export const deleteDocument = async (id: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/documents/${id}`);
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(err.response?.data?.error || "Deleting document failed");
+  }
+};
+
+// Helper function to get download URL
+export const getDocumentDownloadUrl = (id: number): string => {
+  return `/api/documents/${id}/download`;
+};
+
+// Helper function to get preview URL
+export const getDocumentPreviewUrl = (id: number): string => {
+  return `http://localhost:5000/api/documents/${id}/preview`;
+};
+
+// Attendance
+export const clockIn = async () => {
+  const response = await apiClient.post('/attendance/clock-in');
+  return response.data;
+};
+
+export const clockOut = async () => {
+  const response = await apiClient.post('/attendance/clock-out');
+  return response.data;
+};
+
+export const startBreak = async (reason?: string) => {
+  const response = await apiClient.post('/attendance/break/start', { reason });
+  return response.data;
+};
+
+export const endBreak = async () => {
+  const response = await apiClient.post('/attendance/break/end');
+  return response.data;
+};
+
+export const getUserAttendance = async (params?: { 
+  startDate?: string; 
+  endDate?: string;
+  userId?: string;
+}) => {
+  const url = params?.userId ? `/attendance/user/${params.userId}` : '/attendance/my-attendance';
+  const response = await apiClient.get(url, { params: { startDate: params?.startDate, endDate: params?.endDate } });
+  return response.data as Attendance[];
+};
+
+// Admin endpoints
+export const getAllAttendance = async (params?: { 
+  startDate?: string; 
+  endDate?: string;
+  status?: string;
+}) => {
+  const response = await apiClient.get('/attendance/all', { params });
+  return response.data as Attendance[];
+};
+
+export const updateSettings = async (settings: Partial<DTRSettings>) => {
+  const response = await apiClient.put('/attendance/settings', settings);
+  return response.data;
+};
+
+export const getSettings = async () => {
+  const response = await apiClient.get('/attendance/settings');
+  return response.data as DTRSettings;
+};
+
+export const manageAllowedIPs = async (payload: { 
+  action: 'add' | 'remove' | 'update';
+  ipAddress: string;
+  userId: string;
+  description?: string;
+  id?: string;
+}) => {
+  const response = await apiClient.post('/attendance/allowed-ips', payload);
+  return response.data;
+};
+
+export const getAllowedIPs = async (userId?: string) => {
+  const response = await apiClient.get('/attendance/allowed-ips', { params: { userId } });
+  return response.data as AllowedIP[];
 };

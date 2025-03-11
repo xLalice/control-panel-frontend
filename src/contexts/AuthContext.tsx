@@ -1,30 +1,45 @@
-import { verify } from "@/api/api";
+import { verify, login as loginApi, logout as logoutApi } from "@/api/api";
 import { createContext, useContext, useEffect, useState } from "react";
-import { login as loginApi, logout as logoutApi } from "@/api/api";
 
+// Define the user type (adjust based on your backend response)
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Update AuthContext type
 interface AuthContextType {
   isAuthenticated: boolean;
-  isLoading: boolean; 
-  login: (data: { email: string; password: string }) => Promise<void>; // ✅ Fixed Type
-  logout: () => void;
+  user: User | null;
+  isLoading: boolean;
+  login: (data: { email: string; password: string }) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
+  const [authState, setAuthState] = useState<{
+    isAuthenticated: boolean;
+    user: User | null;
+  }>({
+    isAuthenticated: false,
+    user: null,
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      const response: { authenticated: boolean } = await verify();
-      console.log("Verify response:", response); // Add this
-      setIsAuthenticated(response.authenticated);
-      console.log("isAuthenticated set to:", response.authenticated); // Add this
+      const response: { authenticated: boolean; user?: User } = await verify();
+      setAuthState({
+        isAuthenticated: response.authenticated,
+        user: response.authenticated && response.user ? response.user : null, 
+      });
     } catch (error) {
-      console.log("Verify error:", error); // Add this
-      setIsAuthenticated(false);
+      console.log("Verify error:", error);
+      setAuthState({ isAuthenticated: false, user: null });
     } finally {
       setIsLoading(false);
     }
@@ -37,23 +52,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (data: { email: string; password: string }) => {
     try {
       await loginApi(data);
-      setIsAuthenticated(true);
+      // After login, fetch auth status and user data
+      await checkAuth();
     } catch (error) {
       console.error("Login failed", error);
+      throw error; // Optional: rethrow for component handling
     }
   };
 
   const logout = async () => {
-    try{
+    try {
       await logoutApi();
-      setIsAuthenticated(false);
+      setAuthState({ isAuthenticated: false, user: null });
     } catch (error) {
       console.error("Logout failed", error);
+      throw error; 
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: authState.isAuthenticated,
+        user: authState.user,
+        isLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

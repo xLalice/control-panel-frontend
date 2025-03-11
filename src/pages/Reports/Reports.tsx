@@ -31,7 +31,7 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Reports Module</h1>
+      <h1 className="text-3xl font-bold">Report</h1>
       <div className="flex justify-between">
         <FilterBar 
           setReports={setFilteredReports} 

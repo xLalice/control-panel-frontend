@@ -20,6 +20,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Loader } from "./components/ui/Loader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
+import { DocumentLayout } from "./pages/Documents/components/DocumentLayout";
+import AttendancePage from "./pages/Attendance";
+import AdminAttendancePage from "./pages/Attendance/admin";
 
 const queryClient = new QueryClient();
 
@@ -51,14 +54,15 @@ const AppContent = () => {
           element={
             isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
           }
-        />
-
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route
+        />\
+        <Route
             path="/admin/user-management"
             element={<UserManagementPage />}
           />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          
           <Route path="/leads" element={< LeadsTable />} />
           <Route
             path="/marketing/social-media"
@@ -67,6 +71,9 @@ const AppContent = () => {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/pricing" element={<ProductManagementSystem />} />
           <Route path="/inquiries" element={<InquiryManagement />} />
+          <Route path="/documents" element={<DocumentLayout />} />
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/attendance/admin" element={<AdminAttendancePage />} />
         </Route>
 
         <Route
