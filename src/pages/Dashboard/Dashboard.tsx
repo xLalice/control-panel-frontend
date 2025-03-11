@@ -8,30 +8,22 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Bell,
   Menu,
   Users,
   DollarSign,
-  Megaphone,
-  Package,
   BarChart,
   Tag,
-  Calculator,
-  UserCircle,
-  Shield,
-  ShoppingCart,
-  ClipboardList,
-  Calendar,
-  Mail
+  Mail,
+  FileText,
+  Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -41,15 +33,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import Logo from "../../assets/logo.png";
+import CompanyPolicyDashboard from "../CompanyPolicy/PolicyDashboard";
 
 ChartJS.register(
   ArcElement,
@@ -93,29 +78,9 @@ const App: React.FC = () => {
 
     {
       name: "Leads",
-      route: "/sales/leads",
+      route: "/leads",
       icon: <DollarSign className="h-4 w-4" />,
       roles: ["sales", "admin"],
-    },
-
-    {
-      name: "Plans & Budget",
-      route: "/marketing/plans",
-      icon: <Megaphone className="h-4 w-4" />,
-      roles: ["marketing", "admin"],
-    },
-    {
-      name: "Calendar",
-      route: "/marketing/calendar",
-      icon: <Calendar className="h-4 w-4" />,
-      roles: ["marketing", "admin"],
-    },
-
-    {
-      name: "Inventory",
-      route: "/logistics/inventory",
-      icon: <Package className="h-4 w-4" />,
-      roles: ["logistics", "admin"],
     },
 
     {
@@ -131,40 +96,17 @@ const App: React.FC = () => {
       icon: <Tag className="h-4 w-4" />,
       roles: ["pricing-manager", "admin"],
     },
-
     {
-      name: "Incoming/Outgoing Account",
-      route: "/accounting/accounts",
-      icon: <Calculator className="h-4 w-4" />,
-      roles: ["accounting", "admin"],
+      name: "Documents",
+      route: "/documents",
+      icon: <FileText className="h-4 w-4" />,
+      roles: ["base", "admin"], 
     },
-
     {
-      name: "Human Resources",
-      route: "/hr/people",
-      icon: <UserCircle className="h-4 w-4" />,
-      roles: ["hr", "admin"],
-    },
-
-    {
-      name: "Management",
-      route: "/officers/management",
-      icon: <Shield className="h-4 w-4" />,
-      roles: ["officer", "admin"],
-    },
-
-    {
-      name: "Purchase Orders",
-      route: "/purchasing",
-      icon: <ShoppingCart className="h-4 w-4" />,
-      roles: ["purchasing", "admin"],
-    },
-
-    {
-      name: "Procurement Management",
-      route: "/procurement",
-      icon: <ClipboardList className="h-4 w-4" />,
-      roles: ["procurement", "admin"],
+      name: "Attendance",
+      route: "/attendance",
+      icon: <Clock className="h-4 w-4" />,  
+      roles: ["base", "admin"], 
     },
   ];
 
@@ -185,27 +127,6 @@ const App: React.FC = () => {
     } catch (error) {
       toast.error("Logout failed");
     }
-  };
-
-  const doughnutData = {
-    labels: ["Sales", "Marketing", "Logistics"],
-    datasets: [
-      {
-        data: [300, 200, 100],
-        backgroundColor: ["#22c55e", "#eab308", "#ef4444"],
-      },
-    ],
-  };
-
-  const barData = {
-    labels: ["January", "February", "March", "April", "May"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [1200, 1900, 3000, 2500, 3200],
-        backgroundColor: "#3b82f6",
-      },
-    ],
   };
 
   const Sidebar = () => (
@@ -276,58 +197,8 @@ const App: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto p-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Department Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Doughnut data={doughnutData} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Monthly Revenue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Bar data={barData} />
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>2025-01-26</TableCell>
-                    <TableCell>Purchase Order #123</TableCell>
-                    <TableCell>₱15,000</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>2025-01-25</TableCell>
-                    <TableCell>Invoice #456</TableCell>
-                    <TableCell>₱22,500</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>2025-01-24</TableCell>
-                    <TableCell>Salary Payment</TableCell>
-                    <TableCell>₱50,000</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <CompanyPolicyDashboard />
+            
         </main>
       </div>
     </div>

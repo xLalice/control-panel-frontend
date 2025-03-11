@@ -173,51 +173,51 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
         );
 
   const dialogContent = (
-    <DialogContent className="sm:max-w-[600px]">
-      <DialogHeader>
+    <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+      <DialogHeader className="pb-2">
         <DialogTitle>
           {isEditMode ? "Edit Lead" : "Create New Lead"}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription className="text-xs">
           {isEditMode
-            ? "Update the details for this lead. Required fields are marked with an asterisk."
-            : "Enter the details for the new lead. Fill in all required fields."}
+            ? "Update the details for this lead. Required fields marked with *."
+            : "Enter details for the new lead. Fill in all required fields."}
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="createNewCompany"
-                checked={isNewCompany}
-                onChange={() => {
-                  setIsNewCompany(!isNewCompany);
-                  if (isNewCompany) {
-                    form.setValue("companyName", "");
-                  } else {
-                    form.setValue("companyId", "");
-                  }
-                }}
-              />
-              <label htmlFor="createNewCompany">
-                {isEditMode ? "Change Company" : "Create New Company"}
-              </label>
-            </div>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              id="createNewCompany"
+              checked={isNewCompany}
+              onChange={() => {
+                setIsNewCompany(!isNewCompany);
+                if (isNewCompany) {
+                  form.setValue("companyName", "");
+                } else {
+                  form.setValue("companyId", "");
+                }
+              }}
+            />
+            <label htmlFor="createNewCompany" className="text-sm">
+              {isEditMode ? "Change Company" : "Create New Company"}
+            </label>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {isNewCompany ? (
               <FormField
                 control={form.control}
                 name="companyName"
                 rules={{ required: "Company name is required" }}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company Name{isEditMode ? "*" : ""}</FormLabel>
+                  <FormItem className="col-span-1">
+                    <FormLabel className="text-xs">Company Name{isEditMode ? "*" : ""}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter new company name" {...field} />
+                      <Input placeholder="Enter company name" {...field} className="h-8 text-sm" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -227,8 +227,8 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                 name="companyId"
                 rules={{ required: "Company is required" }}
                 render={({}) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Company{isEditMode ? "*" : ""}</FormLabel>
+                  <FormItem className="col-span-1">
+                    <FormLabel className="text-xs">Company{isEditMode ? "*" : ""}</FormLabel>
                     <Popover
                       open={companyPopoverOpen}
                       onOpenChange={setCompanyPopoverOpen}
@@ -239,21 +239,22 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                             variant="outline"
                             role="combobox"
                             aria-expanded={companyPopoverOpen}
-                            className="w-full justify-between font-normal"
+                            className="w-full justify-between font-normal h-8 text-sm"
                           >
                             {displayCompanyName}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0">
+                      <PopoverContent className="w-full p-0">
                         <Command>
                           <CommandInput
                             placeholder="Search company..."
                             value={searchQuery}
                             onValueChange={setSearchQuery}
+                            className="h-8"
                           />
-                          <CommandList>
+                          <CommandList className="max-h-40">
                             <CommandEmpty>No company found</CommandEmpty>
                             <CommandGroup>
                               {filteredCompanies.map((company: Company) => (
@@ -263,13 +264,14 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                                   onSelect={() => {
                                     form.setValue("companyId", company.id);
                                     setCompanyPopoverOpen(false);
-                                    setSearchQuery(""); // Clear search after selection
+                                    setSearchQuery("");
                                   }}
+                                  className="text-sm py-1"
                                 >
                                   {company.name}
                                   <Check
                                     className={cn(
-                                      "ml-auto h-4 w-4",
+                                      "ml-auto h-3 w-3",
                                       selectedCompanyId === company.id
                                         ? "opacity-100"
                                         : "opacity-0"
@@ -282,7 +284,7 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -293,12 +295,12 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               name="contactPerson"
               rules={{ required: "Contact person is required" }}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Person{isEditMode ? "*" : ""}</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Contact Person{isEditMode ? "*" : ""}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -314,12 +316,12 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                 },
               }}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email{isEditMode ? "*" : ""}</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Email{isEditMode ? "*" : ""}</FormLabel>
                   <FormControl>
-                    <Input type="email" {...field} />
+                    <Input type="email" {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -328,12 +330,12 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               control={form.control}
               name="phone"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Phone</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -343,26 +345,26 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               name="status"
               rules={{ required: "Status is required" }}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status{isEditMode ? "*" : ""}</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Status{isEditMode ? "*" : ""}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-sm">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Object.values(LeadStatus).map((status) => (
-                        <SelectItem key={status} value={status}>
+                        <SelectItem key={status} value={status} className="text-sm py-1">
                           {status}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -372,12 +374,12 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               name="industry"
               rules={{ required: "Industry is required" }}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Industry{isEditMode ? "*" : ""}</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Industry{isEditMode ? "*" : ""}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -387,12 +389,12 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               name="region"
               rules={{ required: "Region is required" }}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Region{isEditMode ? "*" : ""}</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Region{isEditMode ? "*" : ""}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -401,26 +403,27 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               control={form.control}
               name="estimatedValue"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estimated Value (₱)</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Estimated Value (₱)</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">
                         ₱
                       </span>
-                      <Input type="number" className="pl-8" {...field} />
+                      <Input type="number" className="pl-8 h-8 text-sm" {...field} />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="leadScore"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lead Score (0-100)</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Lead Score (0-100)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -434,10 +437,11 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
                       }
                       min="0"
                       max="100"
-                      placeholder="Enter score from 0-100"
+                      placeholder="Enter score"
+                      className="h-8 text-sm"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -446,12 +450,40 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
               control={form.control}
               name="source"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Source</FormLabel>
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Source</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-8 text-sm" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="assignedToId"
+              render={({ field }) => (
+                <FormItem className="col-span-1">
+                  <FormLabel className="text-xs">Assigned To</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select user" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {users.map((user: User) => (
+                        <SelectItem key={user.id} value={user.id} className="text-sm py-1">
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -462,56 +494,33 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
             name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Notes</FormLabel>
+                <FormLabel className="text-xs">Notes</FormLabel>
                 <FormControl>
                   <textarea
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="assignedToId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Assigned To</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select user" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {users.map((user: User) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <DialogFooter>
+          <DialogFooter className="mt-4 gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => (isEditMode ? onClose?.() : setOpen(false))}
               disabled={createLeadMutation.isPending}
+              className="h-8 text-xs"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createLeadMutation.isPending}>
+            <Button 
+              type="submit" 
+              disabled={createLeadMutation.isPending}
+              className="h-8 text-xs"
+            >
               {createLeadMutation.isPending
                 ? isEditMode
                   ? "Saving..."
@@ -533,8 +542,8 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
   ) : (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="ml-auto bg-yellow-500 text-black">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button className="ml-auto bg-yellow-500 text-black h-8 text-xs">
+          <Plus className="w-3 h-3 mr-1" />
           Create Lead
         </Button>
       </DialogTrigger>
