@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Edit2, Trash2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserSkeleton } from "./UserSkeleton";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { User } from "../types";
 
 interface UserListProps {
   users: User[];
@@ -29,6 +22,7 @@ interface UserListProps {
   isDeleting: boolean;
   deletingId?: string;
 }
+
 
 const roleColors: Record<string, { bg: string; text: string }> = {
   ADMIN: { bg: "bg-red-100", text: "text-red-800" },
@@ -69,11 +63,11 @@ export function UserList({
             <TableCell>{user.email}</TableCell>
             <TableCell>
               <Badge
-                className={`${roleColors[user.role]?.bg} ${
-                  roleColors[user.role]?.text
+                className={`${roleColors[user.role.name]?.bg} ${
+                  roleColors[user.role.name]?.text
                 }`}
               >
-                {user.role}
+                {user.role.name}
               </Badge>
             </TableCell>
             <TableCell>

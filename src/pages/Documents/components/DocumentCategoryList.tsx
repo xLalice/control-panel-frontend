@@ -4,7 +4,7 @@ import {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
-} from "../hooks/useDocuments"
+} from "../hooks/useDocuments";
 import {
   Card,
   CardContent,
@@ -43,9 +43,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { usePermissions } from "@/hooks/usePermission";
 
 export const DocumentCategoryList: React.FC = () => {
   const { data: categories, isLoading } = useCategories();
+  const { hasPermission } = usePermissions();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
@@ -64,8 +66,10 @@ export const DocumentCategoryList: React.FC = () => {
     description: "",
   });
 
+  const canManageCategories = hasPermission("MANAGE_DOCUMENT_CATEGORIES");
+
   const handleAddCategory = () => {
-    if (!newCategoryName.trim()) return;
+    if (!newCategoryName.trim() || !canManageCategories) return;
 
     createCategory.mutate(
       {
@@ -83,7 +87,7 @@ export const DocumentCategoryList: React.FC = () => {
   };
 
   const handleEditCategory = () => {
-    if (!editingCategory.name.trim()) return;
+    if (!editingCategory.name.trim() || !canManageCategories) return;
 
     updateCategory.mutate(
       {
@@ -102,6 +106,7 @@ export const DocumentCategoryList: React.FC = () => {
   };
 
   const handleDeleteCategory = (id: number) => {
+    if (!canManageCategories) return;
     deleteCategory.mutate(id);
   };
 
@@ -114,10 +119,12 @@ export const DocumentCategoryList: React.FC = () => {
             Manage document categories for organization
           </CardDescription>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Category
-        </Button>
+        {canManageCategories && (
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Category
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -131,7 +138,7 @@ export const DocumentCategoryList: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Documents</TableHead>
-                <TableHead>Actions</TableHead>
+                {canManageCategories && <TableHead>Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -142,48 +149,50 @@ export const DocumentCategoryList: React.FC = () => {
                   <TableCell>
                     {/* Would need to add document count to the API */}-
                   </TableCell>
-                  <TableCell className="space-x-1">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => {
-                        setEditingCategory({
-                          id: category.id,
-                          name: category.name,
-                          description: category.description || "",
-                        });
-                        setIsEditDialogOpen(true);
-                      }}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="icon" variant="destructive">
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete the "{category.name}"
-                            category. This action cannot be undone. If the
-                            category contains documents, they must be moved or
-                            deleted first.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteCategory(category.id)}
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
+                  {canManageCategories && (
+                    <TableCell className="space-x-1">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingCategory({
+                            id: category.id,
+                            name: category.name,
+                            description: category.description || "",
+                          });
+                          setIsEditDialogOpen(true);
+                        }}
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="destructive">
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the "{category.name}"
+                              category. This action cannot be undone. If the
+                              category contains documents, they must be moved or
+                              deleted first.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteCategory(category.id)}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

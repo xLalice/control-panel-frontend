@@ -20,7 +20,7 @@ import {
 import { ProductTable } from "./components/ProductTable"; // Add this import
 import {
   Product,
-  DEFAULT_PRODUCT,
+  defaultProduct,
   TAB_TO_CATEGORY_MAP,
   FormProduct,
 } from "./types";
@@ -32,6 +32,7 @@ import {
 } from "@/api/api";
 import { ProductFormFields } from "./components/ProductFormFields";
 
+
 const ProductManagementSystem = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -40,7 +41,7 @@ const ProductManagementSystem = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [newProduct, setNewProduct] = useState<FormProduct>({
-    ...DEFAULT_PRODUCT,
+    ...defaultProduct,
   });
   const [sortField, setSortField] = useState<keyof Product>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -105,11 +106,12 @@ const ProductManagementSystem = () => {
   });
 
   const filteredProducts = products.filter((product) => {
-    const selectedCategory = TAB_TO_CATEGORY_MAP[activeTab];
-    console.log(selectedCategory);
+    const selectedCategoryStr = TAB_TO_CATEGORY_MAP[activeTab];
+    const selectedCategory =selectedCategoryStr;
+    
     const matchesCategory =
-      !selectedCategory || product.category === selectedCategory;
-      console.log(matchesCategory);
+      selectedCategory === null || product.category === selectedCategory;
+      
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
@@ -154,7 +156,7 @@ const ProductManagementSystem = () => {
   };
 
   const resetNewProduct = () => {
-    setNewProduct({ ...DEFAULT_PRODUCT });
+    setNewProduct({ ...defaultProduct });
   };
 
   const openEditDialog = (product: Product) => {

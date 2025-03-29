@@ -17,21 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserFormProps, UserFormData } from "../types";
 
-interface UserFormData {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}
-
-interface UserFormProps {
-  defaultValues?: Partial<UserFormData>;
-  onSubmit: (data: UserFormData) => void;
-  onCancel: () => void;
-  isSubmitting: boolean;
-  isEditing: boolean;
-}
 
 export function UserForm({
   defaultValues = {},

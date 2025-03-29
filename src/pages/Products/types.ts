@@ -1,27 +1,46 @@
-export type ProductCategory = "Aggregates" | "HeavyEquipment" | "Steel";
+export enum Category {
+  AGGREGATE = "AGGREGATE",
+  HEAVY_EQUIPMENT = "HEAVY_EQUIPMENT",
+  STEEL = "STEEL"
+}
 export type SourceLocation = "Batangas" | "Montalban" | "Other";
 export type PricingModel = "PerHour" | "PerDay" | "PerUnit";
 
 export interface Product {
   id: string;
-  category: ProductCategory;
+  category: Category;
   name: string;
   description: string;
-  source?: SourceLocation;
-  pickUpPrice?: number | null | undefined;
-  deliveryPrice?: number | null | undefined;
-  pricingModel?: PricingModel;
-  unit?: string;
+  basePrice: number;
+  pricingUnit: string;
+  pricingDetails?: object;
+  unit: string;
+  pickUpPrice: number | null;
+  deliveryPrice: number | null;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Category-specific fields
+  source?: string;
+  weightPerUnit?: number;
+  equipmentType?: string;
   grade?: string;
   length?: string;
+  type?: string;
+  color?: string;
+  size?: string;
+  additionalAttributes?: object;
 }
 
-export const DEFAULT_PRODUCT: Omit<Product, "id"> = {
-  category: "Aggregates",
+export const defaultProduct: FormProduct = {
+  category: Category.AGGREGATE,
   name: "",
   description: "",
-  pricingModel: "PerUnit",
-  unit: "cbm",
+  basePrice: 0,
+  pricingUnit: "",
+  unit: "",
+  pickUpPrice: null,
+  deliveryPrice: null
 };
 
 export const TAB_TO_CATEGORY_MAP: Record<string, string | null> = {
@@ -31,4 +50,30 @@ export const TAB_TO_CATEGORY_MAP: Record<string, string | null> = {
   steel: "Steel",
 };
 
-export type FormProduct = Omit<Product, "id"> & { id?: string | number };
+export interface FormProduct {
+  id?: string;
+  category: Category;
+  name: string;
+  description: string;
+  basePrice: number;
+  pricingUnit: string;
+  pricingDetails?: object;
+  unit: string;
+  pickUpPrice: number | null;
+  deliveryPrice: number | null;
+  
+  // Aggregate fields
+  source?: string;
+  weightPerUnit?: number;
+  
+  // Heavy Equipment fields
+  equipmentType?: string;
+  
+  // Steel fields
+  grade?: string;
+  length?: string;
+  type?: string;
+  color?: string;
+  size?: string;
+  additionalAttributes?: object;
+}

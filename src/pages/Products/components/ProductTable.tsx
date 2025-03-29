@@ -9,13 +9,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Edit, Trash2 } from "lucide-react";
-import { Product } from "../types";
-
+import { Product, Category } from "../types";
 
 interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: string | number) => void;
+  onDelete: (id: string) => void;
   isLoading: boolean;
   onSort: (field: keyof Product) => void;
 }
@@ -48,6 +47,19 @@ export const ProductTable = ({
     );
   }
 
+  const formatCategory = (category: Category): string => {
+    switch (category) {
+      case Category.AGGREGATE:
+        return "Aggregate";
+      case Category.HEAVY_EQUIPMENT:
+        return "Heavy Equipment";
+      case Category.STEEL:
+        return "Steel";
+      default:
+        return category;
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -69,6 +81,12 @@ export const ProductTable = ({
               </TableHead>
               <TableHead
                 className="text-right cursor-pointer"
+                onClick={() => onSort("basePrice")}
+              >
+                Base Price <ArrowUpDown className="inline h-4 w-4 ml-1" />
+              </TableHead>
+              <TableHead
+                className="text-right cursor-pointer"
                 onClick={() => onSort("pickUpPrice")}
               >
                 Pick Up Price <ArrowUpDown className="inline h-4 w-4 ml-1" />
@@ -87,7 +105,10 @@ export const ProductTable = ({
               <TableRow key={product.id}>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.description}</TableCell>
-                <TableCell>{product.category}</TableCell>
+                <TableCell>{formatCategory(product.category)}</TableCell>
+                <TableCell className="text-right">
+                  {`₱${product.basePrice.toLocaleString()} ${product.pricingUnit ? `/ ${product.pricingUnit}` : ""}`}
+                </TableCell>
                 <TableCell className="text-right">
                   {product.pickUpPrice
                     ? `₱${product.pickUpPrice.toLocaleString()} ${

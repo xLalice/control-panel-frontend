@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { formatFileSize, formatDate } from "../utils/utils";
+import { usePermissions } from "@/hooks/usePermission";
 
 interface DocumentListProps {
   categoryId?: number;
@@ -101,6 +102,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 }) => {
   const { data: documents, isLoading, error } = useDocuments(categoryId);
   const deleteDocument = useDeleteDocument();
+  const {hasPermission} = usePermissions()
 
   const handleDelete = (id: number) => {
     deleteDocument.mutate(id);

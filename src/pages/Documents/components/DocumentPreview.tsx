@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useDocument } from "../hooks/useDocuments";
-import { getDocumentPreviewUrl, getDocumentDownloadUrl } from "@/api/api";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { DownloadIcon, XIcon, ExternalLinkIcon, FileIcon } from "lucide-react";
-import { formatFileSize, formatDate } from "../utils/utils";
+import { previewDocument } from "@/api/api";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Img } from "react-image";
+
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs"
 
 interface DocumentPreviewProps {
-  documentId: number;
+  documentId: number | null;
   onClose: () => void;
 }
 
@@ -21,150 +25,162 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   documentId,
   onClose,
 }) => {
-  const { data: document, isLoading, error } = useDocument(documentId);
-  const [previewError, setPreviewError] = useState(false);
-  const [previewLoaded, setPreviewLoaded] = useState(false);
+  const [previewData, setPreviewData] = useState<{
+    url: string;
+    mimeType: string;
+    filename: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pdfNumPages, setPdfNumPages] = useState<number>(0);
 
   useEffect(() => {
-    // Reset state when document changes
-    setPreviewError(false);
-    setPreviewLoaded(false);
+    const fetchPreview = async () => {
+      if (!documentId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await previewDocument(documentId);
+        console.log("Response:", response);
+
+        // Make sure we have mimeType in the response
+        if (!response.mimeType) {
+          console.error("Missing MIME type in response:", response);
+          throw new Error("Invalid response format: missing MIME type");
+        }
+
+        // Create blob from the buffer
+        const blob = new Blob([response.buffer], {
+          type: response.mimeType,
+        });
+
+        const url = URL.createObjectURL(blob);
+        console.log("Preview URL:", url);
+        console.log("MIME type:", response.mimeType);
+
+        setPreviewData({
+          url,
+          mimeType: response.mimeType,
+          filename: response.filename,
+        });
+      } catch (err) {
+        console.error("Preview error:", err);
+        setError(
+          axios.isAxiosError(err)
+            ? err.response?.data?.message || "Preview failed"
+            : err instanceof Error
+            ? err.message
+            : "An unexpected error occurred"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPreview();
+
+    // Cleanup
+    return () => {
+      if (previewData?.url) {
+        URL.revokeObjectURL(previewData.url);
+      }
+    };
   }, [documentId]);
 
-  const handlePreviewLoad = () => {
-    setPreviewLoaded(true);
-  };
-
-  const handlePreviewError = () => {
-    setPreviewError(true);
-  };
-
   const renderPreview = () => {
-    if (!document) return null;
-    const previewUrl = getDocumentPreviewUrl(document.id);
-    
-    // If we've already had an error loading the preview, show fallback
-    if (previewError) {
-      return renderFallbackPreview(previewUrl);
-    }
+    if (loading) return <p className="text-center p-4">Loading preview...</p>;
+    if (error) return <p className="text-red-500 p-4">Error: {error}</p>;
+    if (!previewData)
+      return <p className="text-center p-4">No preview available</p>;
 
-    if (document.fileType.includes("image")) {
-      return (
-        <div className="flex justify-center overflow-auto max-h-96">
-          <img
-            src={previewUrl}
-            alt={document.title}
-            className="object-contain max-h-full max-w-full"
-            onLoad={handlePreviewLoad}
-            onError={handlePreviewError}
-          />
-        </div>
-      );
-    }
-    
-    if (document.fileType.includes("pdf")) {
-      // Try using object tag instead of iframe for PDF files
-      return (
-        <div className="w-full h-96 relative">
-          {!previewLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-              <p>Loading preview...</p>
-            </div>
-          )}
-          <object
-            data={previewUrl}
-            type="application/pdf"
-            className="w-full h-full"
-            onLoad={handlePreviewLoad}
-            onError={handlePreviewError}
-          >
-            <embed src={previewUrl} type="application/pdf" className="w-full h-full" />
-            <p>Your browser doesn't support PDF previews.</p>
-          </object>
-        </div>
-      );
-    }
-    
-    // For other file types that can't be previewed
-    return renderFallbackPreview(previewUrl);
-  };
+    const { url, mimeType, filename } = previewData;
 
-  const renderFallbackPreview = (previewUrl: string) => {
-    return (
-      <div className="text-center p-8 flex flex-col items-center">
-        <FileIcon className="h-16 w-16 text-gray-400 mb-4" />
-        <p className="mb-6">
-          {previewError 
-            ? "Unable to display preview in this window." 
-            : `Preview not available for this file type (${document?.fileType}).`}
-        </p>
-        <div className="flex justify-center gap-4">
-          <Button asChild>
-            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLinkIcon className="h-4 w-4 mr-2" />
-              Open in New Tab
+    switch (mimeType) {
+      case "application/pdf":
+        return (
+          <div className="w-full h-[600px] overflow-auto">
+            <Document
+              file={url}
+              onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
+              className="flex flex-col items-center"
+            >
+              {Array.from(new Array(pdfNumPages), (el, index) => (
+                <Page
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  width={800}
+                  className="mb-4"
+                />
+              ))}
+            </Document>
+          </div>
+        );
+
+      case "text/plain":
+      case "text/csv":
+      case "application/json":
+        return (
+          <div className="w-full h-[600px] overflow-auto p-4">
+            <SyntaxHighlighter
+              language={
+                mimeType === "application/json"
+                  ? "json"
+                  : mimeType === "text/csv"
+                  ? "csv"
+                  : "textile"
+              }
+              style={dracula}
+              showLineNumbers
+            >
+              {atob(url.split(",")[1])}
+            </SyntaxHighlighter>
+          </div>
+        );
+
+      case "image/jpeg":
+      case "image/png":
+      case "image/gif":
+      case "image/webp":
+        return (
+          <div className="w-full h-[600px] flex justify-center items-center overflow-auto">
+            <Img
+              src={url}
+              alt={filename}
+              loader={<p>Loading image...</p>}
+              unloader={<p>Error loading image</p>}
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        );
+
+      default:
+        return (
+          <div className="p-4 text-center">
+            <p>Unsupported file type</p>
+            <a
+              href={url}
+              download={filename}
+              className="text-blue-500 hover:underline"
+            >
+              Download File
             </a>
-          </Button>
-          {document && (
-            <Button variant="outline" asChild>
-              <a
-                href={getDocumentDownloadUrl(document.id)}
-                download={document.filename}
-              >
-                <DownloadIcon className="h-4 w-4 mr-2" />
-                Download
-              </a>
-            </Button>
-          )}
-        </div>
-      </div>
-    );
+          </div>
+        );
+    }
   };
 
   return (
     <Dialog open={!!documentId} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <p>Loading document preview...</p>
-          </div>
-        ) : error ? (
-          <div className="p-8 text-center">
-            <p>Error loading document: {String(error)}</p>
-          </div>
-        ) : document ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>{document.title}</DialogTitle>
-              <div className="text-sm text-muted-foreground flex flex-wrap gap-x-6 mt-2">
-                <span>File: {document.filename}</span>
-                <span>Size: {formatFileSize(document.fileSize)}</span>
-                <span>Uploaded: {formatDate(document.createdAt)}</span>
-              </div>
-            </DialogHeader>
-            <div className="py-4">{renderPreview()}</div>
-            <DialogFooter>
-              <Button variant="outline" onClick={onClose}>
-                <XIcon className="h-4 w-4 mr-2" />
-                Close
-              </Button>
-              {document && (
-                <Button asChild>
-                  <a
-                    href={getDocumentDownloadUrl(document.id)}
-                    download={document.filename}
-                  >
-                    <DownloadIcon className="h-4 w-4 mr-2" />
-                    Download
-                  </a>
-                </Button>
-              )}
-            </DialogFooter>
-          </>
-        ) : (
-          <p>Document not found</p>
-        )}
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle>Document Preview</DialogTitle>
+        </DialogHeader>
+        {renderPreview()}
       </DialogContent>
     </Dialog>
   );
 };
+
+export default DocumentPreview;
