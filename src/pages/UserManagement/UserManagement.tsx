@@ -21,20 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserList } from "./components/UserList";
 import { UserForm } from "./components/UserForm";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface UserFormData {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}
+import { User, UserFormData } from "./types";
 
 export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);

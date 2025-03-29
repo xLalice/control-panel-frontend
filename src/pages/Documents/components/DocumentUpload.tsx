@@ -43,9 +43,8 @@ export const DocumentUpload: React.FC = () => {
         form.reset({
           title: '',
           categoryId: '',
-          file: undefined, // Reset the file field in the form state
+          file: undefined, 
         });
-        // No need to manually reset file input via ref since reset clears it
       },
     });
   };

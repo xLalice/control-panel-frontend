@@ -11,7 +11,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
-import SocialMediaDashboard from "./pages/Social_Media/SocialDashboard";
 import ReportsPage from "./pages/Reports/Reports";
 import ProductManagementSystem from "./pages/Products/Products";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -22,6 +21,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./pages/Documents/components/DocumentLayout";
 import AttendancePage from "./pages/Attendance";
+
+
 import AdminAttendancePage from "./pages/Attendance/admin";
 
 const queryClient = new QueryClient();
@@ -54,28 +55,23 @@ const AppContent = () => {
           element={
             isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
           }
-        />\
-        <Route
-            path="/admin/user-management"
-            element={<UserManagementPage />}
-          />
-
+        />
+        \
+        <Route path="/admin/user-management" element={<UserManagementPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          
-          <Route path="/leads" element={< LeadsTable />} />
-          <Route
-            path="/marketing/social-media"
-            element={<SocialMediaDashboard />}
-          />
+
+          <Route path="/leads" element={<LeadsTable />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/pricing" element={<ProductManagementSystem />} />
           <Route path="/inquiries" element={<InquiryManagement />} />
           <Route path="/documents" element={<DocumentLayout />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/attendance/admin" element={<AdminAttendancePage />} />
-        </Route>
+          
 
+          
+        </Route>
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}

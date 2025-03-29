@@ -1,11 +1,10 @@
 import { verify, login as loginApi, logout as logoutApi } from "@/api/api";
 import { createContext, useContext, useEffect, useState } from "react";
 
-// Define the user type (adjust based on your backend response)
 interface User {
   id: string;
   name: string;
-  email: string;
+  permissions: string[];
 }
 
 // Update AuthContext type
@@ -52,11 +51,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (data: { email: string; password: string }) => {
     try {
       await loginApi(data);
-      // After login, fetch auth status and user data
       await checkAuth();
     } catch (error) {
       console.error("Login failed", error);
-      throw error; // Optional: rethrow for component handling
+      throw error;
     }
   };
 
