@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Edit, Trash2 } from "lucide-react";
 import { Product, Category } from "../types";
+import { usePermissions } from "@/hooks/usePermission";
 
 interface ProductTableProps {
   products: Product[];
@@ -26,6 +27,8 @@ export const ProductTable = ({
   isLoading,
   onSort,
 }: ProductTableProps) => {
+  const {hasPermission} = usePermissions();
+
   if (isLoading) {
     return (
       <Card>
@@ -123,25 +126,25 @@ export const ProductTable = ({
                       }`
                     : "N/A"}
                 </TableCell>
-                <TableCell className="text-center">
+                {(hasPermission("UPDATE_PRODUCTS") || hasPermission("DELETE_PRODUCTS")) && <TableCell className="text-center">
                   <div className="flex justify-center space-x-2">
-                    <Button
+                    {hasPermission("UPDATE_PRODUCTS") && <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onEdit(product)}
                     >
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
+                    </Button>}
+                    {hasPermission("DELETE_PRODUCTS") && <Button
                       variant="outline"
                       size="sm"
                       className="text-red-500"
                       onClick={() => onDelete(product.id)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </Button>}
                   </div>
-                </TableCell>
+                </TableCell>}
               </TableRow>
             ))}
           </TableBody>

@@ -31,6 +31,7 @@ import {
   updateProduct,
 } from "@/api/api";
 import { ProductFormFields } from "./components/ProductFormFields";
+import { usePermissions } from "@/hooks/usePermission";
 
 
 const ProductManagementSystem = () => {
@@ -45,6 +46,7 @@ const ProductManagementSystem = () => {
   });
   const [sortField, setSortField] = useState<keyof Product>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const { hasPermission } = usePermissions();
 
   const {
     data: products = [],
@@ -106,8 +108,7 @@ const ProductManagementSystem = () => {
   });
 
   const filteredProducts = products.filter((product) => {
-    const selectedCategoryStr = TAB_TO_CATEGORY_MAP[activeTab];
-    const selectedCategory =selectedCategoryStr;
+    const selectedCategory = TAB_TO_CATEGORY_MAP[activeTab];
     
     const matchesCategory =
       selectedCategory === null || product.category === selectedCategory;
@@ -168,12 +169,12 @@ const ProductManagementSystem = () => {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Product Management</h1>
-        <Button
+        {hasPermission('WRITE_PRODUCTS') && <Button
           onClick={() => setIsAddDialogOpen(true)}
           className="bg-yellow-500 hover:bg-yellow-800"
         >
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
-        </Button>
+        </Button>}
       </div>
 
       <div className="flex items-center space-x-4 mb-6">

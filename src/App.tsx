@@ -63,7 +63,7 @@ const AppContent = () => {
 
           <Route path="/leads" element={<LeadsTable />} />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/pricing" element={<ProductManagementSystem />} />
+          <Route path="/products" element={<ProductManagementSystem />} />
           <Route path="/inquiries" element={<InquiryManagement />} />
           <Route path="/documents" element={<DocumentLayout />} />
           <Route path="/attendance" element={<AttendancePage />} />

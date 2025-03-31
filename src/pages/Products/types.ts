@@ -3,6 +3,13 @@ export enum Category {
   HEAVY_EQUIPMENT = "HEAVY_EQUIPMENT",
   STEEL = "STEEL"
 }
+
+export enum PricingUnit {
+  DAY = "DAY",
+  METER = "METER",
+  KILOGRAM = "KILOGRAM",
+  TON = "TON"
+}
 export type SourceLocation = "Batangas" | "Montalban" | "Other";
 export type PricingModel = "PerHour" | "PerDay" | "PerUnit";
 
@@ -45,9 +52,9 @@ export const defaultProduct: FormProduct = {
 
 export const TAB_TO_CATEGORY_MAP: Record<string, string | null> = {
   all: null,
-  aggregate: "Aggregate",
-  "heavy equipment": "Heavy Equipment",
-  steel: "Steel",
+  aggregate: "AGGREGATE",
+  "heavy equipment": "HEAVY_EQUIPMENT",
+  steel: "STEEL",
 };
 
 export interface FormProduct {

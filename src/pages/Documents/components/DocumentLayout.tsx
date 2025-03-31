@@ -12,7 +12,7 @@ import { Loader } from "@/components/ui/Loader";
 export const DocumentLayout: React.FC = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { hasPermission, isLoading: isLoadingPermissions } = usePermissions();
-  
+
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     number | undefined
   >(undefined);
@@ -20,45 +20,45 @@ export const DocumentLayout: React.FC = () => {
     number | undefined
   >(undefined);
 
-  if (isLoadingPermissions) {
-    return Loader(isLoadingPermissions)
+  if (isLoadingPermissions || isLoadingCategories) {
+    return Loader(true);
   }
 
   const visibleTabs = [
     {
-      value: "browse", 
-      label: "Browse Documents", 
-      allowed: hasPermission('READ_DOCUMENTS')
+      value: "browse",
+      label: "Browse Documents",
+      allowed: hasPermission("READ_DOCUMENTS"),
     },
     {
-      value: "upload", 
-      label: "Upload Document", 
-      allowed: hasPermission('WRITE_DOCUMENTS')
+      value: "upload",
+      label: "Upload Document",
+      allowed: hasPermission("WRITE_DOCUMENTS"),
     },
     {
-      value: "categories", 
-      label: "Manage Categories", 
-      allowed: hasPermission('MANAGE_DOCUMENT_CATEGORIES')
-    }
-  ].filter(tab => tab.allowed);
+      value: "categories",
+      label: "Manage Categories",
+      allowed: hasPermission("MANAGE_DOCUMENT_CATEGORIES"),
+    },
+  ].filter((tab) => tab.allowed);
 
-  const defaultTab = visibleTabs[0]?.value || 'browse';
+  const defaultTab = visibleTabs[0]?.value || "browse";
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Document Management</h1>
-      
+
       {visibleTabs.length > 0 ? (
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="mb-4">
-            {visibleTabs.map(tab => (
+            {visibleTabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
                 {tab.label}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {hasPermission('READ_DOCUMENTS') && (
+          {hasPermission("READ_DOCUMENTS") && (
             <TabsContent value="browse" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="md:col-span-1">
@@ -122,13 +122,13 @@ export const DocumentLayout: React.FC = () => {
             </TabsContent>
           )}
 
-          {hasPermission('WRITE_DOCUMENTS') && (
+          {hasPermission("WRITE_DOCUMENTS") && (
             <TabsContent value="upload">
               <DocumentUpload />
             </TabsContent>
           )}
 
-          {hasPermission('MANAGE_DOCUMENT_CATEGORIES') && (
+          {hasPermission("MANAGE_DOCUMENT_CATEGORIES") && (
             <TabsContent value="categories">
               <DocumentCategoryList />
             </TabsContent>
