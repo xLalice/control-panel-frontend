@@ -91,8 +91,8 @@ const App: React.FC = () => {
     },
 
     {
-      name: "Pricing",
-      route: "/pricing",
+      name: "Products",
+      route: "/products",
       icon: <Tag className="h-4 w-4" />,
       roles: ["pricing-manager", "admin"],
     },
