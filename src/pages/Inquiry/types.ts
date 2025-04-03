@@ -1,6 +1,5 @@
 import { Lead } from "@/types";
 
-
 export interface Inquiry {
   id: string;
   customerName: string;
@@ -54,7 +53,6 @@ export enum Priority {
   High = "High",
   Urgent = "Urgent",
 }
-
 
 // DTO for creating a new inquiry
 export interface CreateInquiryDto {
@@ -117,17 +115,17 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CountByStatus {
-  status: string; 
+  status: string;
   count: number;
 }
 
 export interface CountBySource {
-  source: string; 
+  source: string;
   count: number;
 }
 
 export interface CountByProductType {
-  productType: string; 
+  productType: string;
   count: number;
 }
 
@@ -136,15 +134,21 @@ export interface MonthlyTrend {
   count: number;
 }
 
+// Consolidated InquiryStatistics interface
 export interface InquiryStatistics {
   totalInquiries: number;
   byStatus: CountByStatus[];
-  bySource: CountBySource[]; 
+  bySource: CountBySource[];
   byProductType: CountByProductType[];
-  monthlyTrends: MonthlyTrend[] | null; 
-  conversionRate: number; 
+  monthlyTrends?: MonthlyTrend[] | null;
+  conversionRate: number;
 }
 
+export interface ConversionResult {
+  success: boolean;
+  leadId?: string;
+  message?: string;
+}
 
 export enum DeliveryMethod {
   Delivery = 'Delivery',
@@ -153,7 +157,7 @@ export enum DeliveryMethod {
 }
 
 export enum ReferenceSource {
-  Facebook = 'Facebook' ,
+  Facebook = 'Facebook',
   Instagram = 'Instagram',
   TikTok = 'TikTok',
   Referral = 'Referral',
@@ -164,4 +168,3 @@ export enum ReferenceSource {
 export interface EnhancedInquiry extends Inquiry {
   assignedTo?: string;
 }
-
