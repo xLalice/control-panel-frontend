@@ -13,7 +13,7 @@ import { createInquiry, checkCustomerExists } from '@/api/api';
 import { DatePicker } from './ui/DatePicker';
 import { Checkbox } from '@/components/ui/checkbox';
 import React, { useState, useEffect } from 'react';
-import { Inquiry, CreateInquiryDto, DeliveryMethod, ReferenceSource } from "../types";
+import { Inquiry, CreateInquiryDto, DeliveryMethod, ReferenceSource, InquiryType, Priority } from "../types";
 import { InquiryContactResponse } from '@/api/api';
 import { useDebounce } from 'use-debounce'; 
 
@@ -26,11 +26,15 @@ const formSchema = z.object({
   companyName: z.string().optional(),
   companyAddress: z.string().optional(),
   productType: z.string().min(1, { message: "Please select a product type." }),
+  inquiryType: z.nativeEnum(InquiryType, { 
+    required_error: "Please select an inquiry type." 
+  }),
   quantity: z.number().positive({ message: "Quantity must be positive." }),
   deliveryMethod: z.nativeEnum(DeliveryMethod),
   deliveryLocation: z.string().min(1, { message: "Please enter a delivery location." }),
   preferredDate: z.date({ required_error: "Please select a date." }),
   referenceSource: z.nativeEnum(ReferenceSource),
+  priority: z.nativeEnum(Priority).optional(),
   remarks: z.string().optional(),
   relatedLeadId: z.string().optional(), 
 });
@@ -50,11 +54,13 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
       companyName: "",
       companyAddress: "",
       productType: "",
+      inquiryType: InquiryType.PricingRequest,
       quantity: 1,
       deliveryMethod: DeliveryMethod.Delivery,
       deliveryLocation: "",
       preferredDate: new Date(),
-      referenceSource: ReferenceSource.other,
+      referenceSource: ReferenceSource.Other,
+      priority: Priority.Medium,
       remarks: "",
       relatedLeadId: "",
     },
@@ -62,17 +68,14 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
 
   const [existingCustomer, setExistingCustomer] = useState<InquiryContactResponse | null>(null);
 
-  // Watch form values for debouncing
   const email = form.watch("email");
   const phoneNumber = form.watch("phoneNumber");
   const companyName = form.watch("companyName");
 
-  // Debounce input values to avoid excessive API calls
   const [debouncedEmail] = useDebounce(email, 500);
   const [debouncedPhoneNumber] = useDebounce(phoneNumber, 500);
   const [debouncedCompanyName] = useDebounce(companyName, 500);
 
-  // Check customer existence with useQuery
   const { data: customerData, isLoading: isCheckingCustomer } = useQuery({
     queryKey: ['checkCustomer', debouncedEmail, debouncedPhoneNumber, debouncedCompanyName],
     queryFn: () => checkCustomerExists({
@@ -83,7 +86,6 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
     enabled: !!(debouncedEmail || debouncedPhoneNumber || debouncedCompanyName), // Only run if at least one field has a value
   });
 
-  // Update form with existing customer data
   useEffect(() => {
     if (customerData) {
       setExistingCustomer(customerData);
@@ -255,9 +257,33 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="TypeA">Type A</SelectItem>
-                          <SelectItem value="TypeB">Type B</SelectItem>
-                          <SelectItem value="TypeC">Type C</SelectItem>
+                          <SelectItem value="AGGREGATE">Aggregate</SelectItem>
+                          <SelectItem value="HEAVY_EQUIPMENT">Heavy Equipment</SelectItem>
+                          <SelectItem value="STEEL">Steel</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="inquiryType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Inquiry Type*</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select inquiry type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={InquiryType.PricingRequest}>Pricing Request</SelectItem>
+                          <SelectItem value={InquiryType.ProductAvailability}>Product Availability</SelectItem>
+                          <SelectItem value={InquiryType.TechnicalQuestion}>Technical Question</SelectItem>
+                          <SelectItem value={InquiryType.DeliveryInquiry}>Delivery Inquiry</SelectItem>
+                          <SelectItem value={InquiryType.Other}>Other</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -279,6 +305,29 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Priority</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={Priority.Low}>Low</SelectItem>
+                          <SelectItem value={Priority.Medium}>Medium</SelectItem>
+                          <SelectItem value={Priority.High}>High</SelectItem>
+                          <SelectItem value={Priority.Urgent}>Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -350,12 +399,12 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({ onInquiryAdded }
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Facebook">Facebook</SelectItem>
-                          <SelectItem value="Instagram">Instagram</SelectItem>
-                          <SelectItem value="Tiktok">TikTok</SelectItem>
-                          <SelectItem value="Referral">Referral</SelectItem>
-                          <SelectItem value="Flyers">Flyers</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value={ReferenceSource.Facebook}>Facebook</SelectItem>
+                          <SelectItem value={ReferenceSource.Instagram}>Instagram</SelectItem>
+                          <SelectItem value={ReferenceSource.TikTok}>TikTok</SelectItem>
+                          <SelectItem value={ReferenceSource.Referral}>Referral</SelectItem>
+                          <SelectItem value={ReferenceSource.Flyers}>Flyers</SelectItem>
+                          <SelectItem value={ReferenceSource.Other}>Other</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

@@ -129,16 +129,23 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useQuery<
-    PaginatedResponse<EnhancedInquiry>
-  >({
+  const { data, isLoading, isError } = useQuery<PaginatedResponse<EnhancedInquiry>>({
     queryKey: ["inquiries", currentPage, statusFilter, refreshTrigger],
-    queryFn: () => getInquiries({ page: currentPage, status: statusFilter }),
+    queryFn: async () => {
+      const result = await getInquiries({ page: currentPage, status: statusFilter });
+      return {
+        ...result,
+        data: result.data.map(inquiry => ({
+          ...inquiry,
+          assignedTo: inquiry.assignedTo === null ? undefined : inquiry.assignedTo
+        })) as EnhancedInquiry[]
+      };
+    },
   });
 
   const filteredInquiries =
     data?.data?.filter(
-      (inquiry) =>
+      (inquiry: EnhancedInquiry) =>
         inquiry.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         inquiry.phoneNumber.includes(searchTerm) ||
         inquiry.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -291,7 +298,7 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredInquiries.map((inquiry) => (
+                filteredInquiries.map((inquiry: EnhancedInquiry) => (
                   <TableRow key={inquiry.id}>
                     <TableCell>
                       <div className="font-medium">{inquiry.customerName}</div>

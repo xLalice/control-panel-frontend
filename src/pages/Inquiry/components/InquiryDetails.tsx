@@ -4,14 +4,30 @@ import { InquiryStatusBadge } from './InquiryStatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Phone, Mail, MapPin, Package, Truck, User, Building, Clock } from 'lucide-react';
-import { Inquiry, InquiryStatus } from '../types';
-import { Link } from 'react-router-dom'; // Added for navigation to lead details
+import { Calendar, Phone, Mail, MapPin, Package, Truck, User, Building, Clock, Flag, HelpCircle } from 'lucide-react';
+import { Inquiry, InquiryStatus, Priority } from '../types';
+import { Link } from 'react-router-dom'; 
 
 interface InquiryDetailsProps {
   inquiry: Inquiry;
   onConvertToLead: (inquiryId: string) => void;
 }
+
+// Helper function to get appropriate color for priority badge
+const getPriorityColor = (priority: Priority) => {
+  switch (priority) {
+    case Priority.Low:
+      return "bg-slate-100 text-slate-800";
+    case Priority.Medium:
+      return "bg-blue-100 text-blue-800";
+    case Priority.High:
+      return "bg-amber-100 text-amber-800";
+    case Priority.Urgent:
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-slate-100 text-slate-800";
+  }
+};
 
 export const InquiryDetails: React.FC<InquiryDetailsProps> = ({ inquiry, onConvertToLead }) => {
   // Format dates properly
@@ -22,6 +38,12 @@ export const InquiryDetails: React.FC<InquiryDetailsProps> = ({ inquiry, onConve
   const formattedCreatedAt = typeof inquiry.createdAt === 'string'
     ? new Date(inquiry.createdAt).toLocaleDateString()
     : inquiry.createdAt.toLocaleDateString();
+
+  const formattedDueDate = inquiry.dueDate 
+    ? (typeof inquiry.dueDate === 'string' 
+      ? new Date(inquiry.dueDate).toLocaleDateString() 
+      : inquiry.dueDate.toLocaleDateString())
+    : 'Not set';
 
   return (
     <>
@@ -99,9 +121,29 @@ export const InquiryDetails: React.FC<InquiryDetailsProps> = ({ inquiry, onConve
                   <div>
                     <span className="font-medium">Product/Service:</span> {inquiry.productType}
                   </div>
+                  <div className="flex items-center">
+                    <HelpCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="font-medium">Inquiry Type:</span> {' '}
+                    <Badge variant="outline" className="ml-2">{inquiry.inquiryType}</Badge>
+                  </div>
                   <div>
                     <span className="font-medium">Quantity:</span> {inquiry.quantity}
                   </div>
+                  {inquiry.priority && (
+                    <div className="flex items-center">
+                      <Flag className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span className="font-medium">Priority:</span> {' '}
+                      <Badge variant="outline" className={`ml-2 ${getPriorityColor(inquiry.priority as Priority)}`}>
+                        {inquiry.priority}
+                      </Badge>
+                    </div>
+                  )}
+                  {inquiry.dueDate && (
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span className="font-medium">Due Date:</span> {formattedDueDate}
+                    </div>
+                  )}
                   <div className="mt-4">
                     <h4 className="font-semibold flex items-center mb-1">
                       <Truck className="h-5 w-5 mr-2" />
@@ -124,6 +166,33 @@ export const InquiryDetails: React.FC<InquiryDetailsProps> = ({ inquiry, onConve
             </Card>
           </div>
 
+          {/* Show quote information if available */}
+          {inquiry.quotedPrice && (
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-semibold text-lg mb-2">Quote Information</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-medium">Quoted Price:</span> ${inquiry.quotedPrice.toFixed(2)}
+                  </div>
+                  {inquiry.quotedBy && (
+                    <div>
+                      <span className="font-medium">Quoted By:</span> {inquiry.quotedBy}
+                    </div>
+                  )}
+                  {inquiry.quotedAt && (
+                    <div>
+                      <span className="font-medium">Quote Date:</span> {' '}
+                      {typeof inquiry.quotedAt === 'string'
+                        ? new Date(inquiry.quotedAt).toLocaleDateString()
+                        : inquiry.quotedAt.toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex justify-between items-center mb-2">
@@ -138,6 +207,12 @@ export const InquiryDetails: React.FC<InquiryDetailsProps> = ({ inquiry, onConve
                 <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Created on {formattedCreatedAt}</span>
               </div>
+              {inquiry.assignedTo && (
+                <div className="mt-2 flex items-center">
+                  <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Assigned to {inquiry.assignedTo}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
