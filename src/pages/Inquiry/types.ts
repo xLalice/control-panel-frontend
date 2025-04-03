@@ -1,5 +1,6 @@
 import { Lead } from "@/types";
 
+
 export interface Inquiry {
   id: string;
   customerName: string;
@@ -24,6 +25,10 @@ export interface Inquiry {
   createdById: string;
   createdAt: Date | string;
   updatedAt: Date | string;
+  dueDate?: Date | string | null;
+  inquiryType: InquiryType;
+  priority?: Priority | null;
+  assignedTo?: string | null;
 }
 
 export enum InquiryStatus {
@@ -33,6 +38,21 @@ export enum InquiryStatus {
   Scheduled = "Scheduled",
   Fulfilled = "Fulfilled",
   Cancelled = "Cancelled",
+}
+
+export enum InquiryType {
+  PricingRequest = "PricingRequest",
+  ProductAvailability = "ProductAvailability",
+  TechnicalQuestion = "TechnicalQuestion",
+  DeliveryInquiry = "DeliveryInquiry",
+  Other = "Other",
+}
+
+export enum Priority {
+  Low = "Low",
+  Medium = "Medium",
+  High = "High",
+  Urgent = "Urgent",
 }
 
 
@@ -96,21 +116,35 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// Statistics for inquiries
+export interface CountByStatus {
+  status: string; 
+  count: number;
+}
+
+export interface CountBySource {
+  source: string; 
+  count: number;
+}
+
+export interface CountByProductType {
+  productType: string; 
+  count: number;
+}
+
+export interface MonthlyTrend {
+  month: string | Date;
+  count: number;
+}
+
 export interface InquiryStatistics {
   totalInquiries: number;
-  byStatus: Array<{ status: string; count: number }>;
-  byProductType: Array<{ productType: string; count: number }>;
-  byReferenceSource: Array<{ source: string; count: number }>;
-  monthlyTrends?: Array<{ month: Date; count: number }>;
+  byStatus: CountByStatus[];
+  bySource: CountBySource[]; 
+  byProductType: CountByProductType[];
+  monthlyTrends: MonthlyTrend[] | null; 
+  conversionRate: number; 
 }
 
-
-export interface ConversionResult {
-  success: boolean;
-  leadId?: string;
-  message?: string;
-}
 
 export enum DeliveryMethod {
   Delivery = 'Delivery',
@@ -119,12 +153,12 @@ export enum DeliveryMethod {
 }
 
 export enum ReferenceSource {
-  facebook = 'Facebook' ,
-  instagram = 'Instagram',
-  tikTok = 'TikTok',
-  referral = 'Referral',
-  flyers = 'Flyers',
-  other = 'Other'
+  Facebook = 'Facebook' ,
+  Instagram = 'Instagram',
+  TikTok = 'TikTok',
+  Referral = 'Referral',
+  Flyers = 'Flyers',
+  Other = 'Other'
 }
 
 export interface EnhancedInquiry extends Inquiry {
