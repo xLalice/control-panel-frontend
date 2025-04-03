@@ -25,7 +25,7 @@ export default function ReportsTable({
   reports,
   setReports,
 }: ReportsTableProps) {
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [, setSelectedReport] = useState<Report | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedReport, setEditedReport] = useState<Partial<Report>>({});
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -62,17 +62,30 @@ export default function ReportsTable({
   const toggleSortOrder = () => {
     const newOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newOrder);
-    setReports([...reports].sort((a, b) => (newOrder === "asc" ? a.date.getTime() - b.date.getTime() : b.date.getTime() - a.date.getTime())));
+    setReports(
+      [...reports].sort((a, b) =>
+        newOrder === "asc"
+          ? a.date.getTime() - b.date.getTime()
+          : b.date.getTime() - a.date.getTime()
+      )
+    );
   };
-
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-        <TableHead className="w-40">
-            <button onClick={toggleSortOrder} className="flex items-center gap-2">
-              Date {sortOrder === "asc" ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+          <TableHead className="w-40">
+            <button
+              onClick={toggleSortOrder}
+              className="flex items-center gap-2"
+            >
+              Date{" "}
+              {sortOrder === "asc" ? (
+                <ArrowUp size={16} />
+              ) : (
+                <ArrowDown size={16} />
+              )}
             </button>
           </TableHead>
           <TableHead>Department</TableHead>
@@ -99,9 +112,7 @@ export default function ReportsTable({
                 new Date(report.date).toLocaleDateString()
               )}
             </TableCell>
-            <TableCell>
-                {report.department}
-            </TableCell>
+            <TableCell>{report.department}</TableCell>
             <TableCell>
               {editingId === report.id ? (
                 <Input
@@ -118,43 +129,47 @@ export default function ReportsTable({
             <TableCell>{report.reportedBy || "Unknown"}</TableCell>
             <TableCell className="text-right space-x-2">
               <div className="flex gap-2">
-              {editingId === report.id ? (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleSave}>
-                    Save
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditClick(report)}
-                  >
-                    Edit
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive" size="sm" onClick={() => setSelectedReport(report)}>
-                        Delete
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DeleteDialog
-                        report={report}
-                        onDelete={() => handleDelete(report.id)}
-                      />
-                    </DialogContent>
-                  </Dialog>
-                </>
-              )}
+                {editingId === report.id ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleSave}>
+                      Save
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditClick(report)}
+                    >
+                      Edit
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setSelectedReport(report)}
+                        >
+                          Delete
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DeleteDialog
+                          report={report}
+                          onDelete={() => handleDelete(report.id)}
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
               </div>
             </TableCell>
           </TableRow>
