@@ -178,7 +178,7 @@ function InquiryStats() {
                           fill="#8884d8"
                           dataKey="value"
                           
-                          label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+                          label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
                             const x = cx + (outerRadius + 15) * Math.cos(-midAngle * (Math.PI / 180)); // Position label outside
                             const y = cy + (outerRadius + 15) * Math.sin(-midAngle * (Math.PI / 180));
                             if (percent < 0.03) return null; // Hide label for very small slices
@@ -248,7 +248,7 @@ function InquiryStats() {
                           outerRadius={110}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+                          label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
                              const x = cx + (outerRadius + 15) * Math.cos(-midAngle * (Math.PI / 180));
                              const y = cy + (outerRadius + 15) * Math.sin(-midAngle * (Math.PI / 180));
                              if (percent < 0.03) return null;

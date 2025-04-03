@@ -106,7 +106,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
               className="flex flex-col items-center"
             >
-              {Array.from(new Array(pdfNumPages), (el, index) => (
+              {Array.from(new Array(pdfNumPages), (index) => (
                 <Page
                   key={`page_${index + 1}`}
                   pageNumber={index + 1}
