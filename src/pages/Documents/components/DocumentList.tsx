@@ -102,10 +102,17 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 }) => {
   const { data: documents, isLoading, error } = useDocuments(categoryId);
   const deleteDocument = useDeleteDocument();
-  const {hasPermission} = usePermissions()
+  const { hasPermission } = usePermissions();
+
+  const canRead = hasPermission("READ_PRODUCTS");
+  const canDownload = hasPermission("READ_PRODUCTS");
+  const canPreview = hasPermission("READ_PRODUCTS");
+  const canDelete = hasPermission("DELETE_PRODUCTS");
 
   const handleDelete = (id: number) => {
-    deleteDocument.mutate(id);
+    if (canDelete) {
+      deleteDocument.mutate(id);
+    }
   };
 
   const getFileIcon = (fileType: string) => {
@@ -117,6 +124,20 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       return <PresentationIcon className="h-5 w-5 text-orange-500" />;
     return <FileIcon className="h-5 w-5 text-gray-500" />;
   };
+
+  if (!canRead) {
+    return (
+      <Card className="p-6 text-center">
+        <div className="flex flex-col items-center justify-center py-8">
+          <FileIcon className="h-12 w-12 text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium mb-2">Access Restricted</h3>
+          <p className="text-gray-500">
+            You don't have permission to view documents.
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   if (isLoading) return <DocumentListSkeleton />;
   if (error) return <p>Error loading documents: {String(error)}</p>;
@@ -155,7 +176,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 <TableHead className="w-1/4">File Name</TableHead>
                 <TableHead className="w-16">Size</TableHead>
                 <TableHead className="w-32">Uploaded</TableHead>
-                <TableHead className="w-16 text-right">Actions</TableHead>
+                {(canPreview || canDownload || canDelete) && (
+                  <TableHead className="w-16 text-right">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,65 +193,71 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                   </TableCell>
                   <TableCell>{formatFileSize(document.fileSize)}</TableCell>
                   <TableCell>{formatDate(document.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                        >
-                          <MoreHorizontalIcon className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onPreview(document.id)}>
-                          <EyeIcon className="h-4 w-4 mr-2" />
-                          Preview
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          asChild
-                        >
-                          <a
-                            href={getDocumentDownloadUrl(document.id)}
-                            download={document.filename}
-                            className="w-full flex items-center cursor-pointer"
+                  {(canPreview || canDownload || canDelete) && (
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
                           >
-                            <DownloadIcon className="h-4 w-4 mr-2" />
-                            Download
-                          </a>
-                        </DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onSelect={(e) => e.preventDefault()}
-                            >
-                              <TrashIcon className="h-4 w-4 mr-2" />
-                              Delete
+                            <MoreHorizontalIcon className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canPreview && (
+                            <DropdownMenuItem onClick={() => onPreview(document.id)}>
+                              <EyeIcon className="h-4 w-4 mr-2" />
+                              Preview
                             </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete the document "
-                                {document.title}". This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(document.id)}
+                          )}
+                          {canDownload && (
+                            <DropdownMenuItem asChild>
+                              <a
+                                href={getDocumentDownloadUrl(document.id)}
+                                download={document.filename}
+                                className="w-full flex items-center cursor-pointer"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                                <DownloadIcon className="h-4 w-4 mr-2" />
+                                Download
+                              </a>
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600"
+                                  onSelect={(e) => e.preventDefault()}
+                                >
+                                  <TrashIcon className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently delete the document "
+                                    {document.title}". This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(document.id)}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
