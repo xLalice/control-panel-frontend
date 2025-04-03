@@ -38,11 +38,8 @@ export default function UserManagementPage() {
 
   const addUserMutation = useMutation({
     mutationFn: addUser,
-    onSuccess: (response) => {
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) => [
-        ...oldData,
-        response.newUser,
-      ]);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsDialogOpen(false);
       toast.success("User added successfully");
     },

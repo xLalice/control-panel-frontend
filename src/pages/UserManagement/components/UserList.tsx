@@ -57,19 +57,28 @@ export function UserList({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user: User) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.name}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>
-              <Badge
-                className={`${roleColors[user.role.name]?.bg} ${
-                  roleColors[user.role.name]?.text
-                }`}
-              >
-                {user.role.name}
-              </Badge>
-            </TableCell>
+        {users.map((user: User) => {
+          // Get role name safely
+          const roleName = user?.role?.name;
+          // Get colors safely, provide defaults if role or name is missing
+          const bgColor = roleName ? roleColors[roleName]?.bg : 'bg-gray-100'; // Default background
+          const textColor = roleName ? roleColors[roleName]?.text : 'text-gray-800'; // Default text
+
+          return (
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">{user.name ?? 'N/A'}</TableCell> {/* Handle missing name too */}
+              <TableCell>{user.email ?? 'N/A'}</TableCell> {/* Handle missing email */}
+              <TableCell>
+                {roleName ? (
+                  <Badge className={`${bgColor} ${textColor}`}>
+                    {roleName}
+                  </Badge>
+                ) : (
+                  <Badge className={`${bgColor} ${textColor}`}>
+                    No Role {/* Or N/A, or render nothing */}
+                  </Badge>
+                )}
+              </TableCell>
             <TableCell>
               <div className="flex gap-2">
                 <Button
@@ -99,8 +108,9 @@ export function UserList({
               </div>
             </TableCell>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+        );
+      })}
+    </TableBody>
+  </Table>
+);
 }
