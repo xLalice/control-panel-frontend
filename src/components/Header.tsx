@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/api/api";
 import {toast} from "react-toastify"
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
+  const { logout } = useAuth();
   const handleLogout = async () => {
     try {
       await logout();
