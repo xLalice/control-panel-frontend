@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserFormProps, UserFormData } from "../types";
-
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/api/api";
 
 export function UserForm({
   defaultValues = {},
@@ -27,6 +28,15 @@ export function UserForm({
   isSubmitting,
   isEditing,
 }: UserFormProps) {
+  const { data: roles } = useQuery<{ id: number, name: string}[]>({
+    queryKey: ["roles"],
+    queryFn: async () => {
+      const response = await apiClient.get("/users/roles");
+      
+      return response.data;
+    },
+  });
+
   const form = useForm<UserFormData>({
     defaultValues: {
       name: "",
@@ -74,7 +84,11 @@ export function UserForm({
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input
-                  placeholder={isEditing ? "Leave blank to keep current password" : "Enter password"}
+                  placeholder={
+                    isEditing
+                      ? "Leave blank to keep current password"
+                      : "Enter password"
+                  }
                   type="password"
                   {...field}
                 />
@@ -89,21 +103,20 @@ export function UserForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SALES">Sales</SelectItem>
-                  <SelectItem value="MARKETING">Marketing</SelectItem>
-                  <SelectItem value="LOGISTICS">Logistics</SelectItem>
-                  <SelectItem value="ACCOUNTING">Accounting</SelectItem>
+                  {roles?.map((role) => {
+                    return (
+                      <SelectItem key={role.id} value={role.name}>
+                        {role.name}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -119,10 +132,7 @@ export function UserForm({
           >
             Cancel
           </Button>
-          <Button 
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}

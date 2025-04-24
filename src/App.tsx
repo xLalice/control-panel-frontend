@@ -22,7 +22,6 @@ import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./pages/Documents/components/DocumentLayout";
 import AttendancePage from "./pages/Attendance";
 
-
 import AdminAttendancePage from "./pages/Attendance/admin";
 
 const queryClient = new QueryClient();
@@ -57,10 +56,9 @@ const AppContent = () => {
           }
         />
         \
-        <Route path="/admin/user-management" element={<UserManagementPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-
+          <Route path="/user-management" element={<UserManagementPage />} />
           <Route path="/leads" element={<LeadsTable />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/products" element={<ProductManagementSystem />} />
@@ -68,9 +66,6 @@ const AppContent = () => {
           <Route path="/documents" element={<DocumentLayout />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/attendance/admin" element={<AdminAttendancePage />} />
-          
-
-          
         </Route>
         <Route
           path="*"
