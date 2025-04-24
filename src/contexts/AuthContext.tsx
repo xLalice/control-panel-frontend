@@ -1,13 +1,7 @@
 import { verify, login as loginApi, logout as logoutApi } from "@/api/api";
 import { createContext, useContext, useEffect, useState } from "react";
+import { User } from "@/types";
 
-interface User {
-  id: string;
-  name: string;
-  permissions: string[];
-}
-
-// Update AuthContext type
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
