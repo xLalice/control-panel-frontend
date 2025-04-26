@@ -6,12 +6,23 @@ import { DocumentList } from "./DocumentList";
 import { DocumentUpload } from "./DocumentUpload";
 import { DocumentPreview } from "./DocumentPreview";
 import { useCategories } from "../hooks/useDocuments";
-import { usePermissions } from "@/hooks/usePermission";
 import { Loader } from "@/components/ui/Loader";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 export const DocumentLayout: React.FC = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { hasPermission, isLoading: isLoadingPermissions } = usePermissions();
+  const canReadDocuments = useAppSelector((state) =>
+    selectUserHasPermission(state, "read:documents")
+  );
+
+  const canWriteDocuments = useAppSelector((state) =>
+    selectUserHasPermission(state, "upload:documents")
+  );
+
+  const canManageDocumentCategories = useAppSelector((state) =>
+    selectUserHasPermission(state, "manage:document")
+  );
 
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<
     number | undefined
@@ -20,7 +31,7 @@ export const DocumentLayout: React.FC = () => {
     number | undefined
   >(undefined);
 
-  if (isLoadingPermissions || isLoadingCategories) {
+  if ( isLoadingCategories) {
     return Loader(true);
   }
 
@@ -28,17 +39,17 @@ export const DocumentLayout: React.FC = () => {
     {
       value: "browse",
       label: "Browse Documents",
-      allowed: hasPermission("READ_DOCUMENTS"),
+      allowed: canReadDocuments,
     },
     {
       value: "upload",
       label: "Upload Document",
-      allowed: hasPermission("WRITE_DOCUMENTS"),
+      allowed: canWriteDocuments,
     },
     {
       value: "categories",
       label: "Manage Categories",
-      allowed: hasPermission("MANAGE_DOCUMENT_CATEGORIES"),
+      allowed: canManageDocumentCategories,
     },
   ].filter((tab) => tab.allowed);
 
@@ -58,7 +69,7 @@ export const DocumentLayout: React.FC = () => {
             ))}
           </TabsList>
 
-          {hasPermission("READ_DOCUMENTS") && (
+          {canReadDocuments && (
             <TabsContent value="browse" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="md:col-span-1">
@@ -122,13 +133,13 @@ export const DocumentLayout: React.FC = () => {
             </TabsContent>
           )}
 
-          {hasPermission("WRITE_DOCUMENTS") && (
+          {canWriteDocuments && (
             <TabsContent value="upload">
               <DocumentUpload />
             </TabsContent>
           )}
 
-          {hasPermission("MANAGE_DOCUMENT_CATEGORIES") && (
+          {canManageDocumentCategories && (
             <TabsContent value="categories">
               <DocumentCategoryList />
             </TabsContent>

@@ -31,7 +31,8 @@ import {
   updateProduct,
 } from "@/api/api";
 import { ProductFormFields } from "./components/ProductFormFields";
-import { usePermissions } from "@/hooks/usePermission";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 
 const ProductManagementSystem = () => {
@@ -46,7 +47,7 @@ const ProductManagementSystem = () => {
   });
   const [sortField, setSortField] = useState<keyof Product>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const { hasPermission } = usePermissions();
+  const canWriteProducts = useAppSelector((state) => selectUserHasPermission(state, "manage:products"));
 
   const {
     data: products = [],
@@ -169,7 +170,7 @@ const ProductManagementSystem = () => {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Product Management</h1>
-        {hasPermission('WRITE_PRODUCTS') && <Button
+        {canWriteProducts && <Button
           onClick={() => setIsAddDialogOpen(true)}
           className="bg-yellow-500 hover:bg-yellow-800"
         >

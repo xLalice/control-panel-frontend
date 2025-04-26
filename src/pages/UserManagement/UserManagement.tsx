@@ -18,7 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { UserList } from "./components/UserList";
 import { UserForm } from "./components/UserForm";
 import { User } from "@/types";
@@ -30,9 +29,15 @@ export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-  const canManageUsers = useAppSelector((state) => selectUserHasPermission(state, "manage:users"));
+  const canManageUsers = useAppSelector((state) =>
+    selectUserHasPermission(state, "manage:users")
+  );
 
-  const { data: users = [], isLoading, error } = useQuery({
+  const {
+    data: users = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const response = await fetchUsers();
@@ -43,7 +48,7 @@ export default function UserManagementPage() {
   const addUserMutation = useMutation({
     mutationFn: addUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsDialogOpen(false);
       toast.success("User added successfully");
     },
@@ -121,40 +126,33 @@ export default function UserManagementPage() {
     );
   }
 
-  const editingUser = editingUserId 
-    ? users.find((user: User) => user.id === editingUserId) 
+  const editingUser = editingUserId
+    ? users.find((user: User) => user.id === editingUserId)
     : undefined;
 
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex justify-between items-center">
         <div className="space-y-1">
-          {isLoading ? (
-            <>
-              <Skeleton className="h-8 w-64 mb-2" />
-              <Skeleton className="h-4 w-80" />
-            </>
-          ) : (
-            <>
-              <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-              <p className="text-muted-foreground">
-                Manage your organization's user accounts and permissions.
-              </p>
-            </>
-          )}
+          <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+          <p className="text-muted-foreground">
+            Manage your organization's user accounts and permissions.
+          </p>
         </div>
-        { canManageUsers && <Button 
-          onClick={handleAddNew} 
-          className="gap-2"
-          disabled={addUserMutation.isPending}
-        >
-          {addUserMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
-          Add User
-        </Button>}
+        {canManageUsers && (
+          <Button
+            onClick={handleAddNew}
+            className="gap-2"
+            disabled={addUserMutation.isPending}
+          >
+            {addUserMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            Add User
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -168,7 +166,7 @@ export default function UserManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UserList 
+          <UserList
             users={users}
             isLoading={isLoading}
             onEdit={handleEditUser}
@@ -197,7 +195,9 @@ export default function UserManagementPage() {
             defaultValues={editingUser}
             onSubmit={onSubmit}
             onCancel={() => setIsDialogOpen(false)}
-            isSubmitting={addUserMutation.isPending || updateUserMutation.isPending}
+            isSubmitting={
+              addUserMutation.isPending || updateUserMutation.isPending
+            }
             isEditing={!!editingUserId}
           />
         </DialogContent>

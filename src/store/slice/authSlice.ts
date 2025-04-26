@@ -8,13 +8,11 @@ export const login = createAsyncThunk<
   LoginSuccess,
   { email: string; password: string },
   { rejectValue: string }
->("auth/login", async (credentials, thunkApi) => {
+>("auth/login", async (credentials, { rejectWithValue }) => {
   try {
     return await loginApi(credentials);
   } catch (err: any) {
-    return thunkApi.rejectWithValue(
-      err.response?.data?.message ?? "Login failed"
-    );
+    return rejectWithValue(err.message || "Login failed");
   }
 });
 
@@ -64,7 +62,11 @@ const initialState: AuthState = {
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     /* LOGIN */
     builder
@@ -119,8 +121,11 @@ export const selectCurrentUser = (state: RootState) => state.auth.user;
 export const selectAuthLoadingStatus = (state: RootState) => state.auth.status;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectUserRole = (state: RootState) => state.auth.user?.role;
-export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectIsAuthenticated = (state: RootState) =>
+  state.auth.isAuthenticated;
 export const selectUserHasPermission = (state: RootState, permission: string) =>
   (state.auth.user?.role?.permissions || []).includes(permission);
 
+
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
