@@ -13,29 +13,21 @@ import UserManagementPage from "./pages/UserManagement/UserManagement";
 import LeadsTable from "./pages/Leads/Leads";
 import ReportsPage from "./pages/Reports/Reports";
 import ProductManagementSystem from "./pages/Products/Products";
-import { AuthProvider } from "./contexts/AuthContext";
-import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Loader } from "./components/ui/Loader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./pages/Documents/components/DocumentLayout";
 import AttendancePage from "./pages/Attendance";
-
 import AdminAttendancePage from "./pages/Attendance/admin";
+import { selectIsAuthenticated } from "./slice/authSlice";
+import { useSelector } from "react-redux";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Define pages where the Header should be visible
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const showHeader = !["/", "/login", "/dashboard"].includes(location.pathname);
-
-  if (isLoading) {
-    return Loader(isLoading);
-  }
 
   return (
     <>
@@ -79,11 +71,9 @@ const AppContent = () => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
     </QueryClientProvider>
   );
 };

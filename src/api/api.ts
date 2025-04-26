@@ -1,6 +1,6 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
-import { UpdateLeadParams } from "@/types";
+import { LoginSuccess, UpdateLeadParams, User } from "@/types";
 import { Product } from "@/pages/Products/types";
 import {
   InquiryFilterParams,
@@ -45,23 +45,23 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const login = async (data: LoginFormData) => {
+export const login = async (data: LoginFormData): Promise<LoginSuccess> => {
   try {
-    const response = await apiClient.post("/auth/login", data);
-    return response;
+    const response = await apiClient.post<LoginSuccess>("/auth/login", data);
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Login failed");
   }
 };
 
-export const verify = async (): Promise<{ authenticated: boolean }> => {
+export const me = async (): Promise<User> => {
   try {
-    const response = await apiClient.get("/auth/verify");
+    const response = await apiClient.get<User>("/auth/me");
     return response.data;
   } catch (error: any) {
-    throw new Error("Verify failed");
+    throw new Error(error.response?.data?.message || "Fetching user failed");
   }
-};
+}
 
 export const logout = async () => {
   try {
