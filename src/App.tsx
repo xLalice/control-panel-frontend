@@ -19,8 +19,10 @@ import { InquiryManagement } from "./pages/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./pages/Documents/components/DocumentLayout";
 import AttendancePage from "./pages/Attendance";
 import AdminAttendancePage from "./pages/Attendance/admin";
-import { selectIsAuthenticated } from "./slice/authSlice";
+import { fetchCurrentUser, selectIsAuthenticated } from "./store/slice/authSlice";
 import { useSelector } from "react-redux";
+import { useAppDispatch } from "./store/store";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +71,12 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch])
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

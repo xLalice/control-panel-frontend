@@ -2,17 +2,23 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { Button } from "@/components/ui/button";
 import {toast} from "react-toastify"
-import { useAuth } from "@/contexts/AuthContext";
+import { useAppDispatch } from "@/store/store";
+import { useQueryClient } from "@tanstack/react-query";
+import { logout } from "@/store/slice/authSlice";
 
 export default function Header() {
-  const { logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  
   const handleLogout = async () => {
     try {
-      await logout();
+      await dispatch(logout()).unwrap();
+      queryClient.removeQueries()
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
-      toast.error("Logout failed");
+      const errMessage = error instanceof Error ? error.message : "Logout failed";
+      toast.error(errMessage);
     }
   };
 

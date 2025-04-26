@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -35,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Logo from "../../assets/logo.png";
 import CompanyPolicyDashboard from "../CompanyPolicy/PolicyDashboard";
+import { useAppDispatch } from "@/store/store";
+import { logout } from "@/store/slice/authSlice";
 
 ChartJS.register(
   ArcElement,
@@ -47,7 +48,7 @@ ChartJS.register(
 
 const App: React.FC = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const dispatch = useAppDispatch();
 
   interface MenuItem {
     name: string;
@@ -71,7 +72,7 @@ const App: React.FC = () => {
     },
     {
       name: "User Management",
-      route: "/admin/user-management",
+      route: "/user-management",
       icon: <Users className="h-4 w-4" />,
       roles: ["admin"],
     },
@@ -121,7 +122,7 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await dispatch(logout());
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {

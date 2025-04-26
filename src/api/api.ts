@@ -1,6 +1,6 @@
 import axios from "axios";
 import { LoginFormData } from "../pages/Login";
-import { LoginSuccess, UpdateLeadParams, User } from "@/types";
+import { UpdateLeadParams, User } from "@/types";
 import { Product } from "@/pages/Products/types";
 import {
   InquiryFilterParams,
@@ -45,9 +45,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const login = async (data: LoginFormData): Promise<LoginSuccess> => {
+export const login = async (data: LoginFormData): Promise<{ user: User}> => {
   try {
-    const response = await apiClient.post<LoginSuccess>("/auth/login", data);
+    const response = await apiClient.post<{ user: User}>("/auth/login", data);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Login failed");

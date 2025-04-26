@@ -10,7 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserSkeleton } from "./UserSkeleton";
-import { User } from "../types";
+import { User } from "@/types";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 interface UserListProps {
   users: User[];
@@ -46,6 +48,9 @@ export function UserList({
     return <UserSkeleton />;
   }
 
+  const canManageUsers = useAppSelector((state) => selectUserHasPermission(state, "manage:users"));
+  console.log("canManageUsers", canManageUsers);
+
   return (
     <Table>
       <TableHeader>
@@ -58,16 +63,14 @@ export function UserList({
       </TableHeader>
       <TableBody>
         {users.map((user: User) => {
-          // Get role name safely
           const roleName = user?.role?.name;
-          // Get colors safely, provide defaults if role or name is missing
-          const bgColor = roleName ? roleColors[roleName]?.bg : 'bg-gray-100'; // Default background
-          const textColor = roleName ? roleColors[roleName]?.text : 'text-gray-800'; // Default text
+          const bgColor = roleName ? roleColors[roleName]?.bg : 'bg-gray-100'; 
+          const textColor = roleName ? roleColors[roleName]?.text : 'text-gray-800'; 
 
           return (
             <TableRow key={user.id}>
-              <TableCell className="font-medium">{user.name ?? 'N/A'}</TableCell> {/* Handle missing name too */}
-              <TableCell>{user.email ?? 'N/A'}</TableCell> {/* Handle missing email */}
+              <TableCell className="font-medium">{user.name ?? 'N/A'}</TableCell>
+              <TableCell>{user.email ?? 'N/A'}</TableCell> 
               <TableCell>
                 {roleName ? (
                   <Badge className={`${bgColor} ${textColor}`}>
@@ -75,11 +78,11 @@ export function UserList({
                   </Badge>
                 ) : (
                   <Badge className={`${bgColor} ${textColor}`}>
-                    No Role {/* Or N/A, or render nothing */}
+                    No Role 
                   </Badge>
                 )}
               </TableCell>
-            <TableCell>
+            {canManageUsers &&<TableCell>
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
@@ -106,7 +109,7 @@ export function UserList({
                   )}
                 </Button>
               </div>
-            </TableCell>
+            </TableCell>}
           </TableRow>
         );
       })}

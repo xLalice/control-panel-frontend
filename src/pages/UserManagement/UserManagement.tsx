@@ -21,12 +21,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserList } from "./components/UserList";
 import { UserForm } from "./components/UserForm";
-import { User, UserFormData } from "./types";
+import { User } from "@/types";
+import { UserFormData } from "./types";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { useAppSelector } from "@/store/store";
 
 export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const canManageUsers = useAppSelector((state) => selectUserHasPermission(state, "manage:users"));
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["users"],
@@ -139,7 +143,7 @@ export default function UserManagementPage() {
             </>
           )}
         </div>
-        <Button 
+        { canManageUsers && <Button 
           onClick={handleAddNew} 
           className="gap-2"
           disabled={addUserMutation.isPending}
@@ -150,7 +154,7 @@ export default function UserManagementPage() {
             <Plus className="h-4 w-4" />
           )}
           Add User
-        </Button>
+        </Button>}
       </div>
 
       <Card>
