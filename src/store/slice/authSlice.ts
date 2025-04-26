@@ -1,8 +1,7 @@
-// authSlice.ts
 import { login as loginApi, logout as logoutApi, me } from "@/api/api";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LoginSuccess, User } from "@/types";
-import { RootState } from "@/store";
+import { User, LoginSuccess } from "@/types";
+import { RootState } from "../store";
 
 /* ────────────  async thunks  ──────────── */
 export const login = createAsyncThunk<
@@ -37,8 +36,8 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/logout",
   async (_, thunkApi) => {
     try {
-      await logoutApi(); // session destroy on server
-      return; // fulfilled with void payload
+      await logoutApi();
+      return;
     } catch (err: any) {
       return thunkApi.rejectWithValue(
         err.response?.data?.message ?? "Logout failed"
@@ -51,8 +50,6 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  role: string | null;
-  permissions: string[];
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
@@ -60,8 +57,6 @@ export interface AuthState {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  role: null,
-  permissions: [],
   status: "idle",
   error: null,
 };
@@ -81,8 +76,6 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.isAuthenticated = true;
         state.user = payload.user;
-        state.role = payload.role;
-        state.permissions = payload.permissions;
       })
       .addCase(login.rejected, (state, { payload }) => {
         state.status = "failed";
@@ -98,8 +91,6 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.isAuthenticated = true;
         state.user = payload;
-        state.role = payload.role.name;
-        state.permissions = payload.role.permissions ?? [];
       })
       .addCase(fetchCurrentUser.rejected, (state, { payload }) => {
         state.status = "failed";
@@ -111,7 +102,12 @@ const authSlice = createSlice({
       .addCase(logout.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(logout.fulfilled, () => initialState)
+      .addCase(logout.fulfilled, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+        state.status = "idle";
+        state.error = null;
+      })
       .addCase(logout.rejected, (state, { payload }) => {
         state.status = "failed";
         state.error = payload ?? "Logout failed";
@@ -119,12 +115,12 @@ const authSlice = createSlice({
   },
 });
 
-export const selectCurrentUser = (state: RootState) => state.user;
-export const selectUserRole = (state: RootState) => state.role;
-export const selectUserPermissions = (state: RootState) => state.permissions;
-export const selectAuthLoadingStatus = (state: RootState) => state.status;
-export const selectAuthError = (state: RootState) => state.error;
-export const selectIsAuthenticated = (state: RootState) =>
-  state.isAuthenticated;
+export const selectCurrentUser = (state: RootState) => state.auth.user;
+export const selectAuthLoadingStatus = (state: RootState) => state.auth.status;
+export const selectAuthError = (state: RootState) => state.auth.error;
+export const selectUserRole = (state: RootState) => state.auth.user?.role;
+export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectUserHasPermission = (state: RootState, permission: string) =>
+  (state.auth.user?.role?.permissions || []).includes(permission);
 
 export default authSlice.reducer;

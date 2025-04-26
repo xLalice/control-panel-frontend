@@ -12,14 +12,13 @@ export interface User {
 }
 
 export interface Role {
+  id: number;
   name: string;
   permissions: string[];
 }
 
 export interface LoginSuccess {
-  user: User; 
-  role: string;
-  permissions: string[];
+  user: User;
 }
 
 export interface Lead {

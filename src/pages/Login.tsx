@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { selectIsAuthenticated, login } from "@/store/slice/authSlice";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -29,7 +30,8 @@ const Login = () => {
   } = useForm({
     resolver: yupResolver(loginSchema),
   });
-  const { isAuthenticated, login } = useAuth();
+  const isAuthenticated = useAppSelector((state) => selectIsAuthenticated(state));
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data);
+      dispatch(login(data)).unwrap();
       toast.success("Logged in successfully");
       navigate("/dashboard");
     } catch (error: any) {

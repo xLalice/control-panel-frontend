@@ -1,14 +1,3 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: {
-    id: Number;
-    name: string;
-    permissions: string[];
-  };
-}
-
 export interface UserFormData {
   name: string;
   email: string;

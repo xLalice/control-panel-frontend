@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
+import { selectCurrentUser } from '@/store/slice/authSlice';
+import { useAppSelector } from '@/store/store';
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -20,7 +21,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export const DocumentUpload: React.FC = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { user } = useAuth();
+  const user = useAppSelector((state) => selectCurrentUser(state));
   const uploadDocument = useUploadDocument();
 
   const form = useForm<FormValues>({
