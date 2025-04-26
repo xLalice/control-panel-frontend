@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { selectIsAuthenticated, selectAuthError, login, clearError } from "@/store/slice/authSlice";
+import { Loader } from "@/components/ui/Loader";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -32,6 +33,7 @@ const Login = () => {
     resolver: yupResolver(loginSchema),
   });
 
+  const isAuthInitialized = useAppSelector((state) => state.auth.isAuthInitialized);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const authError = useAppSelector(selectAuthError);
   const dispatch = useAppDispatch();
@@ -49,6 +51,10 @@ const Login = () => {
       setTimeout(() => dispatch(clearError()), 3000); // Clear error after 3s
     }
   }, [authError, dispatch]);
+
+  if (!isAuthInitialized) {
+    return Loader();
+  }
 
   const onSubmit = async (data: LoginFormData) => {
     await dispatch(login(data)).unwrap();
