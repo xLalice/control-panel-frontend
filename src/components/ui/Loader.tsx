@@ -6,12 +6,12 @@ const override: CSSProperties = {
   margin: "0 auto",
 };
 
-export const Loader = (isLoading: boolean) => {
+export const Loader = () => {
   return (
     <div className="flex justify-center items-center h-screen w-screen background-black">
       <ClipLoader
         color={"#FFD700"}
-        loading={isLoading}
+        loading={true}
         cssOverride={override}
         size={150}
         aria-label="Loading Spinner"

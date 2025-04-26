@@ -1,19 +1,21 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader } from "./ui/Loader";
-import { selectAuthLoadingStatus, selectIsAuthenticated } from "@/store/slice/authSlice";
-import { useSelector } from "react-redux";
+import { selectIsAuthenticated } from "@/store/slice/authSlice";
+import { useAppSelector } from "@/store/store";
 
 export default function ProtectedRoute() {
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const authStatus = useSelector(selectAuthLoadingStatus); 
+  const isAuthInitialized = useAppSelector(
+    (state) => state.auth.isAuthInitialized
+  );
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
-  if (authStatus === "loading" || authStatus === "idle") {
-    return Loader(authStatus === "loading");
+  if (!isAuthInitialized) {
+    return Loader();
   }
 
-  if (authStatus === "failed" || !isAuthenticated) {
-    return <Navigate to="/login" replace />; 
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />; 
+  return <Outlet />;
 }

@@ -47,16 +47,18 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 /* ────────────  slice  ──────────── */
 export interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  authStatus: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
+  user: User | null;
+  isAuthInitialized: boolean;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  status: "idle",
+  authStatus: "idle",
   error: null,
+  isAuthInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -65,67 +67,71 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     /* LOGIN */
     builder
       .addCase(login.pending, (state) => {
-        state.status = "loading";
+        state.authStatus = "loading";
         state.error = null;
       })
       .addCase(login.fulfilled, (state, { payload }) => {
-        state.status = "succeeded";
+        state.isAuthInitialized = true;
+        state.authStatus = "succeeded";
         state.isAuthenticated = true;
         state.user = payload.user;
       })
       .addCase(login.rejected, (state, { payload }) => {
-        state.status = "failed";
+        state.authStatus = "failed";
         state.error = payload ?? "Unknown error";
       });
 
     /* FETCH ME */
     builder
       .addCase(fetchCurrentUser.pending, (state) => {
-        state.status = "loading";
+        state.authStatus = "loading";
+        state.isAuthInitialized = false;
       })
-      .addCase(fetchCurrentUser.fulfilled, (state, { payload }) => {
-        state.status = "succeeded";
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.authStatus = "succeeded";
         state.isAuthenticated = true;
-        state.user = payload;
+        state.user = action.payload;
+        state.isAuthInitialized = true;
       })
-      .addCase(fetchCurrentUser.rejected, (state, { payload }) => {
-        state.status = "failed";
-        state.error = payload ?? "Unable to load user";
+      .addCase(fetchCurrentUser.rejected, (state) => {
+        state.authStatus = "failed";
+        state.isAuthenticated = false;
+        state.user = null;
+        state.isAuthInitialized = true; 
       });
 
     /* LOGOUT */
     builder
       .addCase(logout.pending, (state) => {
-        state.status = "loading";
+        state.authStatus = "loading";
       })
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
-        state.status = "idle";
+        state.authStatus = "idle";
         state.error = null;
       })
       .addCase(logout.rejected, (state, { payload }) => {
-        state.status = "failed";
+        state.authStatus = "failed";
         state.error = payload ?? "Logout failed";
       });
   },
 });
 
 export const selectCurrentUser = (state: RootState) => state.auth.user;
-export const selectAuthLoadingStatus = (state: RootState) => state.auth.status;
+export const selectAuthLoadingStatus = (state: RootState) => state.auth.authStatus;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectUserRole = (state: RootState) => state.auth.user?.role;
 export const selectIsAuthenticated = (state: RootState) =>
   state.auth.isAuthenticated;
 export const selectUserHasPermission = (state: RootState, permission: string) =>
   (state.auth.user?.role?.permissions || []).includes(permission);
-
 
 export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
