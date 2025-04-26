@@ -28,11 +28,11 @@ export function UserForm({
   isSubmitting,
   isEditing,
 }: UserFormProps) {
-  const { data: roles } = useQuery<{ id: number, name: string}[]>({
+  const { data: roles } = useQuery<{ id: number; name: string }[]>({
     queryKey: ["roles"],
     queryFn: async () => {
       const response = await apiClient.get("/users/roles");
-      
+
       return response.data;
     },
   });
@@ -97,9 +97,10 @@ export function UserForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
-          name="role"
+          name="role" 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
@@ -110,19 +111,30 @@ export function UserForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {roles?.map((role) => {
-                    return (
+                  {!roles ? (
+                    <SelectItem value="loading" disabled>
+                      Loading roles...
+                    </SelectItem>
+                  ) : roles.length === 0 ? (
+                    <SelectItem value="no-roles" disabled>
+                      No roles found
+                    </SelectItem>
+                  ) : (
+                    roles.map((role) => (
                       <SelectItem key={role.id} value={role.name}>
+                        {" "}
                         {role.name}
                       </SelectItem>
-                    );
-                  })}
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {/* Display validation errors */}
               <FormMessage />
             </FormItem>
           )}
         />
+
         <div className="flex gap-3 justify-end">
           <Button
             type="button"
