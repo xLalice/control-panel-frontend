@@ -1,9 +1,25 @@
 export interface User {
-  id: string;
   name: string;
+  id: string;
   email: string;
-  password: string;
+  roleId: number;
+  role: Role;
+  isOJT: boolean;
+  ojtStartDate: Date | null;
+  ojtEndDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Role {
+  name: string;
+  permissions: string[];
+}
+
+export interface LoginSuccess {
+  user: User; 
   role: string;
+  permissions: string[];
 }
 
 export interface Lead {
@@ -36,15 +52,12 @@ export interface Lead {
   activityLog: ActivityLog[];
 }
 
-
 export interface Pagination {
   currentPage: number;
   totalPages: number;
   totalLeads: number;
   pageSize: number;
 }
-
-
 
 interface UpdateLeadParams {
   [key: string]: string;
@@ -70,5 +83,3 @@ export interface Company {
   updatedAt: Date | string;
   leads: Lead[];
 }
-
-

@@ -8,7 +8,7 @@ const override: CSSProperties = {
 
 export const Loader = (isLoading: boolean) => {
   return (
-    <div className="flex justify-center items-center h-screen w-screen">
+    <div className="flex justify-center items-center h-screen w-screen background-black">
       <ClipLoader
         color={"#FFD700"}
         loading={isLoading}
