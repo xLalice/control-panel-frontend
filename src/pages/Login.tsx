@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -7,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { selectIsAuthenticated, login } from "@/store/slice/authSlice";
+import { selectIsAuthenticated, selectAuthError, login, clearError } from "@/store/slice/authSlice";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -26,27 +27,33 @@ const Login = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(loginSchema),
   });
-  const isAuthenticated = useAppSelector((state) => selectIsAuthenticated(state));
+
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const authError = useAppSelector(selectAuthError);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard");
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
   }, [isAuthenticated, navigate]);
-  
+
+  useEffect(() => {
+    if (authError) {
+      toast.error(authError);
+      setTimeout(() => dispatch(clearError()), 3000); // Clear error after 3s
+    }
+  }, [authError, dispatch]);
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      dispatch(login(data)).unwrap();
-      toast.success("Logged in successfully");
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    await dispatch(login(data)).unwrap();
+    toast.success("Logged in successfully");
+    navigate("/dashboard");
   };
 
   return (
@@ -59,7 +66,6 @@ const Login = () => {
           className="ml-20 object-contain"
         />
       </header>
-      
 
       {/* Login Card */}
       <div className="w-full max-w-lg p-8 bg-white shadow-2xl rounded-2xl border border-gray-200">
@@ -87,6 +93,7 @@ const Login = () => {
               {...register("email")}
               className="w-full px-4 py-2 mt-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-gold-500 focus:outline-none"
               placeholder="example@domain.com"
+              disabled={isSubmitting}
             />
             <p className="text-xs text-red-500 mt-1">{errors.email?.message}</p>
           </div>
@@ -105,6 +112,7 @@ const Login = () => {
               {...register("password")}
               className="w-full px-4 py-2 mt-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-gold-500 focus:outline-none"
               placeholder="••••••••"
+              disabled={isSubmitting}
             />
             <p className="text-xs text-red-500 mt-1">{errors.password?.message}</p>
           </div>
@@ -112,13 +120,12 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 mt-4 text-sm font-bold text-white bg-gold-500 rounded-lg hover:bg-gold-600 focus:ring-4 focus:ring-gold-400 focus:outline-none"
+            className="w-full py-3 mt-4 text-sm font-bold text-white bg-gold-500 rounded-lg hover:bg-gold-600 focus:ring-4 focus:ring-gold-400 focus:outline-none disabled:opacity-50"
+            disabled={isSubmitting}
           >
-            Login
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        
       </div>
     </div>
   );

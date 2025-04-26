@@ -48,7 +48,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { formatFileSize, formatDate } from "../utils/utils";
-import { usePermissions } from "@/hooks/usePermission";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 interface DocumentListProps {
   categoryId?: number;
@@ -67,27 +68,51 @@ export const DocumentListSkeleton: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12"><Skeleton className="h-4 w-10" /></TableHead>
-                <TableHead className="w-1/4"><Skeleton className="h-4 w-16" /></TableHead>
-                <TableHead className="w-1/4"><Skeleton className="h-4 w-24" /></TableHead>
-                <TableHead className="w-16"><Skeleton className="h-4 w-12" /></TableHead>
-                <TableHead className="w-32"><Skeleton className="h-4 w-20" /></TableHead>
-                <TableHead className="w-16 text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableHead>
+                <TableHead className="w-12">
+                  <Skeleton className="h-4 w-10" />
+                </TableHead>
+                <TableHead className="w-1/4">
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                <TableHead className="w-1/4">
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+                <TableHead className="w-16">
+                  <Skeleton className="h-4 w-12" />
+                </TableHead>
+                <TableHead className="w-32">
+                  <Skeleton className="h-4 w-20" />
+                </TableHead>
+                <TableHead className="w-16 text-right">
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Array(5).fill(0).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><Skeleton className="h-5 w-5 rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell className="text-right">
-                    <Skeleton className="h-8 w-8 rounded-md ml-auto" />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {Array(5)
+                .fill(0)
+                .map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>
@@ -102,22 +127,26 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 }) => {
   const { data: documents, isLoading, error } = useDocuments(categoryId);
   const deleteDocument = useDeleteDocument();
-  const { hasPermission } = usePermissions();
 
-  const canRead = hasPermission("READ_PRODUCTS");
-  const canDownload = hasPermission("READ_PRODUCTS");
-  const canPreview = hasPermission("READ_PRODUCTS");
-  const canDelete = hasPermission("DELETE_PRODUCTS");
+  const canRead = useAppSelector((state) =>
+    selectUserHasPermission(state, "read:documents")
+  );
+  const canUpload = useAppSelector((state) =>
+    selectUserHasPermission(state, "upload:documents")
+  );
+  const canManage = useAppSelector((state) =>
+    selectUserHasPermission(state, "manage:documents")
+  );
 
   const handleDelete = (id: number) => {
-    if (canDelete) {
-      deleteDocument.mutate(id);
-    }
+    deleteDocument.mutate(id);
   };
 
   const getFileIcon = (fileType: string) => {
-    if (fileType.includes("image")) return <ImageIcon className="h-5 w-5 text-blue-500" />;
-    if (fileType.includes("pdf")) return <FileTextIcon className="h-5 w-5 text-red-500" />;
+    if (fileType.includes("image"))
+      return <ImageIcon className="h-5 w-5 text-blue-500" />;
+    if (fileType.includes("pdf"))
+      return <FileTextIcon className="h-5 w-5 text-red-500" />;
     if (fileType.includes("spreadsheet") || fileType.includes("excel"))
       return <FileSpreadsheetIcon className="h-5 w-5 text-green-500" />;
     if (fileType.includes("presentation") || fileType.includes("powerpoint"))
@@ -176,7 +205,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 <TableHead className="w-1/4">File Name</TableHead>
                 <TableHead className="w-16">Size</TableHead>
                 <TableHead className="w-32">Uploaded</TableHead>
-                {(canPreview || canDownload || canDelete) && (
+                {(canManage || canUpload || canRead) && (
                   <TableHead className="w-16 text-right">Actions</TableHead>
                 )}
               </TableRow>
@@ -185,15 +214,21 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               {documents.map((document) => (
                 <TableRow key={document.id} className="hover:bg-gray-50">
                   <TableCell>{getFileIcon(document.fileType)}</TableCell>
-                  <TableCell className="font-medium truncate max-w-xs" title={document.title}>
+                  <TableCell
+                    className="font-medium truncate max-w-xs"
+                    title={document.title}
+                  >
                     {document.title}
                   </TableCell>
-                  <TableCell className="truncate max-w-xs" title={document.filename}>
+                  <TableCell
+                    className="truncate max-w-xs"
+                    title={document.filename}
+                  >
                     {document.filename}
                   </TableCell>
                   <TableCell>{formatFileSize(document.fileSize)}</TableCell>
                   <TableCell>{formatDate(document.createdAt)}</TableCell>
-                  {(canPreview || canDownload || canDelete) && (
+                  {(canManage || canUpload || canRead) && (
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -206,25 +241,27 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {canPreview && (
-                            <DropdownMenuItem onClick={() => onPreview(document.id)}>
-                              <EyeIcon className="h-4 w-4 mr-2" />
-                              Preview
-                            </DropdownMenuItem>
-                          )}
-                          {canDownload && (
-                            <DropdownMenuItem asChild>
-                              <a
-                                href={getDocumentDownloadUrl(document.id)}
-                                download={document.filename}
-                                className="w-full flex items-center cursor-pointer"
+                          {canRead && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => onPreview(document.id)}
                               >
-                                <DownloadIcon className="h-4 w-4 mr-2" />
-                                Download
-                              </a>
-                            </DropdownMenuItem>
+                                <EyeIcon className="h-4 w-4 mr-2" />
+                                Preview
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <a
+                                  href={getDocumentDownloadUrl(document.id)}
+                                  download={document.filename}
+                                  className="w-full flex items-center cursor-pointer"
+                                >
+                                  <DownloadIcon className="h-4 w-4 mr-2" />
+                                  Download
+                                </a>
+                              </DropdownMenuItem>
+                            </>
                           )}
-                          {canDelete && (
+                          {canManage && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
@@ -237,10 +274,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Are you sure?
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
                                     This will permanently delete the document "
-                                    {document.title}". This action cannot be undone.
+                                    {document.title}". This action cannot be
+                                    undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

@@ -43,11 +43,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { usePermissions } from "@/hooks/usePermission";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 export const DocumentCategoryList: React.FC = () => {
   const { data: categories, isLoading } = useCategories();
-  const { hasPermission } = usePermissions();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
@@ -66,10 +66,9 @@ export const DocumentCategoryList: React.FC = () => {
     description: "",
   });
 
-  const canManageCategories = hasPermission("MANAGE_DOCUMENT_CATEGORIES");
+  const canManage = useAppSelector((state) => selectUserHasPermission(state, "manage:documents"));
 
   const handleAddCategory = () => {
-    if (!newCategoryName.trim() || !canManageCategories) return;
 
     createCategory.mutate(
       {
@@ -87,7 +86,6 @@ export const DocumentCategoryList: React.FC = () => {
   };
 
   const handleEditCategory = () => {
-    if (!editingCategory.name.trim() || !canManageCategories) return;
 
     updateCategory.mutate(
       {
@@ -106,7 +104,6 @@ export const DocumentCategoryList: React.FC = () => {
   };
 
   const handleDeleteCategory = (id: number) => {
-    if (!canManageCategories) return;
     deleteCategory.mutate(id);
   };
 
@@ -119,7 +116,7 @@ export const DocumentCategoryList: React.FC = () => {
             Manage document categories for organization
           </CardDescription>
         </div>
-        {canManageCategories && (
+        {canManage && (
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Category
@@ -138,7 +135,7 @@ export const DocumentCategoryList: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Documents</TableHead>
-                {canManageCategories && <TableHead>Actions</TableHead>}
+                {canManage && <TableHead>Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -147,9 +144,8 @@ export const DocumentCategoryList: React.FC = () => {
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>{category.description || "-"}</TableCell>
                   <TableCell>
-                    {/* Would need to add document count to the API */}-
                   </TableCell>
-                  {canManageCategories && (
+                  {canManage && (
                     <TableCell className="space-x-1">
                       <Button
                         size="icon"

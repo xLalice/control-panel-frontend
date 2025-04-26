@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Edit, Trash2 } from "lucide-react";
 import { Product, Category } from "../types";
-import { usePermissions } from "@/hooks/usePermission";
+import { useAppSelector } from "@/store/store";
+import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 interface ProductTableProps {
   products: Product[];
@@ -18,6 +19,8 @@ interface ProductTableProps {
   onDelete: (id: string) => void;
   isLoading: boolean;
   onSort: (field: keyof Product) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 export const ProductTable = ({
@@ -26,8 +29,23 @@ export const ProductTable = ({
   onDelete,
   isLoading,
   onSort,
+  canEdit,
+  canDelete,
 }: ProductTableProps) => {
-  const {hasPermission} = usePermissions();
+  const canReadProducts = useAppSelector((state) => 
+    selectUserHasPermission(state, "read:all_reports")
+  );
+
+  if (!canReadProducts) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-red-500 font-medium">Access Denied</p>
+          <p className="text-gray-500 mt-2">You don't have permission to view these products.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -100,7 +118,9 @@ export const ProductTable = ({
               >
                 Delivery Price <ArrowUpDown className="inline h-4 w-4 ml-1" />
               </TableHead>
-              <TableHead className="text-center">Actions</TableHead>
+              {(canEdit || canDelete) && (
+                <TableHead className="text-center">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -126,25 +146,31 @@ export const ProductTable = ({
                       }`
                     : "N/A"}
                 </TableCell>
-                {(hasPermission("UPDATE_PRODUCTS") || hasPermission("DELETE_PRODUCTS")) && <TableCell className="text-center">
-                  <div className="flex justify-center space-x-2">
-                    {hasPermission("UPDATE_PRODUCTS") && <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(product)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>}
-                    {hasPermission("DELETE_PRODUCTS") && <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-500"
-                      onClick={() => onDelete(product.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>}
-                  </div>
-                </TableCell>}
+                {(canEdit || canDelete) && (
+                  <TableCell className="text-center">
+                    <div className="flex justify-center space-x-2">
+                      {canEdit && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEdit(product)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-500"
+                          onClick={() => onDelete(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

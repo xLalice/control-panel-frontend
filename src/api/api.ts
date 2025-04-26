@@ -35,40 +35,27 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.response.use(
-  (response) => response, 
+  (response) => response,
   (error) => {
     if (error.response?.status === 403) {
-      
       window.location.href = "/login";
     }
-    return Promise.reject(error); 
+    return Promise.reject(error);
   }
 );
 
-export const login = async (data: LoginFormData): Promise<{ user: User}> => {
-  try {
-    const response = await apiClient.post<{ user: User}>("/auth/login", data);
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Login failed");
-  }
+export const login = async (data: LoginFormData): Promise<{ user: User }> => {
+  const response = await apiClient.post<{ user: User }>("/auth/login", data);
+  return response.data;
 };
 
 export const me = async (): Promise<User> => {
-  try {
-    const response = await apiClient.get<User>("/auth/me");
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Fetching user failed");
-  }
-}
+  const response = await apiClient.get<User>("/auth/me");
+  return response.data;
+};
 
 export const logout = async () => {
-  try {
-    await apiClient.post("/auth/logout");
-  } catch (error: any) {
-    throw new Error("Logout failed");
-  }
+  await apiClient.post("/auth/logout");
 };
 
 // ----------------- API Functions -----------------
@@ -90,7 +77,7 @@ export const addUser = async (userData: {
 }) => {
   try {
     const response = await apiClient.post("/users", userData);
-    return response.data; 
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Adding user failed");
   }
@@ -102,7 +89,7 @@ export const updateUser = async (
 ) => {
   try {
     const response = await apiClient.put(`/users/${id}`, userData);
-    return response.data; 
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Updating user failed");
   }
@@ -111,7 +98,7 @@ export const updateUser = async (
 export const deleteUser = async (id: string) => {
   try {
     const response = await apiClient.delete(`/users/${id}`);
-    return response.data; 
+    return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Deleting user failed");
   }
@@ -120,11 +107,13 @@ export const deleteUser = async (id: string) => {
 export const getPermissions = async () => {
   try {
     const response = await apiClient.get(`/users/permissions`);
-    return response.data; 
+    return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Getting permissions failed");
+    throw new Error(
+      error.response?.data?.message || "Getting permissions failed"
+    );
   }
-}
+};
 
 export const fetchLead = async (sheetName: string, queryParams: string) => {
   try {
@@ -164,7 +153,6 @@ export const updateLead = async (
     throw new Error(error.response?.data?.message || "Updating lead failed");
   }
 };
-
 
 // Reports
 export const fetchReports = async () => {
@@ -563,58 +551,66 @@ export const getDocumentDownloadUrl = (id: number): string => {
   return `/api/documents/${id}/download`;
 };
 
-
 export const previewDocument = async (id: number) => {
   try {
     // Use arraybuffer responseType to handle binary data properly
     const response = await apiClient.get(`/documents/${id}/preview`, {
-      responseType: 'arraybuffer'
+      responseType: "arraybuffer",
     });
-    
+
     // Get mime type from Content-Type header
-    const mimeType = response.headers['content-type']?.split(';')[0] || 'application/octet-stream';
-    
+    const mimeType =
+      response.headers["content-type"]?.split(";")[0] ||
+      "application/octet-stream";
+
     // Extract filename from Content-Disposition if available
-    let filename = 'document';
-    const contentDisposition = response.headers['content-disposition'];
+    let filename = "document";
+    const contentDisposition = response.headers["content-disposition"];
     if (contentDisposition) {
       const match = contentDisposition.match(/filename="([^"]+)"/);
       if (match && match[1]) {
         filename = match[1];
       }
     }
-    
+
     console.log("Response received:", {
       mimeType,
       filename,
-      dataSize: response.data.byteLength
+      dataSize: response.data.byteLength,
     });
-    
+
     // Return properly structured object
     return {
       mimeType,
       filename,
-      buffer: response.data  // This is already an ArrayBuffer
+      buffer: response.data, // This is already an ArrayBuffer
     };
   } catch (err: any) {
     console.error("Preview document error:", err);
-    
+
     // If the error response is in arraybuffer format, we need to parse it
-    if (err.response?.data instanceof ArrayBuffer && err.response.data.byteLength > 0) {
+    if (
+      err.response?.data instanceof ArrayBuffer &&
+      err.response.data.byteLength > 0
+    ) {
       try {
-        const decoder = new TextDecoder('utf-8');
+        const decoder = new TextDecoder("utf-8");
         const jsonStr = decoder.decode(err.response.data);
         const errorData = JSON.parse(jsonStr);
-        throw new Error(errorData.error || errorData.message || "Previewing document failed");
+        throw new Error(
+          errorData.error || errorData.message || "Previewing document failed"
+        );
       } catch (parseErr) {
         // If we can't parse the error, fall back to generic message
         throw new Error("Previewing document failed");
       }
     } else {
-      throw new Error(err.response?.data?.error || "Previewing document failed");
+      throw new Error(
+        err.response?.data?.error || "Previewing document failed"
+      );
     }
   }
-}
+};
 
 // Attendance
 export const clockIn = async () => {
