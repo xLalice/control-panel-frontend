@@ -13,6 +13,7 @@ import { UserSkeleton } from "./UserSkeleton";
 import { User } from "@/types";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { memo } from "react";
 
 interface UserListProps {
   users: User[];
@@ -33,7 +34,7 @@ const roleColors: Record<string, { bg: string; text: string }> = {
   ACCOUNTING: { bg: "bg-cyan-100", text: "text-cyan-800" },
 };
 
-export function UserList({
+export const UserList = memo(function UserList({
   users,
   isLoading,
   onEdit,
@@ -43,14 +44,17 @@ export function UserList({
   isDeleting,
   deletingId,
 }: UserListProps) {
-  if (isLoading) {
-    return <UserSkeleton />;
-  }
-
   const canManageUsers = useAppSelector((state) =>
     selectUserHasPermission(state, "manage:users")
   );
-  console.log("canManageUsers", canManageUsers);
+
+  const isAuthInitialized = useAppSelector(
+      (state) => state.auth.isAuthInitialized
+    );
+
+  if (isLoading && !isAuthInitialized) {
+    return <UserSkeleton />;
+  }
 
   return (
     <Table>
@@ -123,4 +127,4 @@ export function UserList({
       </TableBody>
     </Table>
   );
-}
+});

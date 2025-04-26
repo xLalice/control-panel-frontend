@@ -32,7 +32,7 @@ export const DocumentLayout: React.FC = () => {
   >(undefined);
 
   if ( isLoadingCategories) {
-    return Loader(true);
+    return Loader();
   }
 
   const visibleTabs = [

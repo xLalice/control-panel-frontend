@@ -24,11 +24,15 @@ import { User } from "@/types";
 import { UserFormData } from "./types";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { useAppSelector } from "@/store/store";
+import { UserSkeleton } from "./components/UserSkeleton";
 
 export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const isAuthInitialized = useAppSelector(
+    (state) => state.auth.isAuthInitialized
+  );
   const canManageUsers = useAppSelector((state) =>
     selectUserHasPermission(state, "manage:users")
   );
@@ -129,6 +133,10 @@ export default function UserManagementPage() {
   const editingUser = editingUserId
     ? users.find((user: User) => user.id === editingUserId)
     : undefined;
+
+  if (!isAuthInitialized) {
+    return <UserSkeleton />;
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-8">
