@@ -73,7 +73,7 @@ export const addUser = async (userData: {
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: {id: number, name: string};
 }) => {
   try {
     const response = await apiClient.post("/users", userData);
@@ -85,7 +85,7 @@ export const addUser = async (userData: {
 
 export const updateUser = async (
   id: string,
-  userData: { name?: string; email?: string; role?: string }
+  userData: { name?: string; email?: string; role?: {id: number, name: string} }
 ) => {
   try {
     const response = await apiClient.put(`/users/${id}`, userData);
