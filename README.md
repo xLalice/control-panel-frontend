@@ -16,6 +16,33 @@ The control panel currently includes the following core modules:
 * **Leads:** Manage potential customer leads.
 * **Inquiries:** Track customer or external inquiries.
 
+## Screenshots
+
+**Dashboard / Main View:**
+![Dashboard Screenshot](./docs/dashboard.png)
+
+**User Management:**
+![User Management Screenshot](./docs/users.png)
+
+**Reports View:**
+![Reports Screenshot](./docs/reports.png)
+
+**Inquiries View:**
+![Inquirues Screenshot](./docs/inquiry.png)
+
+**Leads View:**
+![Leads Screenshot](./docs/leads.png)
+
+**Products View:**
+![Products Screenshot](./docs/products.png)
+
+**Documents View:**
+![Documents Screenshot](./docs/documents.png)
+
+**Attendance View:**
+![Attendance Screenshot](./docs/attendance.png)
+
+
 ## Target Audience
 
 This application is intended for **internal staff and administrators** only.
