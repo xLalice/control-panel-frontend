@@ -8,7 +8,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Edit, Trash2, Eye } from "lucide-react";
+import { ArrowUpDown, Edit } from "lucide-react";
 import { Product, Category } from "../types";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
@@ -28,11 +28,9 @@ export const ProductTable = ({
   products,
   onView,
   onEdit,
-  onDelete,
   isLoading,
   onSort,
-  canEdit,
-  canDelete,
+  canEdit
 }: ProductTableProps) => {
   const canReadProducts = useAppSelector((state) =>
     selectUserHasPermission(state, "read:all_reports")
