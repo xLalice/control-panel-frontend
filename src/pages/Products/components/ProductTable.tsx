@@ -8,13 +8,14 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Edit, Trash2 } from "lucide-react";
+import { ArrowUpDown, Edit, Trash2, Eye } from "lucide-react";
 import { Product, Category } from "../types";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 
 interface ProductTableProps {
   products: Product[];
+  onView: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
   isLoading: boolean;
@@ -25,6 +26,7 @@ interface ProductTableProps {
 
 export const ProductTable = ({
   products,
+  onView,
   onEdit,
   onDelete,
   isLoading,
@@ -32,7 +34,7 @@ export const ProductTable = ({
   canEdit,
   canDelete,
 }: ProductTableProps) => {
-  const canReadProducts = useAppSelector((state) => 
+  const canReadProducts = useAppSelector((state) =>
     selectUserHasPermission(state, "read:all_reports")
   );
 
@@ -41,7 +43,9 @@ export const ProductTable = ({
       <Card>
         <CardContent className="p-6 text-center">
           <p className="text-red-500 font-medium">Access Denied</p>
-          <p className="text-gray-500 mt-2">You don't have permission to view these products.</p>
+          <p className="text-gray-500 mt-2">
+            You don't have permission to view these products.
+          </p>
         </CardContent>
       </Card>
     );
@@ -89,6 +93,12 @@ export const ProductTable = ({
             <TableRow>
               <TableHead
                 className="cursor-pointer"
+                onClick={() => onSort("sku")}
+              >
+                SKU <ArrowUpDown className="inline h-4 w-4 ml-1" />
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
                 onClick={() => onSort("name")}
               >
                 Name <ArrowUpDown className="inline h-4 w-4 ml-1" />
@@ -118,19 +128,26 @@ export const ProductTable = ({
               >
                 Delivery Price <ArrowUpDown className="inline h-4 w-4 ml-1" />
               </TableHead>
-              {(canEdit || canDelete) && (
-                <TableHead className="text-center">Actions</TableHead>
-              )}
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id}>
+              <TableRow
+                key={product.id}
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => onView(product)}
+              >
+                <TableCell className="font-mono text-sm">
+                  {product.sku}
+                </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.description}</TableCell>
                 <TableCell>{formatCategory(product.category)}</TableCell>
                 <TableCell className="text-right">
-                  {`₱${product.basePrice.toLocaleString()} ${product.pricingUnit ? `/ ${product.pricingUnit}` : ""}`}
+                  {`₱${product.basePrice.toLocaleString()} ${
+                    product.pricingUnit ? `/ ${product.pricingUnit}` : ""
+                  }`}
                 </TableCell>
                 <TableCell className="text-right">
                   {product.pickUpPrice
@@ -146,31 +163,26 @@ export const ProductTable = ({
                       }`
                     : "N/A"}
                 </TableCell>
-                {(canEdit || canDelete) && (
-                  <TableCell className="text-center">
-                    <div className="flex justify-center space-x-2">
-                      {canEdit && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onEdit(product)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-500"
-                          onClick={() => onDelete(product.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
+                <TableCell
+                  className="text-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-center space-x-2">
+                    {canEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(product);
+                        }}
+                        title="Edit Product"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

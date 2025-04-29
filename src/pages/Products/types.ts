@@ -21,11 +21,13 @@ export interface Product {
   basePrice: number;
   pricingUnit: string;
   pricingDetails?: object;
+  sku: string;
   unit: string;
   pickUpPrice: number | null;
   deliveryPrice: number | null;
   createdAt: string;
   updatedAt: string;
+  isActive?: boolean;
   
   // Category-specific fields
   source?: string;
@@ -68,6 +70,7 @@ export interface FormProduct {
   unit: string;
   pickUpPrice: number | null;
   deliveryPrice: number | null;
+  isActive?: boolean;
   
   // Aggregate fields
   source?: string;

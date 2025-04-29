@@ -15,6 +15,7 @@ interface ProductFormFieldsProps {
   product: FormProduct;
   setProduct: (updatedProduct: FormProduct) => void;
   isEdit: boolean;
+  disabled?: boolean;
 }
 
 const RequiredAsterisk = () => <span className="text-red-500">*</span>;
@@ -26,6 +27,7 @@ export const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
   product,
   setProduct,
   isEdit = false,
+  disabled
 }) => {
   const prefix = isEdit ? "edit-" : "";
 
@@ -46,7 +48,6 @@ export const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
 
   return (
     <div className="grid gap-4 py-4">
-      {/* Category and Product Name */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor={`${prefix}category`}>

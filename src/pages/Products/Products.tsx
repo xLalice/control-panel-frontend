@@ -12,12 +12,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
-import {
-  PlusCircle,
-  Search,
-  RefreshCw
-} from "lucide-react";
-import { ProductTable } from "./components/ProductTable"; // Add this import
+import { PlusCircle, Search, RefreshCw } from "lucide-react";
+import { ProductTable } from "./components/ProductTable";
 import {
   Product,
   defaultProduct,
@@ -33,21 +29,24 @@ import {
 import { ProductFormFields } from "./components/ProductFormFields";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
-
+import { ProductDetailModal } from "./components/ProductDetailModal"; // Import the new component
 
 const ProductManagementSystem = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState<boolean>(false);
+  const [isViewOnly, setIsViewOnly] = useState<boolean>(true);
   const [newProduct, setNewProduct] = useState<FormProduct>({
     ...defaultProduct,
   });
   const [sortField, setSortField] = useState<keyof Product>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const canWriteProducts = useAppSelector((state) => selectUserHasPermission(state, "manage:products"));
+  const canWriteProducts = useAppSelector((state) =>
+    selectUserHasPermission(state, "manage:products")
+  );
 
   const {
     data: products = [],
@@ -89,8 +88,8 @@ const ProductManagementSystem = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product updated successfully");
-      setIsEditDialogOpen(false);
-      setEditingProduct(null);
+      setIsProductModalOpen(false);
+      setSelectedProduct(null);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update product: ${error.message}`);
@@ -110,10 +109,10 @@ const ProductManagementSystem = () => {
 
   const filteredProducts = products.filter((product) => {
     const selectedCategory = TAB_TO_CATEGORY_MAP[activeTab];
-    
+
     const matchesCategory =
       selectedCategory === null || product.category === selectedCategory;
-      
+
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
@@ -140,42 +139,49 @@ const ProductManagementSystem = () => {
     addMutation.mutate(newProduct as Omit<Product, "id">);
   };
 
-  const handleUpdateProduct = () => {
-    if (editingProduct) {
-      if (!editingProduct.name || !editingProduct.category) {
-        toast.error("Product name and category are required");
-        return;
-      }
-
-      updateMutation.mutate(editingProduct);
+  const handleUpdateProduct = (updatedProduct: Product) => {
+    if (!updatedProduct.name || !updatedProduct.category) {
+      toast.error("Product name and category are required");
+      return;
     }
+
+    updateMutation.mutate(updatedProduct);
   };
 
   const handleDeleteProduct = (id: string | number) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      deleteMutation.mutate(String(id));
-    }
+    deleteMutation.mutate(String(id));
+    setSelectedProduct(null);
+    setIsProductModalOpen(false);
   };
 
   const resetNewProduct = () => {
     setNewProduct({ ...defaultProduct });
   };
 
-  const openEditDialog = (product: Product) => {
-    setEditingProduct(product);
-    setIsEditDialogOpen(true);
+  const viewProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsViewOnly(true);
+    setIsProductModalOpen(true);
+  };
+
+  const editProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsViewOnly(false);
+    setIsProductModalOpen(true);
   };
 
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Product Management</h1>
-        {canWriteProducts && <Button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="bg-yellow-500 hover:bg-yellow-800"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
-        </Button>}
+        {canWriteProducts && (
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-yellow-500 hover:bg-yellow-800"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center space-x-4 mb-6">
@@ -206,47 +212,23 @@ const ProductManagementSystem = () => {
           <TabsTrigger value="steel">Steel Products</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-0">
-          <ProductTable
-            products={sortedProducts}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteProduct}
-            isLoading={isLoading}
-            onSort={handleSort}
-          />
-        </TabsContent>
-
-        <TabsContent value="aggregate" className="mt-0">
-          <ProductTable
-            products={sortedProducts}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteProduct}
-            isLoading={isLoading}
-            onSort={handleSort}
-          />
-        </TabsContent>
-
-        <TabsContent value="heavy equipment" className="mt-0">
-          <ProductTable
-            products={sortedProducts}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteProduct}
-            isLoading={isLoading}
-            onSort={handleSort}
-          />
-        </TabsContent>
-
-        <TabsContent value="steel" className="mt-0">
-          <ProductTable
-            products={sortedProducts}
-            onEdit={openEditDialog}
-            onDelete={handleDeleteProduct}
-            isLoading={isLoading}
-            onSort={handleSort}
-          />
-        </TabsContent>
+        {["all", "aggregate", "heavy equipment", "steel"].map((category) => (
+          <TabsContent value={category} className="mt-0">
+            <ProductTable
+              products={sortedProducts}
+              onView={viewProduct}
+              onEdit={editProduct}
+              onDelete={handleDeleteProduct}
+              isLoading={isLoading}
+              onSort={handleSort}
+              canEdit={canWriteProducts}
+              canDelete={canWriteProducts}
+            />
+          </TabsContent>
+        ))}
       </Tabs>
 
+      {/* Add Product Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -256,7 +238,11 @@ const ProductManagementSystem = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <ProductFormFields product={newProduct} setProduct={setNewProduct} isEdit={false}/>
+          <ProductFormFields
+            product={newProduct}
+            setProduct={setNewProduct}
+            isEdit={false}
+          />
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
@@ -269,41 +255,19 @@ const ProductManagementSystem = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-            <DialogDescription>
-              Update the details of the selected product.
-            </DialogDescription>
-          </DialogHeader>
-
-          {editingProduct && (
-            <ProductFormFields
-              product={editingProduct!}
-              setProduct={(updatedProduct) =>
-                setEditingProduct(updatedProduct as Product)
-              }
-              isEdit={true}
-            />
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpdateProduct}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Product Detail Modal for viewing or editing */}
+      <ProductDetailModal
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onSave={handleUpdateProduct}
+        isLoading={updateMutation.isPending}
+        onDelete={handleDeleteProduct}
+        viewOnly={isViewOnly}
+      />
     </div>
   );
 };
