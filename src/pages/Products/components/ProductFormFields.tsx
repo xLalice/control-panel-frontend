@@ -15,7 +15,6 @@ interface ProductFormFieldsProps {
   product: FormProduct;
   setProduct: (updatedProduct: FormProduct) => void;
   isEdit: boolean;
-  disabled?: boolean;
 }
 
 const RequiredAsterisk = () => <span className="text-red-500">*</span>;
@@ -26,8 +25,7 @@ const OptionalText = () => (
 export const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
   product,
   setProduct,
-  isEdit = false,
-  disabled
+  isEdit = false
 }) => {
   const prefix = isEdit ? "edit-" : "";
 

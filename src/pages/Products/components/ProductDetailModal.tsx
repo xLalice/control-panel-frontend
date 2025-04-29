@@ -66,7 +66,6 @@ export const ProductDetailModal = ({
             product={formProduct}
             setProduct={setFormProduct}
             isEdit={!viewOnly && !!product}
-            disabled={viewOnly}
           />
           
           {!viewOnly && product  && (

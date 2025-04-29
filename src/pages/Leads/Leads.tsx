@@ -266,48 +266,6 @@ const LeadsTable = () => {
         className: "hidden lg:table-cell",
       },
     },
-    {
-      id: "industry",
-      accessorKey: "industry",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
-          aria-label={`Sort by Industry ${
-            column.getIsSorted() === "asc" ? "descending" : "ascending"
-          }`}
-        >
-          Industry
-          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
-        </Button>
-      ),
-      // Hide on small screens
-      meta: {
-        className: "hidden xl:table-cell",
-      },
-    },
-    {
-      id: "region",
-      accessorKey: "region",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
-          aria-label={`Sort by Region ${
-            column.getIsSorted() === "asc" ? "descending" : "ascending"
-          }`}
-        >
-          Region
-          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
-        </Button>
-      ),
-      // Hide on small screens
-      meta: {
-        className: "hidden xl:table-cell",
-      },
-    },
   ];
 
   const table = useReactTable({
