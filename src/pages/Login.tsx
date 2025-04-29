@@ -48,7 +48,7 @@ const Login = () => {
   useEffect(() => {
     if (authError) {
       toast.error(authError);
-      setTimeout(() => dispatch(clearError()), 3000); // Clear error after 3s
+      setTimeout(() => dispatch(clearError()), 3000);
     }
   }, [authError, dispatch]);
 

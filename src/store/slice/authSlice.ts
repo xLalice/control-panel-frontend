@@ -12,9 +12,12 @@ export const login = createAsyncThunk<
   try {
     return await loginApi(credentials);
   } catch (err: any) {
-    return rejectWithValue(err.message || "Login failed");
+    const message =
+      err.response?.data?.message || "Login failed. Please try again.";
+    return rejectWithValue(message);
   }
 });
+
 
 export const fetchCurrentUser = createAsyncThunk<
   User,
