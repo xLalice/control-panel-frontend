@@ -1,7 +1,7 @@
 import axios from "axios";
-import { LoginFormData } from "../pages/Login";
+import { LoginFormData } from "../modules/Login";
 import { UpdateLeadParams, User } from "@/types";
-import { Product } from "@/pages/Products/types";
+import { Product } from "@/modules/Products/types";
 import {
   InquiryFilterParams,
   PaginatedResponse,
@@ -10,9 +10,9 @@ import {
   CreateInquiryDto,
   InquiryStatistics,
   ConversionResult,
-} from "@/pages/Inquiry/types";
-import { Document, DocumentCategory } from "@/pages/Documents/types";
-import { Attendance, DTRSettings, AllowedIP } from "@/pages/Attendance/types";
+} from "@/modules/Inquiry/types";
+import { Document, DocumentCategory } from "@/modules/Documents/types";
+import { Attendance, DTRSettings, AllowedIP } from "@/modules/Attendance/types";
 
 export interface QuoteDetails {
   basePrice: number;
