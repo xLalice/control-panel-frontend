@@ -37,14 +37,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     copyBillingToShipping,
   } = useClientForm({
     client,
-    onSuccess: () => {
+    onSuccess: () => {   
       onSuccess?.();
     },
     onClose,
   });
 
   const handleSubmit = useCallback(() => {
-    form.handleSubmit(onSubmit)();
+    console.log("Form submitted")
+    onSubmit(form.getValues());
   }, [form, onSubmit]);
 
   const handleOpenChange = useCallback((newOpen: boolean) => {

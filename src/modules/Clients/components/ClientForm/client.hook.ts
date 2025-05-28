@@ -3,10 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useCallback, useEffect } from "react";
-import {
-  ClientFormInput,
-  clientUpdateSchema,
-} from "./client.schema";
+import { ClientFormInput, clientUpdateSchema } from "./client.schema";
 import { clientSchema } from "../../clients.schema";
 import { defaultCreateClient, defaultUpdateClient } from "./client.constants";
 import { apiClient } from "@/api/api";
@@ -17,18 +14,14 @@ interface UseClientFormProps {
   onClose?: () => void;
 }
 
-export const useClientForm = ({
-  client,
-  onSuccess,
-}: UseClientFormProps) => {
+export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
   const queryClient = useQueryClient();
   const isEditMode = Boolean(client);
 
   const form = useForm<ClientFormInput>({
     resolver: zodResolver(client ? clientUpdateSchema : clientSchema),
-    defaultValues: isEditMode && client
-      ? defaultUpdateClient(client)
-      : defaultCreateClient,
+    defaultValues:
+      isEditMode && client ? defaultUpdateClient(client) : defaultCreateClient,
     mode: "onBlur",
   });
 
@@ -87,6 +80,7 @@ export const useClientForm = ({
 
   const onSubmit = useCallback(
     (data: ClientFormInput) => {
+      console.log("Onsubmit called")
       clientMutation.mutate(data);
     },
     [clientMutation]
