@@ -1,6 +1,6 @@
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select } from "@radix-ui/react-select";
+import { Select, SelectTrigger, SelectContent, SelectGroup, SelectItem, SelectValue } from "@/components/ui/select";
 import { ClientStatus } from "@/modules/Clients/clients.schema";
 
 export const TableFilters = ({
@@ -29,14 +29,20 @@ export const TableFilters = ({
         <div className="flex items-center space-x-2">
           <Filter className="h-4 w-4 text-gray-400" />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <option value="all">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="OnHold">On Hold</option>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+                <SelectItem value="OnHold">On Hold</SelectItem>
+              </SelectGroup>
+            </SelectContent>
           </Select>
         </div>
       </div>
-      
     </div>
   );
 };

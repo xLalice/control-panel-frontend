@@ -1,27 +1,41 @@
+import React from "react";
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { FileText } from "lucide-react";
 import { ClientFormInput } from "../client.schema";
 
 interface NotesSectionProps {
   control: Control<ClientFormInput>;
+  isViewMode?: boolean;
 }
 
-export const NotesSection: React.FC<NotesSectionProps> = ({ control }) => {
+export const NotesSection: React.FC<NotesSectionProps> = ({ 
+  control,
+  isViewMode = false 
+}) => {
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <FileText className="h-5 w-5 text-muted-foreground" />
+        <h3 className="text-lg font-semibold text-foreground">Additional Notes</h3>
+      </div>
+      
       <FormField
         control={control}
         name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium">Notes</FormLabel>
+            <FormLabel className="text-sm font-medium text-foreground">
+              Notes
+            </FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Enter any additional notes about the client"
-                className="min-h-[100px] resize-none"
+                placeholder={isViewMode ? "No notes provided" : "Enter any additional notes about the client"}
+                className={`min-h-[120px] resize-none ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
                 {...field}
                 value={field.value || ""}
+                readOnly={isViewMode}
               />
             </FormControl>
             <FormMessage />
@@ -29,53 +43,5 @@ export const NotesSection: React.FC<NotesSectionProps> = ({ control }) => {
         )}
       />
     </div>
-  );
-};
-
-// components/ClientForm/FormActions.tsx
-import React from "react";
-import { DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-
-interface FormActionsProps {
-  isEditMode: boolean;
-  isSubmitting: boolean;
-  onCancel: () => void;
-  onSubmit: () => void;
-}
-
-export const FormActions: React.FC<FormActionsProps> = ({
-  isEditMode,
-  isSubmitting,
-  onCancel,
-  onSubmit,
-}) => {
-  return (
-    <DialogFooter className="gap-2 pt-4">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onCancel}
-        disabled={isSubmitting}
-      >
-        Cancel
-      </Button>
-      <Button
-        type="submit"
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="min-w-[120px]"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {isEditMode ? "Updating..." : "Creating..."}
-          </>
-        ) : (
-          <>{isEditMode ? "Update Client" : "Create Client"}</>
-        )}
-      </Button>
-    </DialogFooter>
   );
 };

@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -12,89 +11,131 @@ import { BasicInfoSection } from "./sections/BasicInfoSection";
 import { AddressSection } from "./sections/AddressSection";
 import { NotesSection } from "./sections/NotesSection";
 import { FormActions } from "./sections/FormActions";
-import { ClientFormInput } from "./client.schema";
+import { Badge } from "@/components/ui/badge";
+import { ClientFormInput, FormMode } from "./client.schema";
 
 interface ClientFormProps {
   client?: ClientFormInput;
+  mode?: FormMode;
   onSuccess?: () => void;
   onClose?: () => void;
+  onEdit?: () => void;
   isOpen?: boolean;
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const ClientForm: React.FC<ClientFormProps> = ({
   client,
+  mode = "create",
   onSuccess,
   onClose,
+  onEdit,
   isOpen,
-  setIsOpen
+  setIsOpen,
 }) => {
-  const {
-    form,
-    isEditMode,
-    isSubmitting,
-    onSubmit,
-    copyBillingToShipping,
-  } = useClientForm({
-    client,
-    onSuccess: () => {   
-      onSuccess?.();
-    },
-    onClose,
-  });
+  const { form, isSubmitting, onSubmit, copyBillingToShipping } =
+    useClientForm({
+      client: client || undefined,
+      onSuccess: () => {
+        onSuccess?.();
+      },
+      onClose,
+    });
 
   const handleSubmit = useCallback(() => {
-    console.log("Form submitted")
+    console.log("Form submitted");
     onSubmit(form.getValues());
   }, [form, onSubmit]);
 
-  const handleOpenChange = useCallback((newOpen: boolean) => {
-    setIsOpen?.(newOpen);
-    if (!newOpen) {
-      onClose?.();
-      form.reset();
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      setIsOpen?.(newOpen);
+      if (!newOpen) {
+        onClose?.();
+        form.reset();
+      }
+    },
+    [onClose, form]
+  );
+
+  const getDialogTitle = () => {
+    switch (mode) {
+      case 'create':
+        return "Create New Client";
+      case 'edit':
+        return "Update Client";
+      case 'view':
+        return "Client Details";
+      default:
+        return "Client";
     }
-  }, [onClose, form]);
+  };
+
+  const isViewMode = mode === 'view';
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit Client" : "Create New Client"}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            {isEditMode
-              ? "Update the client information. Required fields are marked with *."
-              : "Enter the client details. Fill in all required fields marked with *."}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-semibold">
+              {getDialogTitle()}
+            </DialogTitle>
+            {client && isViewMode && (
+              <Badge 
+                variant={client.status === 'Active' ? 'default' : 'secondary'}
+                className="text-xs"
+              >
+                {client.status}
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <BasicInfoSection control={form.control} />
-           
-            <AddressSection
-              control={form.control}
-              title="Billing Address"
-              prefix="billing"
-            />
-           
-            <AddressSection
-              control={form.control}
-              title="Shipping Address"
-              prefix="shipping"
-              showCopyButton
-              onCopyClick={copyBillingToShipping}
-            />
-           
-            <NotesSection control={form.control} />
-          </form>
-        </Form>
+
+        <div className="border-t pt-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <BasicInfoSection 
+                control={form.control} 
+                isViewMode={isViewMode}
+              />
+              
+              <div className="border-t pt-6">
+                <AddressSection
+                  control={form.control}
+                  title="Billing Address"
+                  prefix="billing"
+                  isViewMode={isViewMode}
+                />
+              </div>
+              
+              <div className="border-t pt-6">
+                <AddressSection
+                  control={form.control}
+                  title="Shipping Address"
+                  prefix="shipping"
+                  showCopyButton={!isViewMode}
+                  onCopyClick={copyBillingToShipping}
+                  isViewMode={isViewMode}
+                />
+              </div>
+              
+              <div className="border-t pt-6">
+                <NotesSection 
+                  control={form.control} 
+                  isViewMode={isViewMode}
+                />
+              </div>
+            </form>
+          </Form>
+        </div>
+
         <FormActions
-          isEditMode={isEditMode}
+          mode={mode}
           isSubmitting={isSubmitting}
           onCancel={() => handleOpenChange(false)}
           onSubmit={handleSubmit}
+          onEdit={onEdit}
         />
       </DialogContent>
     </Dialog>
