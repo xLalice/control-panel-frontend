@@ -14,7 +14,7 @@ import { Activity, MessageSquare, Search, User, Clock } from "lucide-react";
 import {format} from 'date-fns';
 
 interface InteractionHistoryProps {
-  clientId: string;
+  clientId?: string;
   clientName: string;
   isOpen: boolean;
   onClose: () => void;

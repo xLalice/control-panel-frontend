@@ -20,6 +20,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle } from "lucide-react";
 import {toast} from "react-toastify";
+import { InteractionHistoryDialog } from "../../ClientHistory/ClientHistory";
 
 export const ActionsDropdown = ({
   client,
@@ -37,6 +38,7 @@ export const ActionsDropdown = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const handleView = () => {
     setSelectedClient(client);
@@ -100,6 +102,13 @@ export const ActionsDropdown = ({
           >
             <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>View Details</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => setHistoryDialogOpen(true)}
+            className="cursor-pointer hover:bg-accent focus:bg-accent"
+          >
+            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+            <span>View History</span>
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={handleEdit} 
@@ -178,6 +187,13 @@ export const ActionsDropdown = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <InteractionHistoryDialog
+        clientId={client.id}
+        clientName={client.clientName}
+        isOpen={historyDialogOpen}
+        onClose={() => setHistoryDialogOpen(false)}
+      />
     </>
   );
 };
