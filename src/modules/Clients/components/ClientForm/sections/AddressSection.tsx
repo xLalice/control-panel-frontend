@@ -3,7 +3,7 @@ import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, MapPin } from "lucide-react";
 import { ClientFormInput } from "../client.schema";
 
 interface AddressSectionProps {
@@ -12,6 +12,7 @@ interface AddressSectionProps {
   prefix: 'billing' | 'shipping';
   showCopyButton?: boolean;
   onCopyClick?: () => void;
+  isViewMode?: boolean;
 }
 
 export const AddressSection: React.FC<AddressSectionProps> = ({
@@ -20,59 +21,47 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
   prefix,
   showCopyButton = false,
   onCopyClick,
+  isViewMode = false,
 }) => {
   const getFieldName = (suffix: string) => `${prefix}Address${suffix}` as keyof ClientFormInput;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">{title}</h3>
-        {showCopyButton && (
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-muted-foreground" />
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        </div>
+        {showCopyButton && !isViewMode && (
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onCopyClick}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-xs"
           >
-            <Copy className="h-4 w-4" />
+            <Copy className="h-3 w-3" />
             Copy from Billing
           </Button>
         )}
       </div>
       
-      <FormField
-        control={control}
-        name={getFieldName('Street')}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm font-medium">Street Address</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Enter street address"
-                {...field}
-                value={typeof field.value === 'string' ? field.value : ""}
-                className="h-10"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="space-y-4">
         <FormField
           control={control}
-          name={getFieldName('City')}
+          name={getFieldName('Street')}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium">City</FormLabel>
+              <FormLabel className="text-sm font-medium text-foreground">
+                Street Address
+              </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter city"
+                  placeholder={isViewMode ? "No street address provided" : "Enter street address"}
                   {...field}
                   value={typeof field.value === 'string' ? field.value : ""}
-                  className="h-10"
+                  className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                  readOnly={isViewMode}
                 />
               </FormControl>
               <FormMessage />
@@ -80,37 +69,89 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           )}
         />
 
-        <FormField
-          control={control}
-          name={getFieldName('Region')}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">State/Region</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter state or region"
-                  {...field}
-                  value={typeof field.value === 'string' ? field.value : ""}
-                  className="h-10"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={control}
+            name={getFieldName('City')}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  City
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={isViewMode ? "No city provided" : "Enter city"}
+                    {...field}
+                    value={typeof field.value === 'string' ? field.value : ""}
+                    className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                    readOnly={isViewMode}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name={getFieldName('Region')}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  State/Region
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={isViewMode ? "No region provided" : "Enter state or region"}
+                    {...field}
+                    value={typeof field.value === 'string' ? field.value : ""}
+                    className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                    readOnly={isViewMode}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name={getFieldName('PostalCode')}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  Postal Code
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={isViewMode ? "No postal code provided" : "Enter postal code"}
+                    {...field}
+                    value={typeof field.value === 'string' ? field.value : ""}
+                    className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                    readOnly={isViewMode}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={control}
-          name={getFieldName('PostalCode')}
+          name={getFieldName('Country')}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium">Postal Code</FormLabel>
+              <FormLabel className="text-sm font-medium text-foreground">
+                Country
+              </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter postal code"
+                  placeholder={isViewMode ? "No country provided" : "Enter country"}
                   {...field}
                   value={typeof field.value === 'string' ? field.value : ""}
-                  className="h-10"
+                  className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                  readOnly={isViewMode}
                 />
               </FormControl>
               <FormMessage />
@@ -118,25 +159,6 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           )}
         />
       </div>
-
-      <FormField
-        control={control}
-        name={getFieldName('Country')}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm font-medium">Country</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Enter country"
-                {...field}
-               value={typeof field.value === 'string' ? field.value : ""}
-                className="h-10"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
     </div>
   );
 };

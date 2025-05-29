@@ -1,5 +1,4 @@
 import { Table } from "@tanstack/react-table";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
@@ -11,26 +10,8 @@ import {
 export const TablePagination = ({ table }: { table: Table<any> }) => {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-      <div className="flex-1 text-sm text-gray-500">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
-      </div>
+      
       <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
-          <Select
-            value={`${table.getState().pagination.pageSize}`}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value));
-            }}
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={`${pageSize}`}>
-                {pageSize}
-              </option>
-            ))}
-          </Select>
-        </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}

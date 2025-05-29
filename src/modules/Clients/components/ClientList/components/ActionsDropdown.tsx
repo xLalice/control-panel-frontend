@@ -1,71 +1,183 @@
+import { apiClient } from "@/api/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Client } from "@/modules/Clients/clients.schema";
+import { FormMode } from "../../ClientForm/client.schema";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle } from "lucide-react";
+import {toast} from "react-toastify";
 
-export const ActionsDropdown = ({ client }: { client: Client }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const ActionsDropdown = ({
+  client,
+  setFormIsOpen,
+  setFormMode,
+  setSelectedClient,
+  refetch,
+}: {
+  client: Client;
+  setFormIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setFormMode: React.Dispatch<React.SetStateAction<FormMode>>;
+  setSelectedClient: React.Dispatch<React.SetStateAction<Client | null>>;
+  refetch: any;
+}) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleView = () => {
-    console.log("View client:", client.id);
-    setIsOpen(false);
+    setSelectedClient(client);
+    setFormMode("view");
+    setFormIsOpen(true);
+    setDropdownOpen(false);
   };
+
   const handleEdit = () => {
-    console.log("Edit client:", client.id);
-    setIsOpen(false);
+    setSelectedClient(client);
+    setFormMode("edit");
+    setFormIsOpen(true);
+    setDropdownOpen(false);
   };
-  const handleDelete = () => {
-    console.log("Delete client:", client.id);
-    setIsOpen(false);
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setDropdownOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/clients/${client.id}`);
+      setDeleteDialogOpen(false);
+      refetch();
+      toast.success("Client deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete client:", error);
+      toast.error("Failed to delete client");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
   };
 
   return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsOpen(!open)}
-        className="h-8 w-8 p-0"
-      >
-        <span className="sr-only">Open menu</span>
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
+    <>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0 hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label={`Actions for ${client.clientName || 'client'}`}
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-48 z-50"
+          sideOffset={4}
+        >
+          <DropdownMenuItem 
+            onClick={handleView} 
+            className="cursor-pointer hover:bg-accent focus:bg-accent"
+          >
+            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+            <span>View Details</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={handleEdit} 
+            className="cursor-pointer hover:bg-accent focus:bg-accent"
+          >
+            <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
+            <span>Edit Client</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleDeleteClick}
+            className="cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span>Delete Client</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          ></div>
-          <div className="absolute">
-            <div className="px-4 py-2 text-sm font-medium text-gray-900 border-b border-gray-100">
-              Actions
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <DialogTitle className="text-left">Delete Client</DialogTitle>
+                <DialogDescription className="text-left">
+                  Are you sure you want to delete this client? This action cannot be undone.
+                </DialogDescription>
+              </div>
             </div>
-            <button
-              onClick={handleView}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          </DialogHeader>
+          
+          {client.clientName && (
+            <div className="rounded-md bg-muted p-3">
+              <p className="text-sm font-medium text-foreground">
+                Client: {client.clientName}
+              </p>
+              {client.primaryEmail && (
+                <p className="text-sm text-muted-foreground">
+                  {client.primaryEmail}
+                </p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none"
             >
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </button>
-            <button
-              onClick={handleEdit}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none"
             >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Client
-            </button>
-            <div className="border-t border-gray-100"></div>
-            <button
-              onClick={handleDelete}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Client
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+              {isDeleting ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Client
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
