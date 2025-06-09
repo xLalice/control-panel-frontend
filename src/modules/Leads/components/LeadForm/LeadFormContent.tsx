@@ -1,126 +1,69 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { LeadStatus } from "../constants/constants";
-import { Plus, Check, ChevronsUpDown } from "lucide-react";
-import { Company, LeadFormData, LeadFormProps } from "../types/leads.types";
-import { apiClient } from "@/api/api";
-import { User } from "@/types";
+import { useState } from "react";
 import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Input,
+  Button,
   Popover,
-  PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger,
-  Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
-  Input, Button, Command, CommandInput, CommandList, CommandEmpty,CommandGroup, CommandItem,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  PopoverContent,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  Command,
+  CommandItem,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui";
+import React from "react";
+import { Company, Lead } from "../../types/leads.types";
+import { useCompanies } from "./hooks/useCompanies";
+import { ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useLeadForm } from "./hooks/useLeadForm";
+import { User } from "@/types";
+import { LeadStatus } from "../../constants/constants";
 
+interface LeadFormContentProps {
+  lead?: Lead;
+  onSuccess: (() => void) | undefined;
+  onClose: (() => void) | undefined;
+  users: User[];
+}
 
-const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
+export const LeadFormContent: React.FC<LeadFormContentProps> = ({
+  onSuccess,
+  onClose,
+  users,
+  lead,
+}) => {
   const isEditMode = !!lead;
-  const [open, setOpen] = useState(false);
+
+  const { data: companies = [] } = useCompanies();
+
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isNewCompany, setIsNewCompany] = useState(!isEditMode);
-  const queryClient = useQueryClient();
+  const [isNewCompany, setIsNewCompany] = useState(false);
 
-
-  const { data: companies = [] } = useQuery({
-    queryKey: ["companies"],
-    queryFn: async () => {
-      const response = await apiClient.get("/leads/companies");
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const defaultValues = isEditMode
-    ? {
-        companyId: lead.company?.id || "",
-        companyName: lead.company?.name || "",
-        contactPerson: lead.contactPerson || "",
-        email: lead.company?.email || lead.email || "",
-        phone: lead.company?.phone || lead.phone || "",
-        status: lead.status || "New",
-        industry: lead.industry || "",
-        region: lead.region || "",
-        estimatedValue: lead.estimatedValue?.toString() || "",
-        leadScore: lead.leadScore || 0,
-        source: lead.source || "",
-        notes: lead.notes || "",
-        assignedToId: lead.assignedTo?.id || "",
-      }
-    : {
-        companyId: "",
-        companyName: "",
-        contactPerson: "",
-        email: "",
-        phone: "",
-        status: "New",
-        industry: "",
-        region: "",
-        estimatedValue: "",
-        leadScore: 0,
-        source: "",
-        notes: "",
-        assignedToId: "",
-      };
-
-  const form = useForm<LeadFormData>({
-    defaultValues,
-  });
-
-  useEffect(() => {
-    if (isEditMode) {
-      form.reset(defaultValues);
-      setIsNewCompany(false);
-    }
-  }, [lead, isEditMode]);
-
-  const createLeadMutation = useMutation({
-    mutationFn: async (data: LeadFormData) => {
-      const payload = {
-        ...data,
-        estimatedValue: data.estimatedValue
-          ? parseFloat(data.estimatedValue)
-          : null,
-        leadScore: data.leadScore ? data.leadScore : null,
-      };
-
-      if (isEditMode) {
-        const response = await apiClient.put(`/leads/${lead.id}`, payload);
-        return response.data;
-      } else {
-        const response = await apiClient.post("/leads", payload);
-        return response.data;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
-      if (isEditMode) {
-        onClose?.();
-      } else {
-        setOpen(false);
-      }
-      form.reset();
-      onSuccess?.();
-    },
-  });
-
-  const onSubmit = (data: LeadFormData) => {
-    createLeadMutation.mutate(data);
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen && onClose) {
-      onClose();
-    }
-  };
+  const { form, onSubmit, isSubmitting, isSubmitError, submitError } =
+    useLeadForm({
+      lead,
+      onSuccess,
+      onClose,
+    });
 
   const selectedCompanyId = form.watch("companyId");
   const selectedCompany = companies.find(
@@ -137,7 +80,7 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
           company.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-  const dialogContent = (
+  return (
     <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
       <DialogHeader className="pb-2">
         <DialogTitle>
@@ -158,11 +101,12 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
               checked={isNewCompany}
               onChange={() => {
                 setIsNewCompany(!isNewCompany);
-                if (isNewCompany) {
-                  form.setValue("companyName", "");
-                } else {
+                if (!isNewCompany) {
                   form.setValue("companyId", "");
+                } else {
+                  form.setValue("companyName", "");
                 }
+                form.clearErrors(["companyId", "companyName"]);
               }}
             />
             <label htmlFor="createNewCompany" className="text-sm">
@@ -505,18 +449,18 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => (isEditMode ? onClose?.() : setOpen(false))}
-              disabled={createLeadMutation.isPending}
+              onClick={onClose}
+              disabled={isSubmitting}
               className="h-8 text-xs"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createLeadMutation.isPending}
+              disabled={isSubmitting}
               className="h-8 text-xs"
             >
-              {createLeadMutation.isPending
+              {isSubmitting
                 ? isEditMode
                   ? "Saving..."
                   : "Creating..."
@@ -525,26 +469,13 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
                 : "Create Lead"}
             </Button>
           </DialogFooter>
+          {isSubmitError && (
+            <p className="text-red-500 text-xs mt-2">
+              Error: {submitError?.message || "Something went wrong."}
+            </p>
+          )}
         </form>
       </Form>
     </DialogContent>
   );
-
-  return isEditMode ? (
-    <Dialog open={true} onOpenChange={(open) => !open && onClose?.()}>
-      {dialogContent}
-    </Dialog>
-  ) : (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="ml-auto bg-yellow-500 hover:scale-110 hover:bg-yellow-600 text-black h-8 text-xs">
-          <Plus className="w-3 h-3 mr-1" />
-          Create Lead
-        </Button>
-      </DialogTrigger>
-      {dialogContent}
-    </Dialog>
-  );
 };
-
-export default LeadForm;

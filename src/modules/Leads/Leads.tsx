@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import { PAGE_SIZE } from "./constants/constants";
 import { Filter } from "lucide-react";
-import LeadForm from "./components/LeadForm";
+import LeadForm from "./components/LeadForm/LeadForm";
 import LeadDetailPanel from "./components/LeadDetailModal";
 import { useLeadsTable } from "./hooks/useLeadsTable";
 import { LeadFilters } from "./components/LeadFilters";
