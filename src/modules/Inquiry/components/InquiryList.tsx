@@ -6,25 +6,11 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Badge, Button, Input,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  Dialog, DialogContent
+} from "@/components/ui";
 import {
   getInquiries,
   approveInquiry,
@@ -34,7 +20,7 @@ import {
 import { Search, MoreHorizontal, Filter } from "lucide-react";
 import { InquiryDetails } from "./InquiryDetails";
 import { InquiryStatusBadge } from "./InquiryStatusBadge";
-import { EnhancedInquiry, InquiryStatus, PaginatedResponse } from "../types";
+import { Inquiry, InquiryStatus, PaginatedResponse } from "../types";
 import { toast } from "react-toastify";
 import { CreateQuoteDialog } from "./CreateQuoteDialog";
 import { ScheduleInquiryDialog } from "./ScheduleInquiryDialog";
@@ -125,28 +111,34 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
     useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedInquiryForDetails, setSelectedInquiryForDetails] =
-    useState<EnhancedInquiry | null>(null);
+    useState<Inquiry | null>(null);
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useQuery<PaginatedResponse<EnhancedInquiry>>({
+  const { data, isLoading, isError } = useQuery<
+    PaginatedResponse<Inquiry>
+  >({
     queryKey: ["inquiries", currentPage, statusFilter, refreshTrigger],
     queryFn: async () => {
-      const result = await getInquiries({ page: currentPage, status: statusFilter });
+      const result = await getInquiries({
+        page: currentPage,
+        status: statusFilter,
+      });
       return {
         ...result,
-        data: result.data.map(inquiry => ({
+        data: result.data.map((inquiry) => ({
           ...inquiry,
-          assignedTo: inquiry.assignedTo === null ? undefined : inquiry.assignedTo
-        })) as EnhancedInquiry[]
+          assignedTo:
+            inquiry.assignedTo === null ? undefined : inquiry.assignedTo,
+        })) as Inquiry[],
       };
     },
   });
 
   const filteredInquiries =
     data?.data?.filter(
-      (inquiry: EnhancedInquiry) =>
-        inquiry.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (inquiry: Inquiry) =>
+        inquiry.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         inquiry.phoneNumber.includes(searchTerm) ||
         inquiry.email.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
@@ -203,7 +195,7 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
     setScheduleInquiryDialogOpen(true);
   };
 
-  const openDetailsDialog = (inquiry: EnhancedInquiry) => {
+  const openDetailsDialog = (inquiry: Inquiry) => {
     setSelectedInquiryForDetails(inquiry);
     setDetailsDialogOpen(true);
   };
@@ -211,7 +203,7 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
   const totalPages = data?.meta?.total ? Math.ceil(data.meta.total / 10) : 1;
 
   if (isLoading) {
-    return (<InquiryListSkeleton />);
+    return <InquiryListSkeleton />;
   }
 
   if (isError) {
@@ -298,10 +290,10 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredInquiries.map((inquiry: EnhancedInquiry) => (
+                filteredInquiries.map((inquiry: Inquiry) => (
                   <TableRow key={inquiry.id}>
                     <TableCell>
-                      <div className="font-medium">{inquiry.customerName}</div>
+                      <div className="font-medium">{inquiry.clientName}</div>
                       <div className="text-sm text-muted-foreground">
                         {inquiry.email}
                       </div>
