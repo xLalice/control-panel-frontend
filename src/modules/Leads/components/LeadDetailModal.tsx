@@ -56,9 +56,10 @@ interface LeadDetailPanelProps {
   leadId: string | null;
   onClose: () => void;
   isOpen: boolean;
+  users: User[]
 }
 
-const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
+const LeadDetailPanel = ({ leadId, onClose, isOpen, users }: LeadDetailPanelProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -96,15 +97,6 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
       return response.data;
     },
     enabled: !!leadId,
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await apiClient.get("/admin/users");
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const updateStatusMutation = useMutation({
@@ -545,6 +537,7 @@ const LeadDetailPanel = ({ leadId, onClose, isOpen }: LeadDetailPanelProps) => {
                 queryClient.invalidateQueries({ queryKey: ["leads"] });
                 setIsEditDialogOpen(false);
               }}
+              users={users}
             />
           )}
 

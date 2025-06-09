@@ -96,4 +96,5 @@ export interface LeadFormProps {
   lead?: Lead;  
   onSuccess?: () => void;
   onClose?: () => void; 
+  users: User[]
 }

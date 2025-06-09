@@ -1,39 +1,5 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { LeadStatus } from "../constants/constants";
 import { Plus, Check, ChevronsUpDown } from "lucide-react";
@@ -46,8 +12,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger,
+  Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
+  Input, Button, Command, CommandInput, CommandList, CommandEmpty,CommandGroup, CommandItem,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui";
 
-const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
+
+const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
   const isEditMode = !!lead;
   const [open, setOpen] = useState(false);
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
@@ -55,14 +28,6 @@ const LeadForm = ({ lead, onSuccess, onClose }: LeadFormProps) => {
   const [isNewCompany, setIsNewCompany] = useState(!isEditMode);
   const queryClient = useQueryClient();
 
-  const { data: users = [] } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await apiClient.get("/admin/users");
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
 
   const { data: companies = [] } = useQuery({
     queryKey: ["companies"],
