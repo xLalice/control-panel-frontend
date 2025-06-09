@@ -53,7 +53,7 @@ const LeadsTable = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <CardTitle>Leads</CardTitle>
             <div className="flex flex-col xs:flex-row gap-2">
-              <LeadForm onSuccess={() => {}} />
+              <LeadForm users={users} onSuccess={() => {}} />
               <Button
                 variant="outline"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -231,6 +231,7 @@ const LeadsTable = () => {
         leadId={selectedLeadId}
         isOpen={isDetailOpen && !!selectedLeadId}
         onClose={handleDetailClose}
+        users={users}
       />
     </div>
   );
