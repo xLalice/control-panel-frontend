@@ -18,7 +18,7 @@ import { Client } from "@/modules/Clients/clients.schema";
 import { FormMode } from "../../ClientForm/client.schema";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle, History } from "lucide-react";
 import {toast} from "react-toastify";
 import { InteractionHistoryDialog } from "../../ClientHistory/ClientHistory";
 
@@ -107,7 +107,7 @@ export const ActionsDropdown = ({
             onClick={() => setHistoryDialogOpen(true)}
             className="cursor-pointer hover:bg-accent focus:bg-accent"
           >
-            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+            <History className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>View History</span>
           </DropdownMenuItem>
           <DropdownMenuItem 
@@ -188,12 +188,12 @@ export const ActionsDropdown = ({
         </DialogContent>
       </Dialog>
 
-      <InteractionHistoryDialog
+      {historyDialogOpen && <InteractionHistoryDialog
         clientId={client.id}
         clientName={client.clientName}
         isOpen={historyDialogOpen}
         onClose={() => setHistoryDialogOpen(false)}
-      />
+      />}
     </>
   );
 };
