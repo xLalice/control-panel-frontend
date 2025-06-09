@@ -48,7 +48,7 @@ import {
   BarChart,
 } from "lucide-react";
 import { format } from "date-fns";
-import LeadForm from "./LeadForm";
+import LeadForm from "./LeadForm/LeadForm";
 import LeadDetailSkeleton from "./skeletons/LeadDetailSkeleton";
 import { toast } from "react-toastify";
 
