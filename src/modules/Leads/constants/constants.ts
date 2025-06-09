@@ -19,3 +19,6 @@ export enum LeadSource {
   ADVERTISEMENT = "Advertisement",
   OTHER = "Other"
 }
+
+export const PAGE_SIZE = 20;
+
