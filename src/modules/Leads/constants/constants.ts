@@ -1,12 +1,14 @@
-export const LeadStatus = {
-  New: 'New',
-  Contacted: 'Contacted',
-  Qualified: 'Qualified',
-  Proposal: 'Proposal',
-  Converted: 'Converted',
-  Lost: 'Lost',
-} as const;
 
+
+export const  LeadStatus = {
+  New: "New",
+  Contacted: "Contacted",
+  Qualified: "Qualifed",
+  ProposalSent: "ProposalSent",
+  Negotiation: "Negotiation",
+  Won: "Won",
+  Lost: "Lost",
+} as const;
 
 export enum LeadSource {
   WEBSITE = "Website",

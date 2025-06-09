@@ -537,7 +537,7 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
   ) : (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="ml-auto bg-yellow-500 text-black h-8 text-xs">
+        <Button className="ml-auto bg-yellow-500 hover:scale-110 hover:bg-yellow-600 text-black h-8 text-xs">
           <Plus className="w-3 h-3 mr-1" />
           Create Lead
         </Button>

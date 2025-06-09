@@ -242,7 +242,6 @@ export const ClientList = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header Section */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
@@ -259,7 +258,7 @@ export const ClientList = () => {
           </div>
         </div>
 
-        <Button onClick={handleCreateClient} size="lg" className="gap-2">
+        <Button onClick={handleCreateClient} size="lg" className="gap-2 bg-yellow-500 text-black hover:scale-105 hover:bg-yellow-700">
           <Plus className="h-4 w-4" />
           Add Client
         </Button>

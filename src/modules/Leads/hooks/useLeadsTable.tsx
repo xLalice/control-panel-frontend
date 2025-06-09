@@ -130,9 +130,15 @@ export const useLeadsTable = () => {
       ),
       cell: ({ row }) => {
         const statusColors: Record<string, string> = {
-          Converted: "bg-green-100 text-green-800",
-          Lost: "bg-red-100 text-red-800",
-          New: "bg-blue-100 text-blue-800",
+          New: "bg-blue-100 text-blue-800", 
+          Contacted: "bg-indigo-100 text-indigo-800", 
+          Qualified: "bg-purple-100 text-purple-800", 
+          ProposalSent: "bg-pink-100 text-pink-800", 
+          Negotiation: "bg-amber-100 text-amber-800",
+
+          // Outcome Statuses
+          Won: "bg-green-100 text-green-800", 
+          Lost: "bg-red-100 text-red-800"
         };
 
         return (
@@ -142,7 +148,7 @@ export const useLeadsTable = () => {
             }
             aria-label={`Status: ${row.original.status}`}
           >
-            {row.original.status}
+            {row.original.status.replace(/([A-Z])/g, ' $1').trim()}
           </Badge>
         );
       },
@@ -300,6 +306,6 @@ export const useLeadsTable = () => {
     setPage,
     page,
     users,
-    usersLoading
+    usersLoading,
   };
 };
