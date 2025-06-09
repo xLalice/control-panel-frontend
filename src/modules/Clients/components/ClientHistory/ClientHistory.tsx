@@ -32,6 +32,7 @@ export const InteractionHistoryDialog: React.FC<InteractionHistoryProps> = ({
 
   const { data: contactHistory, isLoading: contactHistoryLoading } = useQuery<ContactHistoryItem[]>({
     queryKey: ["interactionHistory", clientId],
+    enabled: isOpen && !!clientId,
     queryFn: async () => {
       const response = await apiClient.get(`/clients/${clientId}/contact-history`);
       return response.data;
@@ -40,6 +41,7 @@ export const InteractionHistoryDialog: React.FC<InteractionHistoryProps> = ({
 
   const { data: activityLog, isLoading: activityLogLoading } = useQuery<ActivityLogItem[]>({
     queryKey: ["activityLog", clientId],
+    enabled: isOpen && !!clientId,
     queryFn: async () => {
       const response = await apiClient.get(`/clients/${clientId}/activity-log`);
       return response.data;

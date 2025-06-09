@@ -87,21 +87,6 @@ export const ClientList = () => {
         },
       }),
 
-      columnHelper.accessor("company", {
-        header: "Company",
-        cell: ({ getValue }) => {
-          const company = getValue();
-          return company ? (
-            <div className="flex items-center">
-              <Building className="mr-2 h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{company.name}</span>
-            </div>
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          );
-        },
-      }),
-
       columnHelper.accessor("primaryEmail", {
         header: "Contact",
         cell: ({ row }) => {
