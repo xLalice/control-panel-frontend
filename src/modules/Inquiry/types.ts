@@ -1,8 +1,8 @@
-import { Lead } from "@/types";
+import { Lead } from "../Leads/types/leads.types";
 
 export interface Inquiry {
   id: string;
-  customerName: string;
+  clientName: string;
   phoneNumber: string;
   email: string;
   isCompany: boolean;
@@ -163,8 +163,4 @@ export enum ReferenceSource {
   Referral = 'Referral',
   Flyers = 'Flyers',
   Other = 'Other'
-}
-
-export interface EnhancedInquiry extends Inquiry {
-  assignedTo?: string;
 }
