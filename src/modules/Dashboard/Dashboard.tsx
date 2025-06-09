@@ -10,6 +10,7 @@ import {
   FileText,
   Clock,
   Loader,
+  Briefcase,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -87,55 +88,61 @@ const App: React.FC = () => {
   }
 
   const menuItems: MenuItem[] = [
-    {
-      name: "Dashboard",
-      route: "/dashboard",
-      icon: <BarChart className="h-4 w-4" />,
-      visible: true,
-    },
-    {
-      name: "Inquiries",
-      route: "/inquiries",
-      icon: <Mail className="h-4 w-4" />,
-      visible: canReadInquiries,
-    },
-    {
-      name: "User Management",
-      route: "/user-management",
-      icon: <Users className="h-4 w-4" />,
-      visible: canManageUsers || canReadUsers,
-    },
-    {
-      name: "Leads",
-      route: "/leads",
-      icon: <DollarSign className="h-4 w-4" />,
-      visible: canReadAllLeads || canReadOwnLeads || canReadAssignedLeads,
-    },
-    {
-      name: "View Reports",
-      route: "/reports",
-      icon: <BarChart className="h-4 w-4" />,
-      visible: canReadReports,
-    },
-    {
-      name: "Products",
-      route: "/products",
-      icon: <Tag className="h-4 w-4" />,
-      visible: canManageProducts || canReadProducts,
-    },
-    {
-      name: "Documents",
-      route: "/documents",
-      icon: <FileText className="h-4 w-4" />,
-      visible: canReadDocuments,
-    },
-    {
-      name: "Attendance",
-      route: "/attendance",
-      icon: <Clock className="h-4 w-4" />,
-      visible: canReadAttendance,
-    },
-  ];
+  {
+    name: "Dashboard",
+    route: "/dashboard",
+    icon: <BarChart className="h-4 w-4" />,
+    visible: true,
+  },
+  {
+    name: "Leads",
+    route: "/leads",
+    icon: <DollarSign className="h-4 w-4" />,
+    visible: canReadAllLeads || canReadOwnLeads || canReadAssignedLeads,
+  },
+  {
+    name: "Inquiries",
+    route: "/inquiries",
+    icon: <Mail className="h-4 w-4" />,
+    visible: canReadInquiries,
+  },
+  {
+    name: "Clients", 
+    route: "/clients",
+    icon: <Briefcase className="h-4 w-4" />, // Or Handshake
+    visible: true, 
+  },
+  {
+    name: "Products", 
+    route: "/products",
+    icon: <Tag className="h-4 w-4" />,
+    visible: canManageProducts || canReadProducts,
+  },
+  {
+    name: "Documents", 
+    route: "/documents",
+    icon: <FileText className="h-4 w-4" />,
+    visible: canReadDocuments,
+  },
+  {
+    name: "View Reports", 
+    route: "/reports",
+    icon: <BarChart className="h-4 w-4" />,
+    visible: canReadReports,
+  },
+  {
+    name: "Attendance", 
+    route: "/attendance",
+    icon: <Clock className="h-4 w-4" />,
+    visible: canReadAttendance,
+  },
+  {
+    name: "User Management",
+    route: "/user-management",
+    icon: <Users className="h-4 w-4" />,
+    visible: canManageUsers || canReadUsers,
+  },
+];
 
   const handleNavigation = (route: string) => {
     if (route.startsWith("http")) {
