@@ -15,7 +15,13 @@ export {
   TableRow,
 } from "./table";
 export { Badge } from "./badge";
-export { Card, CardContent, CardHeader, CardTitle } from "./card";
+export {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "./card";
 export { Button } from "./button";
 export { Skeleton } from "./skeleton";
 export {
@@ -43,3 +49,9 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
