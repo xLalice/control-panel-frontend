@@ -23,6 +23,7 @@ import LeadForm from "./components/LeadForm/LeadForm";
 import LeadDetailPanel from "./components/LeadDetail/LeadDetailModal";
 import { useLeadsTable } from "./hooks/useLeadsTable";
 import { LeadFilters } from "./components/LeadFilters";
+import { useState } from "react";
 
 const LeadsTable = () => {
   const {
@@ -46,6 +47,11 @@ const LeadsTable = () => {
     users,
   } = useLeadsTable();
 
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
+  const handleCreateFormClose = () => {
+    setIsCreateFormOpen(false);
+  };
 
   return (
     <div className=" mx-auto p-6">
@@ -58,6 +64,8 @@ const LeadsTable = () => {
             <div className="flex flex-col xs:flex-row gap-2">
               <LeadForm
                 users={users}
+                isOpen={isCreateFormOpen}
+                onClose={handleCreateFormClose}
               />
               <Button
                 variant="outline"
