@@ -16,6 +16,7 @@ import { Button, Badge } from "@/components/ui";
 import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fetchUsers } from "@/api/api";
+import { LeadStatus } from "../constants/constants";
 
 export const useLeadsTable = () => {
   const [page, setPage] = useState(1);
@@ -44,7 +45,11 @@ export const useLeadsTable = () => {
     staleTime: 300000,
   });
 
-  const { data: leadsData, isLoading } = useQuery({
+  const {
+    data: leadsData,
+    isLoading,
+    refetch: refetchLeads,
+  } = useQuery({
     queryKey: ["leads", filters, page, sorting],
     refetchOnWindowFocus: false,
     queryFn: async () => {
@@ -77,23 +82,50 @@ export const useLeadsTable = () => {
     });
   };
 
-  const columns: ColumnDef<Lead, unknown>[] = [
+  const columns: ColumnDef<Lead>[] = [
     {
-      id: "companyName",
-      accessorFn: (row: Lead) => row.company?.name || "N/A",
+      id: "name",
+      accessorKey: "name",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
+          aria-label={`Sort by Lead Name ${
+            column.getIsSorted() === "asc" ? "descending" : "ascending"
+          }`}
+        >
+          Lead Name
+          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        return (
+          <span className="font-medium text-blue-600 hover:underline cursor-pointer">
+            {row.original.name}
+          </span>
+        );
+      },
+    },
+    {
+      id: "companyName",
+      accessorFn: (row: Lead) => row.company?.name || "-",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Company Name ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
         >
-          Company Name
+          Company
           <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
         </Button>
       ),
+      meta: {
+        className: "hidden sm:table-cell",
+      },
     },
     {
       id: "contactPerson",
@@ -102,7 +134,7 @@ export const useLeadsTable = () => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Contact Person ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
@@ -111,6 +143,59 @@ export const useLeadsTable = () => {
           <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
         </Button>
       ),
+      meta: {
+        className: "hidden md:table-cell",
+      },
+    },
+    {
+      id: "email",
+      accessorKey: "email",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-full flex justify-between items-center px-2"
+          aria-label={`Sort by Email ${
+            column.getIsSorted() === "asc" ? "descending" : "ascending"
+          }`}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
+        </Button>
+      ),
+      cell: ({ row }) =>
+        row.original.email ? (
+          <a
+            href={`mailto:${row.original.email}`}
+            className="text-blue-500 hover:underline"
+          >
+            {row.original.email}
+          </a>
+        ) : (
+          "-"
+        ),
+      meta: {
+        className: "hidden lg:table-cell",
+      },
+    },
+    {
+      id: "phone",
+      accessorKey: "phone",
+      header: "Phone",
+      cell: ({ row }) =>
+        row.original.phone ? (
+          <a
+            href={`tel:${row.original.phone}`}
+            className="text-blue-500 hover:underline"
+          >
+            {row.original.phone}
+          </a>
+        ) : (
+          "-"
+        ),
+      meta: {
+        className: "hidden xl:table-cell",
+      },
     },
     {
       id: "status",
@@ -119,7 +204,7 @@ export const useLeadsTable = () => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Status ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
@@ -130,28 +215,31 @@ export const useLeadsTable = () => {
       ),
       cell: ({ row }) => {
         const statusColors: Record<string, string> = {
-          New: "bg-blue-100 text-blue-800", 
-          Contacted: "bg-indigo-100 text-indigo-800", 
-          Qualified: "bg-purple-100 text-purple-800", 
-          ProposalSent: "bg-pink-100 text-pink-800", 
-          Negotiation: "bg-amber-100 text-amber-800",
-
-          // Outcome Statuses
-          Won: "bg-green-100 text-green-800", 
-          Lost: "bg-red-100 text-red-800"
+          [LeadStatus.New]: "bg-blue-100 text-blue-800",
+          [LeadStatus.Contacted]: "bg-indigo-100 text-indigo-800",
+          [LeadStatus.Qualified]: "bg-purple-100 text-purple-800",
+          [LeadStatus.ProposalSent]: "bg-pink-100 text-pink-800",
+          [LeadStatus.Negotiation]: "bg-amber-100 text-amber-800",
+          [LeadStatus.Won]: "bg-green-100 text-green-800",
+          [LeadStatus.Lost]: "bg-red-100 text-red-800",
         };
+
+        const displayStatus = row.original.status
+          .replace(/([A-Z])/g, " $1")
+          .trim();
 
         return (
           <Badge
             className={
               statusColors[row.original.status] || "bg-gray-100 text-gray-800"
             }
-            aria-label={`Status: ${row.original.status}`}
+            aria-label={`Status: ${displayStatus}`}
           >
-            {row.original.status.replace(/([A-Z])/g, ' $1').trim()}
+            {displayStatus}
           </Badge>
         );
       },
+      // Always visible, important column
     },
     {
       id: "assignedTo",
@@ -160,7 +248,7 @@ export const useLeadsTable = () => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Assigned To ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
@@ -169,9 +257,42 @@ export const useLeadsTable = () => {
           <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
         </Button>
       ),
-      // Hide on small screens
       meta: {
-        className: "hidden md:table-cell",
+        className: "hidden lg:table-cell", // Hide on large screens
+      },
+    },
+    {
+      id: "estimatedValue",
+      accessorKey: "estimatedValue",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-full flex justify-between items-center px-2"
+          aria-label={`Sort by Value ${
+            column.getIsSorted() === "asc" ? "descending" : "ascending"
+          }`}
+        >
+          Est. Value
+          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        if (
+          row.original.estimatedValue !== null &&
+          row.original.estimatedValue !== undefined
+        ) {
+          return new Intl.NumberFormat("en-PH", {
+            style: "currency",
+            currency: "PHP",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(row.original.estimatedValue);
+        }
+        return "-";
+      },
+      meta: {
+        className: "hidden xl:table-cell",
       },
     },
     {
@@ -181,7 +302,7 @@ export const useLeadsTable = () => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Last Contact ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
@@ -194,9 +315,8 @@ export const useLeadsTable = () => {
         row.original.lastContactDate
           ? format(new Date(row.original.lastContactDate), "MMM d, yyyy")
           : "-",
-      // Hide on small screens
       meta: {
-        className: "hidden md:table-cell",
+        className: "hidden lg:table-cell",
       },
     },
     {
@@ -206,12 +326,12 @@ export const useLeadsTable = () => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
+          className="w-full flex justify-between items-center px-2"
           aria-label={`Sort by Follow-Up Date ${
             column.getIsSorted() === "asc" ? "descending" : "ascending"
           }`}
         >
-          Follow-Up Date
+          Follow-Up
           <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
         </Button>
       ),
@@ -219,31 +339,17 @@ export const useLeadsTable = () => {
         row.original.followUpDate
           ? format(new Date(row.original.followUpDate), "MMM d, yyyy")
           : "-",
-      // Hide on small screens
       meta: {
-        className: "hidden lg:table-cell",
+        className: "hidden xl:table-cell",
       },
     },
     {
-      id: "leadScore",
-      accessorKey: "leadScore",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="w-full flex justify-between items-center"
-          aria-label={`Sort by Score ${
-            column.getIsSorted() === "asc" ? "descending" : "ascending"
-          }`}
-        >
-          Score
-          <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden="true" />
-        </Button>
-      ),
-      cell: ({ row }) =>
-        row.original.leadScore ? row.original.leadScore.toFixed(1) : "-",
+      id: "source",
+      accessorKey: "source",
+      header: "Source",
+      cell: ({ row }) => row.original.source || "-",
       meta: {
-        className: "hidden lg:table-cell",
+        className: "hidden 2xl:table-cell",
       },
     },
   ];
@@ -307,5 +413,6 @@ export const useLeadsTable = () => {
     page,
     users,
     usersLoading,
+    refetchLeads,
   };
 };

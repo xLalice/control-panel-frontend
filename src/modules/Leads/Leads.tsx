@@ -20,7 +20,7 @@ import {
 import { PAGE_SIZE } from "./constants/constants";
 import { Filter } from "lucide-react";
 import LeadForm from "./components/LeadForm/LeadForm";
-import LeadDetailPanel from "./components/LeadDetailModal";
+import LeadDetailPanel from "./components/LeadDetail/LeadDetailModal";
 import { useLeadsTable } from "./hooks/useLeadsTable";
 import { LeadFilters } from "./components/LeadFilters";
 
@@ -46,14 +46,19 @@ const LeadsTable = () => {
     users,
   } = useLeadsTable();
 
+
   return (
-    <div className="container mx-auto p-6">
+    <div className=" mx-auto p-6">
       <Card className="w-full border-[0]">
         <CardHeader className="border-[0]">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="text-3xl font-bold tracking-tight mb-5">Leads</CardTitle>
+            <CardTitle className="text-3xl font-bold tracking-tight mb-5">
+              Leads
+            </CardTitle>
             <div className="flex flex-col xs:flex-row gap-2">
-              <LeadForm users={users} onSuccess={() => {}} />
+              <LeadForm
+                users={users}
+              />
               <Button
                 variant="outline"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}

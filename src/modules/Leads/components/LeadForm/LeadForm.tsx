@@ -3,25 +3,39 @@ import { LeadFormProps } from "../../types/leads.types";
 import { Dialog, DialogTrigger, Button } from "@/components/ui";
 import { LeadFormContent } from "./LeadFormContent";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import { useLeadsTable } from "../../hooks/useLeadsTable";
 
-const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
+const LeadForm = ({ lead, users }: LeadFormProps) => {
   const isEditMode = !!lead;
   const [isOpen, setIsOpen] = useState(false);
+  const { refetchLeads } = useLeadsTable();
 
   const handleOpenChange = (newOpenState: boolean) => {
     setIsOpen(newOpenState);
-    if (!newOpenState && !isEditMode) {
-      onClose?.();
+  };
+
+  const handleLeadFormSuccess = () => {
+    toast.success(
+      isEditMode ? "Lead updated successfully!" : "Lead created successfully!"
+    );
+    setIsOpen(false);
+    if (refetchLeads) {
+      refetchLeads();
     }
   };
 
+  const handleLeadFormClose = () => {
+    setIsOpen(false);
+  };
+
   return isEditMode ? (
-    <Dialog open={true} onOpenChange={(open) => !open && onClose?.()}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <LeadFormContent
         lead={lead}
         users={users}
-        onSuccess={onSuccess}
-        onClose={onClose}
+        onSuccess={handleLeadFormSuccess}
+        onClose={handleLeadFormClose}
       />
     </Dialog>
   ) : (
@@ -32,7 +46,11 @@ const LeadForm = ({ lead, onSuccess, onClose, users }: LeadFormProps) => {
           Create Lead
         </Button>
       </DialogTrigger>
-      <LeadFormContent users={users} onSuccess={onSuccess} onClose={onClose} />
+      <LeadFormContent
+        users={users}
+        onSuccess={handleLeadFormSuccess}
+        onClose={handleLeadFormClose}
+      />
     </Dialog>
   );
 };
