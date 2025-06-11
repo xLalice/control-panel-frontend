@@ -58,14 +58,27 @@ export type ActivityLog = {
   userId: string;
   action: string;
   description: string;
-  metadata: JSON;
+  metadata: ActivityLogMetadata;
   oldStatus?: LeadStatus;
   newStatus?: LeadStatus;
   createdBy: User;
 
+  user: {
+    name: string
+  };
+
   createdAt: Date;
   lead: Lead;
 };
+
+export type ActivityLogMetadata =
+  | Array<{
+      field: string;
+      old: any;
+      new: any;
+    }>
+  | { initialData: any }
+  | null;
 
 export interface ContactHistory {
   id: string;
@@ -96,4 +109,6 @@ export interface LeadFormData {
 export interface LeadFormProps {
   lead?: Lead;
   users: User[];
+  isOpen: boolean;
+  onClose: () => void;
 }
