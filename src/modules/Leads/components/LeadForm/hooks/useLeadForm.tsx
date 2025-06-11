@@ -1,15 +1,15 @@
-import { useEffect, useMemo} from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query"; 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/api";
 import { Lead, LeadFormData } from "@/modules/Leads/types/leads.types";
 import { toast } from "react-toastify";
 
 interface UseLeadMutationOptions {
   onSuccess?: () => void;
-  onClose?: () => void; 
+  onClose?: () => void;
   isEditMode: boolean;
-  leadId?: string; 
+  leadId?: string;
 }
 
 export const useLeadMutation = ({
@@ -24,7 +24,9 @@ export const useLeadMutation = ({
     mutationFn: async (data: LeadFormData) => {
       const payload = {
         ...data,
-        estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : null,
+        estimatedValue: data.estimatedValue
+          ? parseFloat(data.estimatedValue)
+          : null,
         leadScore: data.leadScore ? data.leadScore : null,
       };
 
@@ -38,21 +40,26 @@ export const useLeadMutation = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      if (isEditMode && leadId) {
+        queryClient.invalidateQueries({ queryKey: ["lead", leadId] });
+      }
 
-      onSuccess?.(); 
-      onClose?.();  
+      onSuccess?.();
+      onClose?.();
     },
     onError: (error) => {
       console.error("Lead mutation failed:", error);
-      toast.error(isEditMode && leadId ? "Updating lead failed" : "Creating lead failed");
+      toast.error(
+        isEditMode && leadId ? "Updating lead failed" : "Creating lead failed"
+      );
     },
   });
 };
 
 interface UseLeadFormHookProps {
-  lead?: Lead; 
-  onClose?: () => void; 
-  onSuccess?: () => void; 
+  lead?: Lead;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 export const useLeadForm = ({
@@ -68,8 +75,8 @@ export const useLeadForm = ({
           companyId: lead.company?.id || "",
           companyName: lead.company?.name || "",
           contactPerson: lead.contactPerson || "",
-          email: lead.company?.email || lead.email || "", 
-          phone: lead.company?.phone || lead.phone || "", 
+          email: lead.company?.email || lead.email || "",
+          phone: lead.company?.phone || lead.phone || "",
           status: lead.status || "New",
           industry: lead.industry || "",
           estimatedValue: lead.estimatedValue?.toString() || "",
@@ -103,7 +110,6 @@ export const useLeadForm = ({
     form.reset(defaultValues);
   }, [defaultValues, form]);
 
-
   const {
     mutate: submitLead,
     isPending: isSubmitting,
@@ -111,11 +117,11 @@ export const useLeadForm = ({
     error: submitError,
   } = useLeadMutation({
     onSuccess: () => {
-      form.reset(defaultValues); 
+      form.reset(defaultValues);
       onSuccess?.();
       onClose?.();
     },
-    onClose: onClose, 
+    onClose: onClose,
     isEditMode,
     leadId: lead?.id,
   });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   DialogContent,
   DialogHeader,
@@ -39,8 +39,8 @@ import { LeadStatus } from "../../constants/constants";
 
 interface LeadFormContentProps {
   lead?: Lead;
-  onSuccess: (() => void) | undefined;
-  onClose: (() => void) | undefined;
+  onSuccess: () => void | undefined;
+  onClose: () => void | undefined;
   users: User[];
 }
 
@@ -74,9 +74,6 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
   const selectedCompany = companies.find(
     (c: Company) => c.id === selectedCompanyId
   );
-  const displayCompanyName = selectedCompany
-    ? selectedCompany.name
-    : "Select company";
 
   const filteredCompanies =
     searchQuery.trim() === ""
@@ -117,6 +114,14 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
       setIsLeadNameManuallyEdited(false);
     }
   }, [isNewCompany, isEditMode]);
+
+  const displayCompanyName = useMemo(
+    () =>
+      selectedCompany
+        ? selectedCompany.name
+        : lead?.company?.name || "Select company",
+    [selectedCompany, lead?.company?.name] 
+  );
 
   const handleLeadNameChange = (value: string) => {
     const currentCompanyName = isNewCompany
@@ -161,13 +166,20 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
               id="createNewCompany"
               checked={isNewCompany}
               onChange={() => {
-                setIsNewCompany(!isNewCompany);
-                if (!isNewCompany) {
+                const newIsNewCompany = !isNewCompany;
+                setIsNewCompany(newIsNewCompany);
+                form.clearErrors(["companyId", "companyName"]);
+
+                if (newIsNewCompany) {
                   form.setValue("companyId", "");
                 } else {
                   form.setValue("companyName", "");
+                  if (isEditMode && lead?.companyId) {
+                    form.setValue("companyId", lead.companyId);
+                  } else {
+                    form.setValue("companyId", "");
+                  }
                 }
-                form.clearErrors(["companyId", "companyName"]);
               }}
             />
             <label htmlFor="createNewCompany" className="text-sm">
@@ -200,7 +212,7 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
               <FormField
                 control={form.control}
                 name="companyId"
-                render={({}) => (
+                render={({ field }) => (
                   <FormItem className="col-span-1">
                     <FormLabel className="text-xs">
                       Company{isEditMode ? "*" : ""}
@@ -238,7 +250,7 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
                                   key={company.id}
                                   value={company.name}
                                   onSelect={() => {
-                                    form.setValue("companyId", company.id);
+                                    field.onChange(company.id);
                                     setCompanyPopoverOpen(false);
                                     setSearchQuery("");
                                   }}
@@ -248,7 +260,7 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
                                   <Check
                                     className={cn(
                                       "ml-auto h-3 w-3",
-                                      selectedCompanyId === company.id
+                                      field.value === company.id
                                         ? "opacity-100"
                                         : "opacity-0"
                                     )}
