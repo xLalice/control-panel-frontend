@@ -64,6 +64,7 @@ export const useLeadForm = ({
   const defaultValues = useMemo(() => {
     return isEditMode
       ? {
+          name: lead.name || "",
           companyId: lead.company?.id || "",
           companyName: lead.company?.name || "",
           contactPerson: lead.contactPerson || "",
@@ -71,7 +72,6 @@ export const useLeadForm = ({
           phone: lead.company?.phone || lead.phone || "", 
           status: lead.status || "New",
           industry: lead.industry || "",
-          region: lead.region || "",
           estimatedValue: lead.estimatedValue?.toString() || "",
           leadScore: lead.leadScore || 0,
           source: lead.source || "",
@@ -79,6 +79,7 @@ export const useLeadForm = ({
           assignedToId: lead.assignedTo?.id || "",
         }
       : {
+          name: "",
           companyId: "",
           companyName: "",
           contactPerson: "",
@@ -86,7 +87,6 @@ export const useLeadForm = ({
           phone: "",
           status: "New",
           industry: "",
-          region: "",
           estimatedValue: "",
           leadScore: 0,
           source: "",

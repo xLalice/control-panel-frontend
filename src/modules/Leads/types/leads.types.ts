@@ -6,6 +6,7 @@ type LeadStatus = (typeof LeadStatus)[keyof typeof LeadStatus];
 
 export interface Lead {
   id: string;
+  name: string;
   companyId: string;
   company: Company;
   email: string;
@@ -14,11 +15,11 @@ export interface Lead {
   status: LeadStatus;
   source: string;
   subSource?: string;
+  assignedToId?: string;
   assignedTo: User;
   lastContactDate: string | null;
   leadScore: number | null;
   industry: string | null;
-  region: string | null;
   followUpDate?: Date;
   activityLog: ActivityLog[];
   estimatedValue?: number;
@@ -52,19 +53,19 @@ export type Company = {
 };
 
 export type ActivityLog = {
-    id : string;
-    leadId: string;
-    userId : string;
-    action: string;
-    description: string;
-    metadata : JSON;
-    oldStatus?: LeadStatus;
-    newStatus?: LeadStatus;
-    createdBy: User;
-  
-    createdAt: Date;
-    lead: Lead;
-}
+  id: string;
+  leadId: string;
+  userId: string;
+  action: string;
+  description: string;
+  metadata: JSON;
+  oldStatus?: LeadStatus;
+  newStatus?: LeadStatus;
+  createdBy: User;
+
+  createdAt: Date;
+  lead: Lead;
+};
 
 export interface ContactHistory {
   id: string;
@@ -77,24 +78,22 @@ export interface ContactHistory {
 }
 
 export interface LeadFormData {
+  name: string;
   companyId: string;
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
+  companyName?: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
   status: string;
-  industry: string;
-  region: string;
-  estimatedValue: string;
-  source: string;
-  notes: string;
+  industry?: string;
+  estimatedValue?: string;
+  source?: string;
+  notes?: string;
   assignedToId: string;
   leadScore: number;
 }
 
 export interface LeadFormProps {
-  lead?: Lead;  
-  onSuccess?: () => void;
-  onClose?: () => void; 
-  users: User[]
+  lead?: Lead;
+  users: User[];
 }
