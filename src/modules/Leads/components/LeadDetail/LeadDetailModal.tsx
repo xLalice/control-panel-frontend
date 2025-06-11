@@ -35,7 +35,6 @@ import {
   Phone,
   Mail,
   Tag,
-  Briefcase,
   MessageSquare,
   DollarSign,
   X,
@@ -245,16 +244,6 @@ const LeadDetailPanel = ({
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <Briefcase className="h-5 w-5 text-gray-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">
-                            Industry
-                          </p>
-                          <p>{lead.industry || "N/A"}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
                         <BarChart className="h-5 w-5 text-gray-500 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-gray-500">
@@ -369,7 +358,12 @@ const LeadDetailPanel = ({
             </TabsContent>
           </Tabs>
 
-          {isEditDialogOpen && <LeadForm lead={lead} users={users} />}
+          <LeadForm
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            lead={lead}
+            users={users}
+          />
 
           <AlertDialog
             open={isDeleteDialogOpen}
