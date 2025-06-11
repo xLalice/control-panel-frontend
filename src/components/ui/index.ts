@@ -31,7 +31,7 @@ export {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "./command";
 export {
   Form,
   FormControl,
@@ -39,7 +39,7 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "./form";
 export {
   Dialog,
   DialogContent,
@@ -48,15 +48,26 @@ export {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "./dialog";
 export {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "./dropdown-menu";
+export { Popover, PopoverContent, PopoverTrigger } from "./popover";
+
 export {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover"
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "./alert-dialog";
+
+export { Separator } from "./separator";
+
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
