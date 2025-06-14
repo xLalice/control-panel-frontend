@@ -20,10 +20,12 @@ import {
 import { PAGE_SIZE } from "./constants/constants";
 import { Filter } from "lucide-react";
 import LeadForm from "./components/LeadForm/LeadForm";
-import LeadDetailPanel from "./components/LeadDetail/LeadDetailModal";
+import LeadDetailPanel from "./components/LeadDetail/LeadDetailPanel";
 import { useLeadsTable } from "./hooks/useLeadsTable";
 import { LeadFilters } from "./components/LeadFilters";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CustomPagination } from "@/components/CustomPagination";
+import { useLocation } from "react-router-dom";
 
 const LeadsTable = () => {
   const {
@@ -40,18 +42,38 @@ const LeadsTable = () => {
     handleRowClick,
     handleDetailClose,
     selectedLeadId,
-    leadsData,
+    leadsData: allLeads,
     setPage,
-    page,
+    page: currentPage,
     usersLoading,
     users,
+    setSelectedLeadId,
+    setIsDetailOpen
   } = useLeadsTable();
+  const location = useLocation();
 
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).leadIdToOpen) {
+      const idFromState = (location.state as any).leadIdToOpen;
+      setSelectedLeadId(idFromState);
+      setIsDetailOpen(true);
+
+      window.history.replaceState({}, document.title, location.pathname);
+    }
+  }, [location.state]);
 
   const handleCreateFormClose = () => {
     setIsCreateFormOpen(false);
   };
+
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
+
+  const totalItems = allLeads?.total || 0;
+  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
 
   return (
     <div className=" mx-auto p-6">
@@ -189,7 +211,7 @@ const LeadsTable = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4">
             {isLoading ? (
               <>
                 <Skeleton className="h-5 w-32" />
@@ -201,39 +223,19 @@ const LeadsTable = () => {
               </>
             ) : (
               <>
-                <div className="flex-1 text-sm text-muted-foreground">
-                  {leadsData?.total || 0} total leads
+                <div className="flex text-sm text-muted-foreground">
+                  {totalItems} leads
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(page - 1)}
-                    disabled={page === 1}
-                    aria-label="Previous page"
-                  >
-                    Previous
-                  </Button>
-                  <div
-                    className="flex items-center justify-center text-sm font-medium"
-                    aria-live="polite"
-                  >
-                    Page {page} of{" "}
-                    {Math.ceil((leadsData?.total || 0) / PAGE_SIZE)}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(page + 1)}
-                    disabled={
-                      !leadsData ||
-                      page >= Math.ceil(leadsData.total / PAGE_SIZE)
-                    }
-                    aria-label="Next page"
-                  >
-                    Next
-                  </Button>
-                </div>
+
+                {totalPages > 1 && (
+                  <CustomPagination
+                    onPageChange={(page) => {
+                      handlePageChange(page);
+                    }}
+                    totalPages={totalPages}
+                    currentPage={currentPage}
+                  />
+                )}
               </>
             )}
           </div>

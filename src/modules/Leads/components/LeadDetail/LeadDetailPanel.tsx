@@ -43,10 +43,8 @@ import {
 import LeadForm from "../LeadForm/LeadForm";
 import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
 import { useLeadDetails } from "./hooks/useLeadDetails";
-import { useUpdateLeadStatus } from "./hooks/useUpdateLeadStatus";
-import { useAssignLead } from "./hooks/useUpdateAssignmentMutation";
-import { useDeleteLead } from "./hooks/useDeleteLead";
 import { LeadActivities } from "./components/LeadActivities";
+import { useAssignLead, useDeleteLead, useUpdateLeadStatus } from "./hooks/useLeadDetailMutations";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -70,9 +68,9 @@ const LeadDetailPanel = ({
     error: leadError,
   } = useLeadDetails({ leadId });
 
-  const updateStatusMutation = useUpdateLeadStatus();
-  const updateAssignmentMutation = useAssignLead();
   const deleteLeadMutation = useDeleteLead();
+  const updateStatusMutation = useUpdateLeadStatus();
+ const updateAssignmentMutation = useAssignLead();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
