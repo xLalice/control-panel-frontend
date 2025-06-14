@@ -1,3 +1,5 @@
+
+
 export {
   Select,
   SelectContent,
@@ -39,6 +41,7 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "./form";
 export {
   Dialog,
@@ -67,6 +70,12 @@ export {
   AlertDialogCancel,
   AlertDialogAction,
 } from "./alert-dialog";
+
+export {Alert, AlertDescription} from "./alert";
+
+export {Textarea} from "./textarea";
+
+export { Checkbox } from "./checkbox";
 
 export { Separator } from "./separator";
 
