@@ -25,7 +25,13 @@ import { useAppDispatch } from "./store/store";
 import { useEffect } from "react";
 import { ClientList } from "./modules/Clients/components/ClientList/ClientList";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 const AppContent = () => {
   const location = useLocation();
