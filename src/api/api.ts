@@ -1,6 +1,6 @@
 import axios from "axios";
 import { LoginFormData } from "../modules/Login";
-import { UpdateLeadParams, User } from "@/types";
+import { User } from "@/types";
 import { Product } from "@/modules/Products/types";
 import {
   InquiryFilterParams,
@@ -13,6 +13,7 @@ import {
 } from "@/modules/Inquiry/types";
 import { Document, DocumentCategory } from "@/modules/Documents/types";
 import { Attendance, DTRSettings, AllowedIP } from "@/modules/Attendance/types";
+import { Lead } from "@/modules/Leads/types/leads.types";
 
 export interface QuoteDetails {
   basePrice: number;
@@ -73,7 +74,7 @@ export const addUser = async (userData: {
   name: string;
   email: string;
   password: string;
-  role: {id: number, name: string};
+  role: { id: number; name: string };
 }) => {
   try {
     const response = await apiClient.post("/users", userData);
@@ -85,7 +86,11 @@ export const addUser = async (userData: {
 
 export const updateUser = async (
   id: string,
-  userData: { name?: string; email?: string; role?: {id: number, name: string} }
+  userData: {
+    name?: string;
+    email?: string;
+    role?: { id: number; name: string };
+  }
 ) => {
   try {
     const response = await apiClient.put(`/users/${id}`, userData);
@@ -140,7 +145,7 @@ export const fetchSheetNames = async () => {
 export const updateLead = async (
   sheetName: string,
   leadId: string,
-  updates: UpdateLeadParams
+  updates: Partial<Lead>
 ): Promise<void> => {
   try {
     const encodedSheetName = encodeURIComponent(sheetName);
@@ -233,7 +238,6 @@ export const deleteProduct = async (id: string): Promise<void> => {
   }
 };
 
-// Inquiries
 export const getInquiries = async (
   params: InquiryFilterParams
 ): Promise<PaginatedResponse<Inquiry>> => {
@@ -377,11 +381,19 @@ export const approveInquiry = async (id: string): Promise<Inquiry> => {
 // Schedule an inquiry
 export const scheduleInquiry = async (
   id: string,
-  scheduledDate: Date | string
+  scheduledDate: Date | string,
+  options?: {
+    priority?: string;
+    reminderMinutes?: number;
+  }
 ): Promise<Inquiry> => {
   try {
     const response = await apiClient.post(`/inquiries/${id}/schedule`, {
       scheduledDate,
+      ...(options && {
+        priority: options.priority,
+        reminderMinutes: options.reminderMinutes,
+      }),
     });
     return response.data;
   } catch (err: any) {
@@ -442,11 +454,12 @@ export const convertInquiryToLead = async (
   try {
     const response = await apiClient.post(`/inquiries/${id}/convert-to-lead`);
     return response.data.data;
-  } catch (err: any) {
-    console.error(err);
-    throw new Error(
-      err.response?.data?.error || "Converting inquiry to lead failed"
-    );
+  } catch (err: any) { 
+    console.error("Original error caught in api.ts:", err); 
+    console.error("Error response data in api.ts:", err.response?.data); 
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || "Converting inquiry to lead failed";
+
+    throw new Error(errorMessage);
   }
 };
 
