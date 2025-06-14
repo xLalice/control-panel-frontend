@@ -86,7 +86,7 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
     debouncedCompanyName,
   });
 
-  const { data: products, isLoading: isProductsLoading } = useProduct();
+  const { data: products } = useProduct();
 
   useEffect(() => {
     if (customerData) {

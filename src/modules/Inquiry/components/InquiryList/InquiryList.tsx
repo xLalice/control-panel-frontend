@@ -61,7 +61,6 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
     refreshTrigger,
   });
 
-
   const openCreateQuoteDialog = (inquiryId: string) => {
     setSelectedInquiryId(inquiryId);
     setCreateQuoteDialogOpen(true);
@@ -223,7 +222,11 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow
+                    key={row.id}
+                    className="cursor-pointer hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    onClick={() => openDetailsDialog(row.original)}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(

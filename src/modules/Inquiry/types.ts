@@ -1,3 +1,4 @@
+import { User } from "@/types";
 import { Lead } from "../Leads/types/leads.types";
 import { Product } from "../Products/types";
 import {z} from "zod";
@@ -31,10 +32,7 @@ export interface Inquiry {
   dueDate?: Date | string | null;
   inquiryType: InquiryType;
   priority?: Priority | null;
-  assignedTo?: {
-    id: string;
-    name: string;
-  };
+  assignedTo?: User;
   product?: Partial<Product>;
 }
 
@@ -109,18 +107,41 @@ export interface CountByStatus {
   count: number;
 }
 
-export interface CountBySource {
-  source: string;
+export interface CountByReferenceSource {
+  referenceSource: string;
   count: number;
 }
 
-export interface CountByProductType {
-  productType: string;
+export interface CountByProduct {
+  product: string;
   count: number;
 }
+
+export interface CountByInquiryTpe {
+  inquiryType: string;
+  count: number;
+}
+
+export interface CountByPriority {
+  priority: string,
+  count: number;
+}
+
+export interface CountByDeliveryMethod {
+  deliveryMethod: string,
+  count: number
+}
+
 
 export interface MonthlyTrend {
   month: string | Date;
+  count: number;
+  fulfilled: number;
+  cancelled: number;
+}
+
+interface DailyTrend {
+  date: Date | string;
   count: number;
 }
 
@@ -128,9 +149,13 @@ export interface MonthlyTrend {
 export interface InquiryStatistics {
   totalInquiries: number;
   byStatus: CountByStatus[];
-  bySource: CountBySource[];
-  byProductType: CountByProductType[];
+  byReferenceSource: CountByReferenceSource[];
+  byProductType: CountByProduct[];
+  byInquiryType: CountByInquiryTpe[];
+  byPriority: CountByPriority[];
+  byDeliveryMethod: CountByDeliveryMethod[];
   monthlyTrends?: MonthlyTrend[] | null;
+  dailyTrends?: DailyTrend[] | null
   conversionRate: number;
 }
 

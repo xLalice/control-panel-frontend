@@ -188,16 +188,13 @@ export const useInquiriesTable = ({
         cell: ({ row }) => {
           const inquiry = row.original;
           return (
-            <DropdownMenu>
+            inquiry.status !== "Cancelled" ? (<DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => openDetailsDialog(inquiry)}>
-                  View Details
-                </DropdownMenuItem>
                 {inquiry.status === "New" && (
                   <DropdownMenuItem
                     onClick={() => openCreateQuoteDialog(inquiry.id)}
@@ -235,7 +232,8 @@ export const useInquiriesTable = ({
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu>) :
+            <></>
           );
         },
       },

@@ -14,3 +14,13 @@ export const getPriorityColor = (priority: Priority) => {
       return "bg-slate-50 text-slate-700 border-slate-200";
   }
 };
+
+export const formatDate = (date: string | Date) => {
+    if (!date) return "Not set";
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    return dateObj.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
