@@ -398,22 +398,6 @@ export const LeadFormContent: React.FC<LeadFormContentProps> = ({
 
             <FormField
               control={form.control}
-              name="industry"
-              render={({ field }) => (
-                <FormItem className="col-span-1">
-                  <FormLabel className="text-xs">
-                    Industry{isEditMode ? "*" : ""}
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} className="h-8 text-sm" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="estimatedValue"
               render={({ field }) => (
                 <FormItem className="col-span-1">
