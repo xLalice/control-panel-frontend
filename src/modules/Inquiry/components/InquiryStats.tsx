@@ -32,8 +32,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { getInquiryStatistics } from '@/api/api';
-import { InquiryStatistics, Priority } from '../types';
-import { getPriorityColor } from '../inquiry.utils';
+import { InquiryStatistics } from '../types';
 
 const STATUS_ORDER = ['New', 'Quoted', 'Approved', 'Scheduled', 'Fulfilled', 'Cancelled'] as const;
 
@@ -87,6 +86,13 @@ const STATUS_CONFIG = {
     border: 'border-gray-200',
     text: 'text-gray-800'
   },
+};
+
+const PRIORITY_COLORS = {
+  'Low': '#10B981',
+  'Medium': '#F59E0B', 
+  'High': '#F97316',
+  'Urgent': '#EF4444'
 };
 
 const REFERENCE_SOURCE_COLORS = {
@@ -189,7 +195,7 @@ function InquiryStats() {
       priorityData: data.byPriority?.map(item => ({
         name: item.priority,
         value: item.count,
-        color: getPriorityColor(item.priority as Priority) || '#6B7280'
+        color: PRIORITY_COLORS[item.priority as keyof typeof PRIORITY_COLORS] || '#6B7280'
       })) || [],
       deliveryMethodData: data.byDeliveryMethod?.map(item => ({
         name: item.deliveryMethod,
