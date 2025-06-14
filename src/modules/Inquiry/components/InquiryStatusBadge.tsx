@@ -1,34 +1,31 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "@/components/ui";
 
-// Assuming this enum is defined in a types file or within this file
-enum InquiryStatus {
-  New = 'New',
-  Quoted = 'Quoted',
-  Approved = 'Approved',
-  Scheduled = 'Scheduled',
-  Fulfilled = 'Fulfilled',
-  Cancelled = 'Cancelled',
-}
+export const InquiryStatusBadge = ({ status }: { status: string }) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "New":
+        return "bg-sky-100 text-sky-800 border-sky-300";
+      case "Quoted":
+        return "bg-amber-100 text-amber-800 border-amber-300";
+      case "Approved":
+        return "bg-indigo-100 text-indigo-800 border-indigo-300";
+      case "Scheduled":
+        return "bg-emerald-100 text-emerald-800 border-emerald-300";
+      case "Fulfilled":
+        return "bg-stone-100 text-stone-800 border-stone-300";
+      case "Cancelled":
+        return "bg-red-100 text-red-800 border-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-300";
+    }
+  };
 
-interface InquiryStatusBadgeProps {
-  status: InquiryStatus;
-}
-
-export const InquiryStatusBadge: React.FC<InquiryStatusBadgeProps> = ({ status }) => {
-  switch (status) {
-    case InquiryStatus.New:
-      return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">New</Badge>;
-    case InquiryStatus.Quoted:
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Quoted</Badge>;
-    case InquiryStatus.Approved:
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Approved</Badge>;
-    case InquiryStatus.Scheduled:
-      return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Scheduled</Badge>;
-    case InquiryStatus.Fulfilled:
-      return <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">Fulfilled</Badge>;
-    case InquiryStatus.Cancelled:
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelled</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
+  return (
+    <Badge
+      variant="outline"
+      className={`${getStatusColor(status)} font-medium`}
+    >
+      {status}
+    </Badge>
+  );
 };

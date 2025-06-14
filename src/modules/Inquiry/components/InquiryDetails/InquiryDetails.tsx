@@ -9,7 +9,7 @@ import {
   MapPin,
   Package,
   Truck,
-  User,
+  User as UserIcon,
   Building,
   Clock,
   Flag,
@@ -21,10 +21,24 @@ import {
   Tag,
   ChevronRight,
   LucideProps,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import { Inquiry, Priority } from "../../types";
 import { useNavigate } from "react-router-dom";
 import { getPriorityColor } from "../../inquiry.utils";
+import { Select, SelectItem } from "@/components/ui";
+import {
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@radix-ui/react-select";
+import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
+import { useAssignInquiryMutation } from "../hooks/useAssignInquiryMutation";
+import { useEffect, useState } from "react";
+import { InquiryStatusBadge } from "../InquiryStatusBadge";
+import { formatDate } from "../../inquiry.utils";
+import { User } from "@/types";
 
 interface InquiryDetailProps {
   isOpen: boolean;
@@ -32,38 +46,6 @@ interface InquiryDetailProps {
   inquiry: Inquiry;
   onConvertToLead: () => void;
 }
-
-const InquiryStatusBadge = ({ status }: { status: string }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "New":
-        return "bg-sky-100 text-sky-800 border-sky-300";
-      case "Quoted":
-        return "bg-amber-100 text-amber-800 border-amber-300";
-      case "Approved":
-        return "bg-indigo-100 text-indigo-800 border-indigo-300";
-      case "Scheduled":
-        return "bg-emerald-100 text-emerald-800 border-emerald-300";
-      case "Fulfilled":
-        return "bg-stone-100 text-stone-800 border-stone-300";
-      case "Cancelled":
-        return "bg-red-100 text-red-800 border-red-300";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
-    }
-  };
-
-  return (
-    <Badge
-      variant="outline"
-      className={`${getStatusColor(status)} font-medium`}
-    >
-      {status}
-    </Badge>
-  );
-};
-
-
 
 const InfoRow = ({
   icon: IconComponent,
@@ -93,16 +75,33 @@ export const InquiryDetails = ({
   onClose = () => {},
   isOpen = true,
 }: InquiryDetailProps) => {
-  const formatDate = (date: string | Date) => {
-    if (!date) return "Not set";
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const [currentAssignment, setCurrentAssignment] = useState<User | null>(
+    inquiry.assignedTo ?? null
+  );
+
+  useEffect(() => {
+    setCurrentAssignment(inquiry.assignedTo ?? null);
+  }, [inquiry.assignedTo]);
+
   const navigate = useNavigate();
+
+  const { data: users } = useUsersData();
+
+  const { mutate: assignInquiry, isPending: isAssigning } =
+    useAssignInquiryMutation(inquiry.id);
+
+  const handleAssignmentChange = (selectedUserId: string) => {
+    if (selectedUserId === "unassign") {
+      setCurrentAssignment(null);
+      assignInquiry({ assignedToId: null });
+    } else {
+      const selectedUser = users?.find((user) => user.id === selectedUserId);
+      if (selectedUser) {
+        setCurrentAssignment(selectedUser);
+      }
+      assignInquiry({ assignedToId: selectedUserId });
+    }
+  };
 
   const handleViewLead = () => {
     if (inquiry.relatedLeadId) {
@@ -150,43 +149,165 @@ export const InquiryDetails = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 mt-4">
-            {inquiry.relatedLeadId ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={handleViewLead}
+          <div className="mt-6 px-0">
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+              {inquiry.relatedLeadId ? (
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="group flex items-center justify-center gap-3 px-6 py-4 
+                   bg-gradient-to-r from-slate-50 to-blue-50 
+                   border-2 border-slate-200 hover:border-blue-300
+                   text-slate-700 hover:text-blue-700
+                   transition-all duration-300 ease-out
+                   hover:shadow-lg hover:shadow-blue-100/50
+                   hover:-translate-y-0.5
+                   rounded-xl font-medium text-sm
+                   min-h-[56px] relative overflow-hidden"
+                  onClick={handleViewLead}
+                >
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-indigo-500/0 
+                        group-hover:from-blue-500/5 group-hover:to-indigo-500/5 
+                        transition-all duration-300"
+                  />
+
+                  <div className="relative flex items-center gap-3">
+                    <div
+                      className="p-1.5 rounded-lg bg-blue-100 group-hover:bg-blue-200 
+                          transition-colors duration-200"
+                    >
+                      <ExternalLink className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <span className="font-semibold">View Connected Lead</span>
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </div>
+                </Button>
+              ) : (
+                <Button
+                  onClick={onConvertToLead}
+                  size="default"
+                  className="group flex items-center justify-center gap-3 px-6 py-4
+                   bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500
+                   hover:from-emerald-600 hover:via-green-600 hover:to-teal-600
+                   text-white font-semibold text-sm
+                   shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30
+                   transition-all duration-300 ease-out
+                   hover:-translate-y-0.5 hover:scale-[1.02]
+                   rounded-xl border-0 min-h-[56px]
+                   relative overflow-hidden"
+                >
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
+                        translate-x-[-100%] group-hover:translate-x-[100%] 
+                        transition-transform duration-700 ease-out"
+                  />
+
+                  <div className="relative flex items-center gap-3">
+                    <div
+                      className="p-1.5 rounded-lg bg-white/20 group-hover:bg-white/30 
+                          transition-colors duration-200"
+                    >
+                      <Zap className="h-4 w-4" />
+                    </div>
+                    <span>Convert to Lead</span>
+                    <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </div>
+                </Button>
+              )}
+
+              <div
+                className="flex items-center gap-3 bg-white rounded-xl p-4 
+                              border-2 border-gray-200 hover:border-gray-300
+                              shadow-sm hover:shadow-md
+                              transition-all duration-200
+                              min-h-[56px] flex-1 sm:flex-initial sm:min-w-[280px]"
               >
-                <ExternalLink className="h-4 w-4" />
-                View Connected Lead
-              </Button>
-            ) : (
-              <Button
-                onClick={() => onConvertToLead()}
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <ChevronRight className="h-4 w-4" />
-                Convert to Lead
-              </Button>
-            )}
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <div className="p-1.5 rounded-lg bg-purple-100">
+                    <UserIcon className="h-3.5 w-3.5 text-purple-600" />
+                  </div>
+                  <span className="whitespace-nowrap">Assign to:</span>
+                </div>
+
+                <Select
+                  value={currentAssignment?.id || "unassign"}
+                  onValueChange={handleAssignmentChange}
+                  disabled={isAssigning}
+                >
+                  <SelectTrigger
+                    className="h-10 flex-1 border-2 border-gray-200 
+                                            focus:border-purple-400 focus:ring-2 focus:ring-purple-100
+                                            hover:border-gray-300 
+                                            rounded-lg bg-gray-50 hover:bg-white
+                                            transition-all duration-200
+                                            text-sm font-medium
+                                            disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <SelectValue
+                      placeholder={
+                        <span className="text-gray-500">
+                          {currentAssignment?.name || "Select assignee..."}
+                        </span>
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-gray-200 shadow-lg bg-white">
+                    <SelectItem
+                      value="unassign"
+                      className="hover:bg-gray-50 focus:bg-gray-50 rounded-lg m-1 
+                                 transition-colors duration-150 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        <span className="text-gray-600">Unassigned</span>
+                      </div>
+                    </SelectItem>
+                    {users?.map((user) => (
+                      <SelectItem
+                        key={user.id}
+                        value={user.id}
+                        className="hover:bg-purple-50 focus:bg-purple-50 rounded-lg m-1
+                                   transition-colors duration-150 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          <span className="font-medium">{user.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Loading indicator for assignment */}
+                {isAssigning && (
+                  <div className="flex items-center justify-center w-6 h-6">
+                    <div
+                      className="w-4 h-4 border-2 border-purple-500 border-t-transparent 
+                                    rounded-full animate-spin"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Content */}
         <div className="h-full overflow-y-auto pb-20">
           <div className="p-6 space-y-6">
-            {/* Customer Information */}
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
+                  <UserIcon className="h-5 w-5 text-blue-600" />
                   Customer Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InfoRow icon={User} label="Name" value={inquiry.clientName} />
+                <InfoRow
+                  icon={UserIcon}
+                  label="Name"
+                  value={inquiry.clientName}
+                />
                 <InfoRow
                   icon={Phone}
                   label="Phone"
@@ -308,7 +429,7 @@ export const InquiryDetails = ({
                   />
                   {inquiry.quotedBy && (
                     <InfoRow
-                      icon={User}
+                      icon={UserIcon}
                       label="Quoted By"
                       value={inquiry.quotedBy.name}
                     />
@@ -358,7 +479,7 @@ export const InquiryDetails = ({
 
                 {inquiry.assignedTo && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="h-4 w-4" />
                     Assigned to {inquiry.assignedTo.name}
                   </div>
                 )}
@@ -386,7 +507,7 @@ export const InquiryDetails = ({
                     value={<Badge>{inquiry.relatedLead.status}</Badge>}
                   />
                   <InfoRow
-                    icon={User}
+                    icon={UserIcon}
                     label="Contact Person"
                     value={inquiry.relatedLead.contactPerson || "N/A"}
                   />

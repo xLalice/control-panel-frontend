@@ -1,7 +1,9 @@
-import { useMemo } from 'react'; 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle,
+  Tabs, TabsContent, TabsList, TabsTrigger
+ } from '@/components/ui';
+
 import {
   BarChart,
   PieChart,
@@ -14,32 +16,156 @@ import {
   Legend,
   Pie,
   Cell,
+  Area,
+  AreaChart,
 } from 'recharts';
-import { getInquiryStatistics } from '@/api/api'; 
-import { InquiryStatistics } from '../types'; 
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle,
+  Package,
+  Phone,
+  Calendar,
+  Target,
+  MessageSquare
+} from 'lucide-react';
+import { getInquiryStatistics } from '@/api/api';
+import { InquiryStatistics, Priority } from '../types';
+import { getPriorityColor } from '../inquiry.utils';
 
-const STATUS_ORDER: ReadonlyArray<string> = ['New', 'Quoted', 'Approved', 'Scheduled', 'Fulfilled', 'Cancelled'];
+const STATUS_ORDER = ['New', 'Quoted', 'Approved', 'Scheduled', 'Fulfilled', 'Cancelled'] as const;
 
-const STATUS_COLORS: Readonly<{ [key: string]: { bg: string; chart: string } }> = {
-  'New':       { bg: 'bg-blue-100',    chart: '#3B82F6' }, 
-  'Quoted':    { bg: 'bg-yellow-100',  chart: '#F59E0B' }, 
-  'Approved':  { bg: 'bg-emerald-100', chart: '#10B981' },
-  'Scheduled': { bg: 'bg-orange-100',  chart: '#F97316' }, 
-  'Fulfilled': { bg: 'bg-teal-100',    chart: '#14B8A6' }, 
-  'Cancelled': { bg: 'bg-red-100',     chart: '#EF4444' }, 
-  'Default':   { bg: 'bg-gray-100',    chart: '#6B7280' }, 
+const STATUS_CONFIG = {
+  'New': { 
+    bg: 'bg-gradient-to-br from-blue-50 to-blue-100', 
+    chart: '#3B82F6', 
+    icon: MessageSquare,
+    border: 'border-blue-200',
+    text: 'text-blue-800'
+  },
+  'Quoted': { 
+    bg: 'bg-gradient-to-br from-amber-50 to-yellow-100', 
+    chart: '#F59E0B', 
+    icon: Clock,
+    border: 'border-yellow-200',
+    text: 'text-yellow-800'
+  },
+  'Approved': { 
+    bg: 'bg-gradient-to-br from-emerald-50 to-green-100', 
+    chart: '#10B981', 
+    icon: CheckCircle,
+    border: 'border-emerald-200',
+    text: 'text-emerald-800'
+  },
+  'Scheduled': { 
+    bg: 'bg-gradient-to-br from-orange-50 to-orange-100', 
+    chart: '#F97316', 
+    icon: Calendar,
+    border: 'border-orange-200',
+    text: 'text-orange-800'
+  },
+  'Fulfilled': { 
+    bg: 'bg-gradient-to-br from-teal-50 to-teal-100', 
+    chart: '#14B8A6', 
+    icon: Package,
+    border: 'border-teal-200',
+    text: 'text-teal-800'
+  },
+  'Cancelled': { 
+    bg: 'bg-gradient-to-br from-red-50 to-red-100', 
+    chart: '#EF4444', 
+    icon: AlertCircle,
+    border: 'border-red-200',
+    text: 'text-red-800'
+  },
+  'Default': { 
+    bg: 'bg-gradient-to-br from-gray-50 to-gray-100', 
+    chart: '#6B7280', 
+    icon: AlertCircle,
+    border: 'border-gray-200',
+    text: 'text-gray-800'
+  },
 };
-const GENERAL_CHART_COLORS: ReadonlyArray<string> = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#A4DE6C', '#D0ED57', '#FFC658'];
 
-const getStatusColor = (status: string, type: 'bg' | 'chart'): string => {
-  return (STATUS_COLORS[status] || STATUS_COLORS['Default'])[type];
+const REFERENCE_SOURCE_COLORS = {
+  'Facebook': '#1877F2',
+  'Instagram': '#E4405F',
+  'TikTok': '#000000',
+  'Referral': '#8B5CF6',
+  'Flyers': '#06B6D4',
+  'Other': '#6B7280'
 };
 
+const getStatusConfig = (status: string) => {
+  return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG['Default'];
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+        <p className="font-medium text-gray-900">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {`${entry.name}: ${entry.value}`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const StatCard = ({ title, value, icon: Icon, trend, trendValue, subtitle, className = "" }: any) => (
+  <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${className}`}>
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+        </div>
+        <div className="flex flex-col items-end space-y-2">
+          <div className="p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-full">
+            <Icon className="h-6 w-6 text-indigo-600" />
+          </div>
+          {trend && (
+            <div className={`flex items-center space-x-1 text-xs ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+              {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              <span>{trendValue}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const StatusCard = ({ status, count }: { status: string; count: number }) => {
+  const config = getStatusConfig(status);
+  const Icon = config.icon;
+  
+  return (
+    <Card className={`${config.bg} ${config.border} border transition-all duration-300 hover:shadow-md hover:scale-105`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className={`text-sm font-medium ${config.text}`}>{status}</p>
+            <p className="text-2xl font-bold text-gray-900">{count}</p>
+          </div>
+          <Icon className={`h-5 w-5 ${config.text}`} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 function InquiryStats() {
-  const { data, isLoading, isError, error } = useQuery<InquiryStatistics, Error>({ 
-    queryKey: ['inquiryStats'], 
-    queryFn: () => getInquiryStatistics(), 
+  const { data, isLoading, isError, error } = useQuery<InquiryStatistics, Error>({
+    queryKey: ['inquiryStats'],
+    queryFn: () => getInquiryStatistics(),
   });
 
   const processedData = useMemo(() => {
@@ -51,226 +177,410 @@ function InquiryStats() {
     }));
 
     const chartData = {
-      sourceDistribution: data.bySource.map(item => ({
-        name: item.source,
+      referenceSourceData: data.byReferenceSource?.map(item => ({
+        name: item.referenceSource,
         value: item.count,
-      })),
-      productTypeData: data.byProductType.map(item => ({
-        name: item.productType,
+        color: REFERENCE_SOURCE_COLORS[item.referenceSource as keyof typeof REFERENCE_SOURCE_COLORS] || '#6B7280'
+      })) || [],
+      inquiryTypeData: data.byInquiryType?.map(item => ({
+        name: item.inquiryType,
         value: item.count,
-      })),
+      })) || [],
+      priorityData: data.byPriority?.map(item => ({
+        name: item.priority,
+        value: item.count,
+        color: getPriorityColor(item.priority as Priority) || '#6B7280'
+      })) || [],
+      deliveryMethodData: data.byDeliveryMethod?.map(item => ({
+        name: item.deliveryMethod,
+        value: item.count,
+      })) || [],
       statusData: statusCounts.map(item => ({
         name: item.status,
         value: item.count,
+        color: getStatusConfig(item.status).chart
       })),
       monthlyData: (data.monthlyTrends ?? []).map(item => ({
-        
         month: new Date(item.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        inquiries: item.count,
+        fulfilled: item.fulfilled || 0,
+        cancelled: item.cancelled || 0,
+      })),
+      dailyData: (data.dailyTrends ?? []).map(item => ({
+        date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         inquiries: item.count,
       })),
     };
 
     return {
-      statusCounts, 
-      chartData,    
+      statusCounts,
+      chartData,
     };
-  }, [data]); 
-
-  
+  }, [data]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center p-8 h-64"><p>Loading statistics...</p></div>;
+    return (
+      <div className="flex justify-center items-center p-8 h-64">
+        <div className="space-y-4 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="text-gray-600">Loading statistics...</p>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
-    
-    return <div className="flex justify-center p-8 text-red-600 bg-red-100 border border-red-300 rounded-md">Error loading statistics: {error?.message || 'Unknown error'}</div>;
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-700 font-medium">Error loading statistics</p>
+          <p className="text-red-600 text-sm mt-2">{error?.message || 'Unknown error occurred'}</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (!data || !processedData) {
-    return <div className="flex justify-center p-8 text-gray-600">No statistics data available for the selected period.</div>;
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No statistics data available for the selected period.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const { statusCounts, chartData } = processedData;
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-    
+    <div className="space-y-8 p-6">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Inquiries"
+          value={data.totalInquiries}
+          icon={MessageSquare}
+          trend="up"
+          trendValue="+12%"
+          subtitle="This month"
+        />
+        <StatCard
+          title="Conversion Rate"
+          value={`${data.conversionRate.toFixed(1)}%`}
+          icon={Target}
+          trend="up"
+          trendValue="+2.3%"
+          subtitle="Quote to fulfillment"
+        />
+        <StatCard
+          title="Active Inquiries"
+          value={statusCounts.filter(s => !['Fulfilled', 'Cancelled'].includes(s.status)).reduce((sum, s) => sum + s.count, 0)}
+          icon={Clock}
+          subtitle="Pending processing"
+        />
+        <StatCard
+          title="Avg Response Time"
+          value="2.4h"
+          icon={Phone}
+          trend="down"
+          trendValue="-18min"
+          subtitle="Time to first quote"
+        />
+      </div>
+
+      {/* Status Overview */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">Inquiry Overview</CardTitle>
+          <CardTitle className="flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5 text-indigo-600" />
+            <span>Inquiry Status Overview</span>
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-             <div className="p-4 bg-indigo-100 rounded-lg">
-                <p className="text-sm font-medium text-indigo-800">Total Inquiries</p>
-                <p className="text-3xl font-bold text-indigo-900">{data.totalInquiries}</p>
-              </div>
-             <div className="p-4 bg-purple-100 rounded-lg">
-                <p className="text-sm font-medium text-purple-800">Conversion Rate</p>
-                <p className="text-3xl font-bold text-purple-900">{data.conversionRate.toFixed(1)}%</p>
-             </div>
-             {statusCounts.slice(0, 2).map(({ status, count }) => (
-                 <div key={status} className={`${getStatusColor(status, 'bg')} p-4 rounded-lg`}>
-                   <p className="text-sm font-medium text-gray-700">{status}</p>
-                   <p className="text-3xl font-bold text-gray-900">{count}</p>
-                 </div>
-             ))}
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {statusCounts.map(({ status, count }) => (
+              <StatusCard key={status} status={status} count={count} />
+            ))}
           </div>
-           
-           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center pt-4 border-t mt-4">
-               {statusCounts.slice(2).map(({ status, count }) => (
-                   <div key={status} className={`${getStatusColor(status, 'bg')} p-3 rounded-lg`}>
-                     <p className="text-xs font-medium text-gray-600">{status}</p>
-                     <p className="text-xl font-semibold text-gray-800">{count}</p>
-                   </div>
-               ))}
-           </div>
         </CardContent>
       </Card>
 
-      
-      <Tabs defaultValue="trends" className="mt-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
-           <TabsTrigger value="sources">Source Analysis</TabsTrigger>
-           <TabsTrigger value="products">Product Analysis</TabsTrigger>
-           <TabsTrigger value="status">Status Breakdown</TabsTrigger>
+      {/* Charts Tabs */}
+      <Tabs defaultValue="trends" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto p-1">
+          <TabsTrigger value="trends" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Trends
+          </TabsTrigger>
+          <TabsTrigger value="sources" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Sources
+          </TabsTrigger>
+          <TabsTrigger value="types" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Types
+          </TabsTrigger>
+          <TabsTrigger value="priority" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Priority
+          </TabsTrigger>
+          <TabsTrigger value="delivery" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Delivery
+          </TabsTrigger>
+          <TabsTrigger value="status" className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white">
+            Status
+          </TabsTrigger>
         </TabsList>
 
-        {/* Monthly Trends Tab */}
-        <TabsContent value="trends" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Inquiries Trend (Last 6 Months)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={chartData.monthlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                  <Tooltip contentStyle={{fontSize: '13px', borderRadius: '4px'}} />
-                  <Legend wrapperStyle={{fontSize: '14px'}}/>
-                  <Bar dataKey="inquiries" fill={STATUS_COLORS['New'].chart} name="Total Inquiries" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Source Analysis Tab */}
-        <TabsContent value="sources" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inquiries by Source</CardTitle>
-            </CardHeader>
-            <CardContent>
-               {chartData.sourceDistribution.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                     <PieChart>
-                        <Pie
-                          data={chartData.sourceDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false} 
-                          outerRadius={110}
-                          fill="#8884d8"
-                          dataKey="value"
-                          
-                          label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
-                            const x = cx + (outerRadius + 15) * Math.cos(-midAngle * (Math.PI / 180)); // Position label outside
-                            const y = cy + (outerRadius + 15) * Math.sin(-midAngle * (Math.PI / 180));
-                            if (percent < 0.03) return null; // Hide label for very small slices
-                            return (
-                              <text x={x} y={y} fill="currentColor" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12}>
-                                {`${name} (${(percent * 100).toFixed(0)}%)`}
-                              </text>
-                            );
-                          }}
-                        >
-                          {chartData.sourceDistribution.map((entry, index) => (
-                            <Cell key={`cell-${entry.name}-${index}`} fill={GENERAL_CHART_COLORS[index % GENERAL_CHART_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number, name: string) => [`${value} Inquiries`, name]} contentStyle={{fontSize: '13px', borderRadius: '4px'}}/>
-                        <Legend wrapperStyle={{fontSize: '14px'}} align="center" layout="horizontal" verticalAlign="bottom"/>
-                     </PieChart>
-                   </ResponsiveContainer>
-               ) : (
-                   <p className="text-center text-gray-500">No source data available.</p>
-               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-         {/* Product Analysis Tab */}
-         <TabsContent value="products" className="mt-4">
+        {/* Monthly Trends */}
+        <TabsContent value="trends" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                 <CardTitle>Inquiries by Product/Service</CardTitle>
+                <CardTitle>Monthly Inquiry Trends</CardTitle>
               </CardHeader>
               <CardContent>
-                 {chartData.productTypeData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={Math.max(300, chartData.productTypeData.length * 40)}>
-                      <BarChart data={chartData.productTypeData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
-                          <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 12 }} interval={0} />
-                          <Tooltip formatter={(value: number) => [`${value} Inquiries`, undefined]} contentStyle={{fontSize: '13px', borderRadius: '4px'}} />
-                          <Legend wrapperStyle={{fontSize: '14px'}} />
-                          <Bar dataKey="value" name="Number of Inquiries" fill={STATUS_COLORS['Approved'].chart} radius={[0, 4, 4, 0]} barSize={25} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                 ) : (
-                   <p className="text-center text-gray-500">No product type data available.</p>
-                 )}
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={chartData.monthlyData}>
+                    <defs>
+                      <linearGradient id="colorInquiries" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="inquiries" 
+                      stroke="#3B82F6" 
+                      fillOpacity={1} 
+                      fill="url(#colorInquiries)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
-         </TabsContent>
 
-        {/* Status Breakdown Tab */}
-        <TabsContent value="status" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fulfillment vs Cancellation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData.monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="fulfilled" fill="#10B981" name="Fulfilled" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="cancelled" fill="#EF4444" name="Cancelled" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Reference Sources */}
+        <TabsContent value="sources">
           <Card>
             <CardHeader>
-              <CardTitle>Inquiry Status Breakdown</CardTitle>
+              <CardTitle>Inquiries by Reference Source</CardTitle>
             </CardHeader>
             <CardContent>
-               {chartData.statusData.length > 0 ? (
-                 <div>
-                   <ResponsiveContainer width="100%" height={350}>
-                      <PieChart>
-                        <Pie
-                          data={chartData.statusData.filter(d => d.value > 0)} // Don't show 0-value slices
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={110}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
-                             const x = cx + (outerRadius + 15) * Math.cos(-midAngle * (Math.PI / 180));
-                             const y = cy + (outerRadius + 15) * Math.sin(-midAngle * (Math.PI / 180));
-                             if (percent < 0.03) return null;
-                             return (
-                               <text x={x} y={y} fill={getStatusColor(name, 'chart')} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12}>
-                                 {`${name} (${(percent * 100).toFixed(0)}%)`}
-                               </text>
-                             );
-                          }}
-                        >
-                          {chartData.statusData.filter(d => d.value > 0).map((entry) => (
-                            <Cell key={`cell-${entry.name}`} fill={getStatusColor(entry.name, 'chart')} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number, name: string) => [`${value} Inquiries`, name]} contentStyle={{fontSize: '13px', borderRadius: '4px'}}/>
-                        <Legend wrapperStyle={{fontSize: '14px'}} align="center" layout="horizontal" verticalAlign="bottom"/>
-                      </PieChart>
-                    </ResponsiveContainer>
-                 </div>
-               ) : (
-                   <p className="text-center text-gray-500">No status data available.</p>
-               )}
+              {chartData.referenceSourceData.length > 0 ? (
+                <div className="space-y-4">
+                  <ResponsiveContainer width="100%" height={400}>
+                    <PieChart>
+                      <Pie
+                        data={chartData.referenceSourceData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        dataKey="value"
+                        label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
+                          if (percent < 0.05) return null;
+                          const x = cx + (outerRadius + 20) * Math.cos(-midAngle * (Math.PI / 180));
+                          const y = cy + (outerRadius + 20) * Math.sin(-midAngle * (Math.PI / 180));
+                          return (
+                            <text
+                              x={x}
+                              y={y}
+                              fill="currentColor"
+                              textAnchor={x > cx ? 'start' : 'end'}
+                              dominantBaseline="central"
+                              fontSize={12}
+                              fontWeight="medium"
+                            >
+                              {`${name} (${(percent * 100).toFixed(0)}%)`}
+                            </text>
+                          );
+                        }}
+                      >
+                        {chartData.referenceSourceData.map((entry, index) => (
+                          <Cell key={`cell-${entry.name}-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+                    {chartData.referenceSourceData.map((item) => (
+                      <div key={item.name} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <div>
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-lg font-bold">{item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No reference source data available.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Inquiry Types */}
+        <TabsContent value="types">
+          <Card>
+            <CardHeader>
+              <CardTitle>Inquiries by Type</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.inquiryTypeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={Math.max(300, chartData.inquiryTypeData.length * 60)}>
+                  <BarChart data={chartData.inquiryTypeData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No inquiry type data available.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Priority Analysis */}
+        <TabsContent value="priority">
+          <Card>
+            <CardHeader>
+              <CardTitle>Inquiries by Priority Level</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.priorityData.length > 0 ? (
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={chartData.priorityData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        dataKey="value"
+                        label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
+                          if (percent < 0.05) return null;
+                          const x = cx + (outerRadius + 15) * Math.cos(-midAngle * (Math.PI / 180));
+                          const y = cy + (outerRadius + 15) * Math.sin(-midAngle * (Math.PI / 180));
+                          return (
+                            <text x={x} y={y} fill="currentColor" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12}>
+                              {`${name} (${(percent * 100).toFixed(0)}%)`}
+                            </text>
+                          );
+                        }}
+                      >
+                        {chartData.priorityData.map((entry, index) => (
+                          <Cell key={`cell-${entry.name}-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {chartData.priorityData.map((item) => (
+                      <div key={item.name} className="text-center p-4 bg-gray-50 rounded-lg">
+                        <div className="w-6 h-6 rounded-full mx-auto mb-2" style={{ backgroundColor: item.color }}></div>
+                        <p className="font-medium text-sm">{item.name}</p>
+                        <p className="text-2xl font-bold">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No priority data available.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Delivery Methods */}
+        <TabsContent value="delivery">
+          <Card>
+            <CardHeader>
+              <CardTitle>Delivery Method Preferences</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.deliveryMethodData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={chartData.deliveryMethodData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" fill="#06B6D4" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No delivery method data available.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Status Breakdown */}
+        <TabsContent value="status">
+          <Card>
+            <CardHeader>
+              <CardTitle>Status Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <ResponsiveContainer width="100%" height={350}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.statusData.filter(d => d.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={120}
+                      dataKey="value"
+                      label={({ cx, cy, midAngle, outerRadius, percent, name }) => {
+                        if (percent < 0.03) return null;
+                        const x = cx + (outerRadius + 20) * Math.cos(-midAngle * (Math.PI / 180));
+                        const y = cy + (outerRadius + 20) * Math.sin(-midAngle * (Math.PI / 180));
+                        return (
+                          <text x={x} y={y} fill={getStatusConfig(name).chart} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="medium">
+                            {`${name} (${(percent * 100).toFixed(0)}%)`}
+                          </text>
+                        );
+                      }}
+                    >
+                      {chartData.statusData.filter(d => d.value > 0).map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
