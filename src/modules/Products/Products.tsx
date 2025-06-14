@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,13 +23,13 @@ import {
 import {
   addProduct,
   deleteProduct,
-  fetchProducts,
   updateProduct,
 } from "@/api/api";
 import { ProductFormFields } from "./components/ProductFormFields";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
-import { ProductDetailModal } from "./components/ProductDetailModal"; // Import the new component
+import { ProductDetailModal } from "./components/ProductDetailModal"; 
+import { useProduct } from "./hooks/useProducts";
 
 const ProductManagementSystem = () => {
   const queryClient = useQueryClient();
@@ -51,11 +51,8 @@ const ProductManagementSystem = () => {
   const {
     data: products = [],
     isLoading,
-    refetch,
-  } = useQuery<Product[]>({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
+    refetch
+  } = useProduct();
 
   const handleSort = (field: keyof Product) => {
     if (sortField === field) {
