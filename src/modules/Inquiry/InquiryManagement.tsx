@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InquiryList } from './components/InquiryList';
-import { AddInquiryForm } from './components/AddInquiryForm';
+import { InquiryList } from './components/InquiryList/InquiryList';
+import { AddInquiryForm } from './InquiryCreateForm/AddInquiryForm';
 import InquiryStats from './components/InquiryStats';
 export function InquiryManagement() {
   const [activeTab, setActiveTab] = useState('list');
