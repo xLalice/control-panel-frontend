@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { fetchUsers, addUser, deleteUser, updateUser } from "../../api/api";
+import {  addUser, deleteUser, updateUser } from "../../api/api";
 import { Plus, Users, Loader2 } from "lucide-react";
 import {
   Card,
@@ -25,6 +25,7 @@ import { UserFormData } from "./types";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { useAppSelector } from "@/store/store";
 import { UserSkeleton } from "./components/UserSkeleton";
+import { useUsersData } from "./hooks/useUsersData";
 
 export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -37,17 +38,7 @@ export default function UserManagementPage() {
     selectUserHasPermission(state, "manage:users")
   );
 
-  const {
-    data: users = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await fetchUsers();
-      return response;
-    },
-  });
+  const {data: users = [], isLoading, error} = useUsersData();
 
   const addUserMutation = useMutation({
     mutationFn: addUser,
