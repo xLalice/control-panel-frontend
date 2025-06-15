@@ -10,7 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/api";
 import { Client, ClientStatus } from "../../clients.schema";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Building, Mail, Phone, ArrowUpDown, Plus } from "lucide-react";
 import { StatusBadge } from "./components/StatusBadge";
@@ -27,6 +27,7 @@ import { TableFilters } from "./components/TableFilters";
 import { ClientForm } from "../ClientForm/ClientForm";
 import { FormMode } from "../ClientForm/client.schema";
 import { ActionsDropdown } from "./components/ActionsDropdown";
+import { useLocation } from "react-router-dom";
 
 export const ClientList = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | ClientStatus>("all");
@@ -34,8 +35,25 @@ export const ClientList = () => {
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [globalFilter, setGlobalFilter] = useState("");
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const location = useLocation();
 
-  const { data: clients, refetch } = useQuery<Client[], Error>({
+  const [initialClientToOpenId, setInitialClientToOpenId] = useState<string | null>(null);
+  const clientsLoadedInitially = useRef(false); 
+
+  useEffect(() => {
+    if (
+      location.state &&
+      typeof location.state === "object" &&
+      "clientIdToOpen" in location.state
+    ) {
+      const idFromState = (location.state as { clientIdToOpen: string })
+        .clientIdToOpen;
+      setInitialClientToOpenId(idFromState);
+      window.history.replaceState({}, document.title, location.pathname);
+    }
+  }, [location.state, location.pathname]);
+
+  const { data: clients, refetch, isLoading: isClientsLoading } = useQuery<Client[], Error>({
     queryKey: ["clients"],
     refetchOnWindowFocus: false,
     queryFn: async () => {
@@ -43,6 +61,31 @@ export const ClientList = () => {
       return response.data;
     },
   });
+
+  useEffect(() => {
+    if (initialClientToOpenId && clients && !isClientsLoading && !clientsLoadedInitially.current) {
+      clientsLoadedInitially.current = true; 
+      const clientToOpen = clients.find((client) => client.id === initialClientToOpenId);
+      if (clientToOpen) {
+        handleViewDetail(clientToOpen);
+        setInitialClientToOpenId(null); 
+      }
+    }
+    if (initialClientToOpenId && clients && !isClientsLoading && formIsOpen === false) {
+        const clientToOpen = clients.find((client) => client.id === initialClientToOpenId);
+        if (clientToOpen) {
+          handleViewDetail(clientToOpen);
+          setInitialClientToOpenId(null); 
+        }
+    }
+
+  }, [initialClientToOpenId, clients, isClientsLoading, formIsOpen]);
+
+  const handleViewDetail = (client: Client) => {
+    setSelectedClient(client);
+    setFormMode("view");
+    setFormIsOpen(true);
+  };
 
   const columnHelper = createColumnHelper<Client>();
 
@@ -68,11 +111,7 @@ export const ClientList = () => {
           return (
             <div className="flex flex-col">
               <button
-                onClick={() => {
-                  setSelectedClient(client);
-                  setFormMode("view");
-                  setFormIsOpen(true);
-                }}
+                onClick={() => handleViewDetail(client)}
                 className="font-medium text-left hover:text-primary transition-colors cursor-pointer"
               >
                 {client.clientName}
@@ -258,7 +297,11 @@ export const ClientList = () => {
           </div>
         </div>
 
-        <Button onClick={handleCreateClient} size="lg" className="gap-2 bg-yellow-500 text-black hover:scale-105 hover:bg-yellow-700">
+        <Button
+          onClick={handleCreateClient}
+          size="lg"
+          className="gap-2 bg-yellow-500 text-black hover:scale-105 hover:bg-yellow-700"
+        >
           <Plus className="h-4 w-4" />
           Add Client
         </Button>
