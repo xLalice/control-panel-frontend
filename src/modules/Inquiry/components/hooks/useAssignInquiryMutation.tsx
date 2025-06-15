@@ -17,7 +17,7 @@ export const useAssignInquiryMutation = (inquiryId: string) => {
       );
       return response.data;
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["inquiries"],
         exact: false 
