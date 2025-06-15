@@ -1,6 +1,7 @@
 import { LeadStatus } from "../constants/constants";
 import { DateRange } from "react-day-picker";
 import { User } from "@/types";
+import { Client } from "@/modules/Clients/clients.schema";
 
 type LeadStatus = (typeof LeadStatus)[keyof typeof LeadStatus];
 
@@ -28,6 +29,7 @@ export interface Lead {
   createdAt?: string;
   notes?: string;
   contactHistory: ContactHistory[];
+  client: Client;
 }
 
 export type Filters = {
