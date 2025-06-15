@@ -39,7 +39,6 @@ const useLeadMutation = <TData = any, TVariables = any>(
   return useMutation<TData, Error, TVariables>({
     mutationFn: config.mutationFn,
     onSuccess: (data, variables) => {
-      // Handle query invalidation
       if (config.queryKeysToInvalidate) {
         const keysToInvalidate = config.queryKeysToInvalidate(variables);
         keysToInvalidate.forEach((key) => {

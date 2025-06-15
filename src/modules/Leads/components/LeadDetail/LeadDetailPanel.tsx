@@ -39,12 +39,21 @@ import {
   DollarSign,
   X,
   BarChart,
+  Zap,
+  Briefcase,
 } from "lucide-react";
 import LeadForm from "../LeadForm/LeadForm";
 import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
 import { useLeadDetails } from "./hooks/useLeadDetails";
 import { LeadActivities } from "./components/LeadActivities";
-import { useAssignLead, useDeleteLead, useUpdateLeadStatus } from "./hooks/useLeadDetailMutations";
+import {
+  useAssignLead,
+  useDeleteLead,
+  useUpdateLeadStatus,
+} from "./hooks/useLeadDetailMutations";
+import { useConvertToClientMutation } from "./hooks/useConvertToClientMutation";
+import { useNavigate } from "react-router-dom";
+
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -61,6 +70,7 @@ const LeadDetailPanel = ({
 }: LeadDetailPanelProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const {
     data: lead,
@@ -70,7 +80,9 @@ const LeadDetailPanel = ({
 
   const deleteLeadMutation = useDeleteLead();
   const updateStatusMutation = useUpdateLeadStatus();
- const updateAssignmentMutation = useAssignLead();
+  const updateAssignmentMutation = useAssignLead();
+  const { mutateAsync: convertToClientMutation, isPending } =
+    useConvertToClientMutation();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -137,6 +149,28 @@ const LeadDetailPanel = ({
     deleteLeadMutation.mutate({ leadId: lead.id });
   };
 
+  const handleConvertToCLient = async () => {
+    if (lead.client?.id) {
+      navigate("/clients", {
+        state: { clientIdToOpen: lead.client.id },
+      });
+    } else if (lead.status === LeadStatus.Won) {
+      try {
+        const newClient = await convertToClientMutation({
+          leadId: lead.id,
+        });
+        if (newClient.id) {
+          navigate("/clients", {
+            state: { clientIdToOpen: newClient.id },
+          });
+          onClose();
+        }
+      } catch (error) {
+        console.error("Failed to convert lead to client:", error);
+      }
+    }
+  };
+
   return (
     <div className="">
       <div
@@ -182,6 +216,29 @@ const LeadDetailPanel = ({
             >
               <Trash2 className="h-4 w-4 mr-2" /> Delete
             </Button>
+
+            {lead.client?.id ? (
+              <Button
+                size="sm"
+                onClick={handleConvertToCLient}
+              >
+                <Briefcase className="h-4 w-4 mr-2" /> View Related Client
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleConvertToCLient}
+                disabled={lead.status !== LeadStatus.Won || isPending}
+                className={
+                  lead.status !== LeadStatus.Won
+                    ? "hidden"
+                    : ""
+                }
+              >
+                <Zap className="h-4 w-4 mr-2" />{" "}
+                {isPending ? "Converting..." : "Convert to Client"}
+              </Button>
+            )}
           </div>
 
           <Tabs defaultValue="details">
