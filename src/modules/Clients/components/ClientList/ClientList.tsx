@@ -28,17 +28,24 @@ import { ClientForm } from "../ClientForm/ClientForm";
 import { FormMode } from "../ClientForm/client.schema";
 import { ActionsDropdown } from "./components/ActionsDropdown";
 import { useLocation } from "react-router-dom";
+import { ClientDetailsPanel } from "../ClientDetails/ClientDetails"; 
 
 export const ClientList = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | ClientStatus>("all");
-  const [formIsOpen, setFormIsOpen] = useState(false);
+  const [formIsOpen, setFormIsOpen] = useState(false); 
   const [formMode, setFormMode] = useState<FormMode>("create");
+
+  const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
+  const [selectedClient, setSelectedClient] =
+    useState<Client | null>(null);
+
   const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const location = useLocation();
 
-  const [initialClientToOpenId, setInitialClientToOpenId] = useState<string | null>(null);
-  const clientsLoadedInitially = useRef(false); 
+  const [initialClientToOpenId, setInitialClientToOpenId] = useState<
+    string | null
+  >(null);
+  const clientsLoadedInitially = useRef(false);
 
   useEffect(() => {
     if (
@@ -53,7 +60,11 @@ export const ClientList = () => {
     }
   }, [location.state, location.pathname]);
 
-  const { data: clients, refetch, isLoading: isClientsLoading } = useQuery<Client[], Error>({
+  const {
+    data: clients,
+    refetch,
+    isLoading: isClientsLoading,
+  } = useQuery<Client[], Error>({
     queryKey: ["clients"],
     refetchOnWindowFocus: false,
     queryFn: async () => {
@@ -63,28 +74,41 @@ export const ClientList = () => {
   });
 
   useEffect(() => {
-    if (initialClientToOpenId && clients && !isClientsLoading && !clientsLoadedInitially.current) {
-      clientsLoadedInitially.current = true; 
-      const clientToOpen = clients.find((client) => client.id === initialClientToOpenId);
+    if (
+      initialClientToOpenId &&
+      clients &&
+      !isClientsLoading &&
+      !clientsLoadedInitially.current
+    ) {
+      clientsLoadedInitially.current = true;
+      const clientToOpen = clients.find(
+        (client: Client) => client.id === initialClientToOpenId
+      );
       if (clientToOpen) {
         handleViewDetail(clientToOpen);
-        setInitialClientToOpenId(null); 
+        setInitialClientToOpenId(null);
       }
     }
-    if (initialClientToOpenId && clients && !isClientsLoading && formIsOpen === false) {
-        const clientToOpen = clients.find((client) => client.id === initialClientToOpenId);
-        if (clientToOpen) {
-          handleViewDetail(clientToOpen);
-          setInitialClientToOpenId(null); 
-        }
-    }
 
-  }, [initialClientToOpenId, clients, isClientsLoading, formIsOpen]);
+    if (
+      initialClientToOpenId &&
+      clients &&
+      !isClientsLoading &&
+      !isDetailsPanelOpen
+    ) {
+      const clientToOpen = clients.find(
+        (client: Client) => client.id === initialClientToOpenId
+      );
+      if (clientToOpen) {
+        handleViewDetail(clientToOpen);
+        setInitialClientToOpenId(null);
+      }
+    }
+  }, [initialClientToOpenId, clients, isClientsLoading, isDetailsPanelOpen]);
 
   const handleViewDetail = (client: Client) => {
     setSelectedClient(client);
-    setFormMode("view");
-    setFormIsOpen(true);
+    setIsDetailsPanelOpen(true);
   };
 
   const columnHelper = createColumnHelper<Client>();
@@ -111,7 +135,6 @@ export const ClientList = () => {
           return (
             <div className="flex flex-col">
               <button
-                onClick={() => handleViewDetail(client)}
                 className="font-medium text-left hover:text-primary transition-colors cursor-pointer"
               >
                 {client.clientName}
@@ -186,7 +209,8 @@ export const ClientList = () => {
       columnHelper.accessor("status", {
         header: "Status",
         cell: ({ getValue }) => <StatusBadge status={getValue()} />,
-        filterFn: (row, id, value) => {
+        filterFn: (row, id, value: ClientStatus | "all") => {
+          // Explicitly typed value
           if (value === "all") return true;
           return row.getValue(id) === value;
         },
@@ -219,9 +243,9 @@ export const ClientList = () => {
         cell: ({ row }) => (
           <ActionsDropdown
             client={row.original}
-            setFormIsOpen={setFormIsOpen}
+            setFormIsOpen={setFormIsOpen} 
             setFormMode={setFormMode}
-            setSelectedClient={setSelectedClient}
+            setSelectedClient={setSelectedClient} 
             refetch={refetch}
           />
         ),
@@ -233,7 +257,9 @@ export const ClientList = () => {
   const filteredData = useMemo(() => {
     if (!clients) return [];
     if (statusFilter === "all") return clients;
-    return clients.filter((client) => client.status === statusFilter);
+    return (clients as Client[]).filter(
+      (client: Client) => client.status === statusFilter
+    );
   }, [statusFilter, clients]);
 
   const table = useReactTable({
@@ -255,25 +281,27 @@ export const ClientList = () => {
     },
   });
 
+  // Function to open the ClientForm for creating a new client
   const handleCreateClient = () => {
-    setSelectedClient(null);
+    setSelectedClient(null); // Clear any previously selected client
     setFormMode("create");
     setFormIsOpen(true);
   };
 
   const handleFormSuccess = () => {
-    setFormIsOpen(false);
-    setSelectedClient(null);
+    setFormIsOpen(false); // Close ClientForm
+    setSelectedClient(null); // Clear selected client after form submission
     refetch(); // Refresh the client list
   };
 
   const handleFormClose = () => {
-    setFormIsOpen(false);
-    setSelectedClient(null);
+    setFormIsOpen(false); // Close ClientForm
+    setSelectedClient(null); // Clear selected client
   };
 
-  const handleEditFromView = () => {
-    setFormMode("edit");
+  const handleDetailsPanelClose = () => {
+    setIsDetailsPanelOpen(false);
+    setSelectedClient(null);
   };
 
   const clientsCount = clients?.length || 0;
@@ -345,6 +373,7 @@ export const ClientList = () => {
                   <TableRow
                     key={row.id}
                     className="hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => handleViewDetail(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="py-4">
@@ -390,9 +419,14 @@ export const ClientList = () => {
         mode={formMode}
         onSuccess={handleFormSuccess}
         onClose={handleFormClose}
-        onEdit={handleEditFromView}
         isOpen={formIsOpen}
         setIsOpen={setFormIsOpen}
+      />
+
+      <ClientDetailsPanel
+        client={selectedClient || undefined}
+        isOpen={isDetailsPanelOpen}
+        onClose={handleDetailsPanelClose}
       />
     </div>
   );

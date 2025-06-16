@@ -40,12 +40,6 @@ export const ActionsDropdown = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
-  const handleView = () => {
-    setSelectedClient(client);
-    setFormMode("view");
-    setFormIsOpen(true);
-    setDropdownOpen(false);
-  };
 
   const handleEdit = () => {
     setSelectedClient(client);
@@ -96,13 +90,6 @@ export const ActionsDropdown = ({
           className="w-48 z-50"
           sideOffset={4}
         >
-          <DropdownMenuItem 
-            onClick={handleView} 
-            className="cursor-pointer hover:bg-accent focus:bg-accent"
-          >
-            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>View Details</span>
-          </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => setHistoryDialogOpen(true)}
             className="cursor-pointer hover:bg-accent focus:bg-accent"

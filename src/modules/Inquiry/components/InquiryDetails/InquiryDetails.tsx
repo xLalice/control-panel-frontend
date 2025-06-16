@@ -14,7 +14,6 @@ import {
   Clock,
   Flag,
   HelpCircle,
-  X,
   ExternalLink,
   DollarSign,
   FileText,
@@ -39,6 +38,7 @@ import { useEffect, useState } from "react";
 import { InquiryStatusBadge } from "../InquiryStatusBadge";
 import { formatDate } from "../../inquiry.utils";
 import { User } from "@/types";
+import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 
 interface InquiryDetailProps {
   isOpen: boolean;
@@ -110,19 +110,9 @@ export const InquiryDetails = ({
   };
   return (
     <>
-      <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <aside
-        className={`fixed inset-y-0 right-0 w-full sm:w-[480px] lg:w-[560px] xl:w-[640px] bg-white shadow-2xl z-50 
-                   transform transition-all duration-300 ease-out overflow-hidden
-                   ${isOpen ? "translate-x-0" : "translate-x-full"}`}
-        aria-label="Inquiry details panel"
+      <SlideInPanel
+      isOpen={isOpen}
+      onClose={onClose}
       >
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
           <div className="flex items-center justify-between">
@@ -137,15 +127,6 @@ export const InquiryDetails = ({
                 {inquiry.clientName} • {formatDate(inquiry.createdAt)}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="ml-4 h-8 w-8 p-0 hover:bg-gray-100"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close panel</span>
-            </Button>
           </div>
 
           {/* Action Buttons */}
@@ -533,7 +514,7 @@ export const InquiryDetails = ({
             )}
           </div>
         </div>
-      </aside>
+      </SlideInPanel>
     </>
   );
 };

@@ -11,17 +11,15 @@ import { apiClient } from "@/api/api";
 interface UseClientFormProps {
   client?: ClientFormInput;
   onSuccess?: () => void;
-  onClose?: () => void;
 }
 
 export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
   const queryClient = useQueryClient();
   const isEditMode = Boolean(client);
-
+  
   const form = useForm<ClientFormInput>({
     resolver: zodResolver(client ? clientUpdateSchema : clientSchema),
-    defaultValues:
-      isEditMode && client ? defaultUpdateClient(client) : defaultCreateClient,
+    defaultValues: isEditMode && client ? defaultUpdateClient(client) : defaultCreateClient,
     mode: "onBlur",
   });
 
@@ -52,27 +50,22 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
         return response.data;
       }
     },
-
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({ queryKey: ["client", data.id] });
-
       toast.success(
         isEditMode
           ? "Client updated successfully"
           : "Client created successfully"
       );
-
       form.reset();
       onSuccess?.();
     },
-
     onError: (error: any) => {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
         `Failed to ${isEditMode ? "update" : "create"} client`;
-
       toast.error(errorMessage);
       console.error("Client mutation error:", error);
     },
@@ -80,7 +73,7 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
 
   const onSubmit = useCallback(
     (data: ClientFormInput) => {
-      console.log("Onsubmit called")
+      console.log("Onsubmit called");
       clientMutation.mutate(data);
     },
     [clientMutation]
@@ -88,7 +81,6 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
 
   const copyBillingToShipping = useCallback(() => {
     const billingValues = form.getValues();
-
     const billingFields = [
       "billingAddressStreet",
       "billingAddressCity",
@@ -96,7 +88,6 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
       "billingAddressPostalCode",
       "billingAddressCountry",
     ] as const;
-
     const shippingFields = [
       "shippingAddressStreet",
       "shippingAddressCity",

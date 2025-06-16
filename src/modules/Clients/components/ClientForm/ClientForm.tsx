@@ -11,15 +11,16 @@ import { BasicInfoSection } from "./sections/BasicInfoSection";
 import { AddressSection } from "./sections/AddressSection";
 import { NotesSection } from "./sections/NotesSection";
 import { FormActions } from "./sections/FormActions";
-import { Badge } from "@/components/ui/badge";
-import { ClientFormInput, FormMode } from "./client.schema";
+import { ClientFormInput } from "./client.schema";
+
+// Updated FormMode type to only include create and edit
+type FormMode = "create" | "edit";
 
 interface ClientFormProps {
   client?: ClientFormInput;
   mode?: FormMode;
   onSuccess?: () => void;
   onClose?: () => void;
-  onEdit?: () => void;
   isOpen?: boolean;
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -29,7 +30,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   mode = "create",
   onSuccess,
   onClose,
-  onEdit,
   isOpen,
   setIsOpen,
 }) => {
@@ -39,7 +39,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       onSuccess: () => {
         onSuccess?.();
       },
-      onClose,
     });
 
   const handleSubmit = useCallback(() => {
@@ -55,7 +54,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         form.reset();
       }
     },
-    [onClose, form]
+    [onClose, form, setIsOpen]
   );
 
   const getDialogTitle = () => {
@@ -64,78 +63,63 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         return "Create New Client";
       case 'edit':
         return "Update Client";
-      case 'view':
-        return "Client Details";
       default:
         return "Client";
     }
   };
 
-  const isViewMode = mode === 'view';
-
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-3">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">
-              {getDialogTitle()}
-            </DialogTitle>
-            {client && isViewMode && (
-              <Badge 
-                variant={client.status === 'Active' ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {client.status}
-              </Badge>
-            )}
-          </div>
+          <DialogTitle className="text-xl font-semibold">
+            {getDialogTitle()}
+          </DialogTitle>
         </DialogHeader>
-
+        
         <div className="border-t pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <BasicInfoSection 
-                control={form.control} 
-                isViewMode={isViewMode}
+              <BasicInfoSection
+                control={form.control}
+                isViewMode={false}
               />
-              
+             
               <div className="border-t pt-6">
                 <AddressSection
                   control={form.control}
                   title="Billing Address"
                   prefix="billing"
-                  isViewMode={isViewMode}
+                  isViewMode={false}
                 />
               </div>
-              
+             
               <div className="border-t pt-6">
                 <AddressSection
                   control={form.control}
                   title="Shipping Address"
                   prefix="shipping"
-                  showCopyButton={!isViewMode}
+                  showCopyButton={true}
                   onCopyClick={copyBillingToShipping}
-                  isViewMode={isViewMode}
+                  isViewMode={false}
                 />
               </div>
-              
+             
               <div className="border-t pt-6">
-                <NotesSection 
-                  control={form.control} 
-                  isViewMode={isViewMode}
+                <NotesSection
+                  control={form.control}
+                  isViewMode={false}
                 />
               </div>
             </form>
           </Form>
         </div>
-
+        
         <FormActions
           mode={mode}
           isSubmitting={isSubmitting}
           onCancel={() => handleOpenChange(false)}
           onSubmit={handleSubmit}
-          onEdit={onEdit}
         />
       </DialogContent>
     </Dialog>
