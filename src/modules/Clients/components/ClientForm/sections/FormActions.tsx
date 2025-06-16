@@ -19,9 +19,8 @@ export const FormActions: React.FC<FormActionsProps> = ({
   onSubmit,
   onEdit,
 }) => {
-  const isViewMode = mode === 'view';
-  const isEditMode = mode === 'edit';
-  const isCreateMode = mode === 'create';
+  const isEditMode = mode === "edit";
+  const isCreateMode = mode === "create";
 
   return (
     <DialogFooter className="gap-3 pt-6 border-t">
@@ -33,10 +32,10 @@ export const FormActions: React.FC<FormActionsProps> = ({
         className="flex items-center gap-2"
       >
         <X className="h-4 w-4" />
-        {isViewMode ? "Close" : "Cancel"}
+        Close"
       </Button>
-      
-      {isViewMode && onEdit && (
+
+      {onEdit && (
         <Button
           type="button"
           onClick={onEdit}
@@ -46,8 +45,8 @@ export const FormActions: React.FC<FormActionsProps> = ({
           Edit Client
         </Button>
       )}
-      
-      {!isViewMode && (
+
+    
         <Button
           type="submit"
           onClick={onSubmit}
@@ -61,12 +60,15 @@ export const FormActions: React.FC<FormActionsProps> = ({
             </>
           ) : (
             <>
-              {isCreateMode ? <Plus className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {isCreateMode ? (
+                <Plus className="h-4 w-4" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               {isEditMode ? "Update Client" : "Create Client"}
             </>
           )}
         </Button>
-      )}
     </DialogFooter>
   );
 };

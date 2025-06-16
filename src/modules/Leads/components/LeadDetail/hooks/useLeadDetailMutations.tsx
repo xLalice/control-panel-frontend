@@ -18,7 +18,7 @@ interface UpdateStatusPayload {
 
 interface AssignLeadPayload {
   leadId: string;
-  assignedToId: string;
+  assignedToId: string | null;
 }
 
 // Base mutation configuration interface

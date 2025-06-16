@@ -1,32 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 
-const LeadDetailSkeleton: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const LeadDetailSkeleton: React.FC = () => {
   return (
     <div className="space-y-4">
-      {/* Header Skeleton */}
-      <div className="flex justify-between items-center">
-        <div className="h-8 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          aria-label="Close panel"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Action Buttons Skeleton */}
       <div className="flex gap-2">
         <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
         <div className="h-8 bg-gray-200 rounded-md w-20 animate-pulse"></div>
       </div>
 
-      {/* Tabs Skeleton */}
       <div className="border-b">
         <div className="flex gap-4">
           <div className="h-9 bg-gray-200 rounded-md w-24 animate-pulse"></div>
@@ -34,7 +17,6 @@ const LeadDetailSkeleton: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       </div>
 
-      {/* Details Card Skeleton */}
       <Card>
         <CardHeader>
           <div className="h-6 bg-gray-200 rounded-md w-32 animate-pulse mb-2"></div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Button,
   Tabs,
@@ -24,9 +24,9 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui";
+} from "@/components/ui"; 
 import { LeadStatus } from "../../constants/constants";
-import { User } from "@/types";
+import { User } from "@/types"; 
 import {
   Pencil,
   Trash2,
@@ -37,13 +37,12 @@ import {
   Tag,
   MessageSquare,
   DollarSign,
-  X,
   BarChart,
   Zap,
   Briefcase,
 } from "lucide-react";
 import LeadForm from "../LeadForm/LeadForm";
-import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
+import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton"; 
 import { useLeadDetails } from "./hooks/useLeadDetails";
 import { LeadActivities } from "./components/LeadActivities";
 import {
@@ -53,6 +52,7 @@ import {
 } from "./hooks/useLeadDetailMutations";
 import { useConvertToClientMutation } from "./hooks/useConvertToClientMutation";
 import { useNavigate } from "react-router-dom";
+import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 
 
 interface LeadDetailPanelProps {
@@ -84,52 +84,8 @@ const LeadDetailPanel = ({
   const { mutateAsync: convertToClientMutation, isPending } =
     useConvertToClientMutation();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  if (isLeadLoading) {
-    return (
-      <div
-        className="fixed inset-y-20 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 bg-white shadow-xl z-30 
-                   transform transition-transform duration-300 ease-in-out
-                   overflow-y-auto"
-      >
-        <div className="p-6 space-y-6">
-          <LeadDetailSkeleton onClose={onClose} />
-        </div>
-      </div>
-    );
-  }
-
-  if (leadError) {
-    return (
-      <div className="fixed inset-y-0 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 bg-white shadow-xl z-30 p-6 overflow-y-auto">
-        <div className="text-red-500">
-          Error loading lead details. Please try again.
-        </div>
-      </div>
-    );
-  }
-
-  if (!lead) {
-    return (
-      <div className="fixed inset-y-0 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 bg-white shadow-xl z-30 p-6 overflow-y-auto">
-        <div>Lead not found.</div>
-      </div>
-    );
-  }
-
   const handleStatusChange = (newStatus: string) => {
+    if (!lead) return; // Defensive check
     updateStatusMutation.mutate({
       leadId: lead.id,
       oldStatus: lead.status,
@@ -138,22 +94,34 @@ const LeadDetailPanel = ({
     });
   };
 
-  const handleAssignmentChange = (userId: string) => {
+  const handleAssignmentChange = (userId: string | null) => {
+    if (!lead) return; 
     updateAssignmentMutation.mutate({
       leadId: lead.id,
-      assignedToId: userId,
+      assignedToId: userId === "unassigned" ? null : userId, 
     });
   };
 
   const handleDeleteLead = () => {
-    deleteLeadMutation.mutate({ leadId: lead.id });
+    if (!lead) return; 
+    deleteLeadMutation.mutate(
+      { leadId: lead.id },
+      {
+        onSuccess: () => {
+          onClose(); 
+          setIsDeleteDialogOpen(false); 
+        },
+      }
+    );
   };
 
   const handleConvertToCLient = async () => {
+    if (!lead) return;
     if (lead.client?.id) {
       navigate("/clients", {
         state: { clientIdToOpen: lead.client.id },
       });
+      onClose(); 
     } else if (lead.status === LeadStatus.Won) {
       try {
         const newClient = await convertToClientMutation({
@@ -171,36 +139,24 @@ const LeadDetailPanel = ({
     }
   };
 
-  return (
-    <div className="">
-      <div
-        className="fixed inset-0 bg-black/20 z-20 md:hidden"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <aside
-        className={`fixed inset-y-20 right-0 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/5 bg-white shadow-xl z-30 
-                   transform transition-transform duration-300 ease-in-out 
-                   ${isOpen ? "translate-x-0" : "translate-x-full"} 
-                   overflow-y-auto`}
-        aria-label="Lead details"
-      >
-        <div className="p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">
-              {lead.contactPerson} {lead.company && `- ${lead.company.name}`}
-            </h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              aria-label="Close panel"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+  const panelTitle = lead ? `${lead.contactPerson} ${lead.company ? `- ${lead.company.name}` : ''}` : "Lead Details";
 
-          <div className="flex gap-2">
+  return (
+    <SlideInPanel
+      isOpen={isOpen}
+      onClose={onClose}
+      title={panelTitle}
+      isLoading={isLeadLoading}
+      error={leadError}
+      skeleton={LeadDetailSkeleton}
+    >
+      {!leadId || (leadError && !isLeadLoading) ? ( 
+        <div className="text-muted-foreground text-center p-4">
+          {leadId ? "Lead not found or an error occurred." : "Select a lead to view details."}
+        </div>
+      ) : lead ? (
+        <>
+          <div className="flex gap-2 mb-4">
             <Button
               variant="outline"
               size="sm"
@@ -231,7 +187,7 @@ const LeadDetailPanel = ({
                 disabled={lead.status !== LeadStatus.Won || isPending}
                 className={
                   lead.status !== LeadStatus.Won
-                    ? "hidden"
+                    ? "opacity-50 cursor-not-allowed" // Better visual for disabled
                     : ""
                 }
               >
@@ -242,7 +198,7 @@ const LeadDetailPanel = ({
           </div>
 
           <Tabs defaultValue="details">
-            <TabsList>
+            <TabsList className="mb-4">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="activity">Activity Timeline</TabsTrigger>
             </TabsList>
@@ -343,11 +299,7 @@ const LeadDetailPanel = ({
                           </p>
                           <Select
                             value={lead.assignedToId ?? "unassigned"}
-                            onValueChange={(value) =>
-                              handleAssignmentChange(
-                                value === "unassigned" ? "unassigned" : value
-                              )
-                            }
+                            onValueChange={handleAssignmentChange}
                             disabled={updateAssignmentMutation.isPending}
                           >
                             <SelectTrigger className="w-[180px]">
@@ -412,43 +364,48 @@ const LeadDetailPanel = ({
               <LeadActivities leadId={lead.id} />
             </TabsContent>
           </Tabs>
-
-          <LeadForm
-            isOpen={isEditDialogOpen}
-            onClose={() => setIsEditDialogOpen(false)}
-            lead={lead}
-            users={users}
-          />
-
-          <AlertDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this lead? This action cannot
-                  be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleteLeadMutation.isPending}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteLead}
-                  disabled={deleteLeadMutation.isPending}
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                >
-                  {deleteLeadMutation.isPending ? "Deleting..." : "Delete"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        </>
+      ) : (
+        <div className="text-muted-foreground text-center p-4">
+          Error: Lead data could not be loaded.
         </div>
-      </aside>
-    </div>
+      )}
+
+      {/* Modals/Dialogs related to lead actions (edit/delete) */}
+      <LeadForm
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        lead={lead}
+        users={users}
+      />
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this lead? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLeadMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteLead}
+              disabled={deleteLeadMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleteLeadMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SlideInPanel>
   );
 };
 
