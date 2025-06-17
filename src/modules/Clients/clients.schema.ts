@@ -3,7 +3,7 @@ import {z} from "zod";
 
 export const clientStatusEnum = z.enum(["Active", "Inactive", "OnHold"]); 
 export const clientSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().uuid(),
 
   company: z.object({
     name: z.string().min(1, "Company name is required"),
