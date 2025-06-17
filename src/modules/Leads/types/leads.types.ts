@@ -1,6 +1,6 @@
 import { LeadStatus } from "../constants/constants";
 import { DateRange } from "react-day-picker";
-import { User } from "@/types";
+import { User, ActivityLog, ContactHistory } from "@/types/sharedTypes";
 import { Client } from "@/modules/Clients/clients.schema";
 
 type LeadStatus = (typeof LeadStatus)[keyof typeof LeadStatus];
@@ -53,44 +53,6 @@ export type Company = {
   updatedAt: Date;
   leads: Lead[];
 };
-
-export type ActivityLog = {
-  id: string;
-  leadId: string;
-  userId: string;
-  action: string;
-  description: string;
-  metadata: ActivityLogMetadata;
-  oldStatus?: LeadStatus;
-  newStatus?: LeadStatus;
-  createdBy: User;
-
-  user: {
-    name: string
-  };
-
-  createdAt: Date;
-  lead: Lead;
-};
-
-export type ActivityLogMetadata =
-  | Array<{
-      field: string;
-      old: any;
-      new: any;
-    }>
-  | { initialData: any }
-  | null;
-
-export interface ContactHistory {
-  id: string;
-  leadId: string;
-  method: string;
-  summary: string;
-  outcome?: string;
-  timestamp: Date;
-  lead: Lead;
-}
 
 export interface LeadFormData {
   name: string;

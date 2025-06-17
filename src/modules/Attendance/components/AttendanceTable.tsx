@@ -17,11 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Attendance } from "../types";
 import {
-  formatDate,
-  formatTime,
   calculateDuration,
   getStatusColor,
 } from "../utils";
+import { formatTime, formatDate } from "@/lib/utils";
 import { MoreHorizontal } from "lucide-react";
 
 interface AttendanceTableProps {

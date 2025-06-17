@@ -1,25 +1,4 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { format, parseISO, differenceInMinutes, differenceInHours } from 'date-fns';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-export function formatTime(dateString?: string): string {
-  if (!dateString) return '--:--';
-  return format(parseISO(dateString), 'hh:mm a');
-}
-
-export function formatDate(dateString?: string): string {
-  if (!dateString) return '--/--/----';
-  return format(parseISO(dateString), 'MMM dd, yyyy');
-}
-
-export function formatDateTime(dateString?: string): string {
-  if (!dateString) return '--/--/---- --:--';
-  return format(parseISO(dateString), 'MMM dd, yyyy hh:mm a');
-}
+import {  parseISO, differenceInMinutes, differenceInHours } from 'date-fns';
 
 export function calculateDuration(startTime?: string, endTime?: string): string {
   if (!startTime || !endTime) return '--:--';
@@ -40,7 +19,6 @@ export function calculateTotalHours(startTime?: string, endTime?: string): numbe
   const start = parseISO(startTime);
   const end = parseISO(endTime);
   
-  // Return hours with 2 decimal places
   return parseFloat((differenceInHours(end, start) + (differenceInMinutes(end, start) % 60) / 60).toFixed(2));
 }
 

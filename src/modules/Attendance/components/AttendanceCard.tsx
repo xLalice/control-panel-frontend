@@ -4,7 +4,8 @@ import { ClockButton } from './ClockButton';
 import { BreakModal } from './BreakModal';
 import { Badge } from '@/components/ui/badge';
 import { Attendance } from "../types"
-import { formatTime, getStatusBadgeColor } from "../utils"
+import {  getStatusBadgeColor } from "../utils";
+import { formatTime } from '@/lib/utils';
 import { Clock, Calendar } from 'lucide-react';
 
 interface AttendanceCardProps {
