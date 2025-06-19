@@ -215,3 +215,29 @@ export type CreateInquiryDto = z.infer<
     items: InquiryItem[];
   }
 >;
+
+
+const quotationItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  description: z.string().min(1, "Description is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  unitPrice: z.number().min(0, "Unit price must be a positive number"),
+  lineTotal: z.number().min(0, "Line total must be calculated"),
+});
+
+export const quotationSchema = z.object({
+  fromEntity: z.object({
+    id: z.string(),
+    entityType: z.enum(["lead", "client", "inquiry"])
+  }),
+  validUntil: z.date().min(new Date(), "Valid until date must be in the future"),
+  subtotal: z.number().min(0, "Subtotal must be a positive number"),
+  discount: z.number().min(0).optional(),
+  tax: z.number().min(0).optional(),
+  total: z.number().min(0, "Total must be a positive number"),
+  notesToCustomer: z.string().optional(),
+  internalNotes: z.string().optional(),
+  items: z.array(quotationItemSchema).min(1, "At least one item is required"),
+});
+
+export type QuotationFormData = z.infer<typeof quotationSchema>;

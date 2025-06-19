@@ -228,11 +228,6 @@ export const InquiryDetails = ({
     }
   };
 
-  console.log("Current Inquiry Status:", inquiry.status);
-  console.log("inquiry.leadOriginated:", inquiry.leadOriginated);
-  console.log("inquiry.leadId:", inquiry.leadId);
-  console.log("inquiry.clientId:", inquiry.clientId);
-
   return (
     <>
       <SlideInPanel isOpen={isOpen} onClose={onClose}>

@@ -24,7 +24,6 @@ import {
 import { InquiryStatusBadge } from "../../InquiryStatusBadge";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { useAssociateInquiry } from "./useAssociateInquiry";
 
 interface UseInquiriesTableProps {
   inquiries: any;
