@@ -3,20 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { checkCustomerExists } from "@/api/api";
 
 
-export const useClientData = ({
+export const useCheckCustomer = ({
     debouncedEmail,
     debouncedPhoneNumber,
-    debouncedCompanyName
+    debouncedCompanyName,
+    debouncedClientName
 }: {
     debouncedEmail?: string;
-    debouncedPhoneNumber: string,
+    debouncedPhoneNumber?: string,
     debouncedCompanyName?: string;
+    debouncedClientName?: string;
 }) => {
   
 
   return useQuery({
     queryKey: [
       "checkCustomer",
+      debouncedClientName,
       debouncedEmail,
       debouncedPhoneNumber,
       debouncedCompanyName,
@@ -26,6 +29,7 @@ export const useClientData = ({
         email: debouncedEmail,
         phoneNumber: debouncedPhoneNumber,
         companyName: debouncedCompanyName,
+        clientName: debouncedClientName
       }),
     enabled: !!(debouncedEmail || debouncedPhoneNumber || debouncedCompanyName),
   });

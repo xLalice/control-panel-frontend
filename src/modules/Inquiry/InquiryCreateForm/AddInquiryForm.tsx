@@ -51,13 +51,17 @@ import {
   Phone,
   Mail,
   Star,
+  ShoppingCart,
+  Trash2, // Fixed: Added missing import
+  Plus,   // Fixed: Added missing import
 } from "lucide-react";
 import { DatePicker } from "../components/ui/DatePicker";
 import { getPriorityColor } from "../inquiry.utils";
 import { useInquiryForm } from "./hooks/useInquiryForm";
-import { useClientData } from "./hooks/useClientData";
 import { useCreateInquiryMutation } from "./hooks/useCreateInquiryMutation";
 import { useProduct } from "@/modules/Products/hooks/useProducts";
+import { useFieldArray } from "react-hook-form";
+import { useCheckCustomer } from "./hooks/useCheckCustomer";
 
 type AddInquiryFormProps = {
   onInquiryAdded?: () => void;
@@ -70,6 +74,11 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
     useState<InquiryContactResponse | null>(null);
   const { form } = useInquiryForm();
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "items",
+  });
+
   const email = form.watch("email");
   const phoneNumber = form.watch("phoneNumber");
   const companyName = form.watch("companyName");
@@ -80,7 +89,7 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
   const [debouncedPhoneNumber] = useDebounce(phoneNumber, 500);
   const [debouncedCompanyName] = useDebounce(companyName, 500);
 
-  const { data: customerData, isLoading } = useClientData({
+  const { data: customerData, isLoading } = useCheckCustomer({
     debouncedEmail,
     debouncedPhoneNumber,
     debouncedCompanyName,
@@ -108,6 +117,21 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     createInquiryMutation.mutate(data);
+  };
+
+  const addNewItem = () => {
+    append({
+      productId: "",
+      quantity: 1,
+    });
+  };
+
+  const removeItem = (index: number) => {
+    if (fields.length > 1) {
+      remove(index);
+    } else {
+      toast.warning("At least one item is required");
+    }
   };
 
   return (
@@ -373,53 +397,145 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
 
               <Separator className="my-8" />
 
-              {/* Order Request Section */}
+              {/* Order Items Section */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <ShoppingCart className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Order Items
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Products and quantities requested
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-sm">
+                    {fields.length} item{fields.length !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <Card key={field.id} className="p-6 bg-green-50/30 border border-green-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-green-600" />
+                          <h4 className="font-medium text-gray-900">
+                            Item {index + 1}
+                          </h4>
+                        </div>
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.productId`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Product/Service*
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-11 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500">
+                                    <SelectValue placeholder="Select product" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {products?.map((product) => (
+                                    <SelectItem key={product.id} value={product.id}>
+                                      {product.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Quantity*
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Enter quantity"
+                                  className="h-11 bg-white border-gray-300 focus:border-green-500 focus:ring-green-500"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(Number(e.target.value))
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Only include fields that exist in your form schema */}
+                      {/* Remove the unitPrice, specifications, and notes fields if they're not in your schema */}
+                    </Card>
+                  ))}
+                </div>
+
+                <div className="flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addNewItem}
+                    className="h-11 px-6 border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Item
+                  </Button>
+                </div>
+              </div>
+
+              <Separator className="my-8" />
+
+              {/* Inquiry Details Section */}
               <div className="space-y-6">
                 <div className="flex items-center gap-3 pb-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Package className="h-5 w-5 text-green-600" />
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
-                      Order Request
+                      Inquiry Details
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Product details and specifications
+                      Type and priority information
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="product"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
-                          Product/Service*
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500">
-                              <SelectValue placeholder="Select product/service" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {products?.map((product) => (
-                              <SelectItem value={product.id}>
-                                {product.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="inquiryType"
@@ -433,7 +549,7 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500">
+                            <SelectTrigger className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500">
                               <SelectValue placeholder="Select inquiry type" />
                             </SelectTrigger>
                           </FormControl>
@@ -462,31 +578,6 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
 
                   <FormField
                     control={form.control}
-                    name="quantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
-                          Quantity*
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="1"
-                            placeholder="Enter quantity"
-                            className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
@@ -499,7 +590,7 @@ export const AddInquiryForm: React.FC<AddInquiryFormProps> = ({
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-11 border-gray-300 focus:border-green-500 focus:ring-green-500">
+                            <SelectTrigger className="h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500">
                               <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
                           </FormControl>

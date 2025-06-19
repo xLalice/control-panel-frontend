@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { approveInquiry, convertInquiryToLead, fulfillInquiry } from "@/api/api";
+import { closeInquiry, convertInquiryToLead, reviewInquiry } from "@/api/api";
 import { AxiosError } from "axios";
 
 interface MutationConfig {
@@ -37,23 +37,26 @@ const useInquiryMutation = (config: MutationConfig) => {
   });
 };
 
-export const useApproveInquiry = () =>
-  useInquiryMutation({
-    mutationFn: approveInquiry,
-    successMessage: "Inquiry approved successfully",
-    errorMessage: "Failed to approve inquiry",
-  });
-
-export const useFulfillInquiry = () =>
-  useInquiryMutation({
-    mutationFn: fulfillInquiry,
-    successMessage: "Inquiry fulfilled successfully",
-    errorMessage: "Failed to fulfill inquiry",
-  });
-
-export const useConvertToLead = () => 
+export const useConvertToLead = () =>
   useInquiryMutation({
     mutationFn: convertInquiryToLead,
     successMessage: "Inquiry converted to lead successfully",
-    errorMessage: "Failed to conver to lead"
+    errorMessage: "Failed to convert to lead",
+    queryKeys: [
+      ["inquiries"]
+    ],
+  });
+
+export const useReviewInquiry = () => 
+  useInquiryMutation({
+    mutationFn: reviewInquiry,
+    successMessage: "Inquiry reviewed successfully",
+    errorMessage: "Error changing status in the backend. Contact author"
+  })
+
+export const useCloseInquiry = () =>
+  useInquiryMutation({
+    mutationFn: closeInquiry,
+    successMessage: "Inquiry closed successfully",
+    errorMessage: "Failed to close inquiry."
   })
