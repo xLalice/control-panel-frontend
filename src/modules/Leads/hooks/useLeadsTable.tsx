@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import { PAGE_SIZE } from "../constants/constants";
-import { apiClient } from "@/api/api";
 import { Lead } from "../types/leads.types";
 import { useForm } from "react-hook-form";
 import { Filters } from "../types/leads.types";
@@ -17,6 +16,7 @@ import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fetchUsers } from "@/api/api";
 import { LeadStatus } from "../constants/constants";
+import { useLeadsData } from "./useLeadsData";
 
 const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState("L");
@@ -66,37 +66,11 @@ export const useLeadsTable = () => {
     staleTime: 300000,
   });
 
-  const {
-    data: leadsData,
-    isLoading,
-    refetch: refetchLeads,
-  } = useQuery({
-    queryKey: ["leads", filters, page, sorting], 
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-
-      const params = new URLSearchParams();
-      if (filters.search) params.set("search", filters.search);
-      if (filters.status) params.set("status", filters.status);
-      if (filters.assignedTo) params.set("assignedTo", filters.assignedTo);
-
-      params.set("page", page.toString());
-      params.set("pageSize", PAGE_SIZE.toString());
-
-      if (sorting.length > 0) {
-        params.set("sortBy", sorting[0].id);
-        params.set("sortOrder", sorting[0].desc ? "desc" : "asc");
-      }
-
-      console.log("API URL:", "/leads?" + params.toString()); // Debug log
-
-      const response = await apiClient("/leads?" + params.toString());
-      return response.data as {
-        leads: Lead[];
-        total: number;
-      };
-    },
-  });
+  const {data: leadsData, isLoading, refetch: refetchLeads} = useLeadsData({
+    filters,
+    sorting,
+    page
+  })
 
   const hasActiveFilters =
     filters.search || filters.status || filters.assignedTo;
