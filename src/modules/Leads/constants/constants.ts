@@ -3,7 +3,7 @@
 export const  LeadStatus = {
   New: "New",
   Contacted: "Contacted",
-  Qualified: "Qualifed",
+  Qualified: "Qualified",
   ProposalSent: "ProposalSent",
   Negotiation: "Negotiation",
   Won: "Won",

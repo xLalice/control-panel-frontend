@@ -41,6 +41,7 @@ import {
   Zap,
   Briefcase,
   NotebookPen,
+  FilePlus,
 } from "lucide-react";
 import LeadForm from "../LeadForm/LeadForm";
 import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
@@ -56,6 +57,7 @@ import { useNavigate } from "react-router-dom";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactHistoryTImeline";
 import { LogContactModal } from "@/components/LogContactModal";
+import { CreateQuotationDialog } from "@/modules/Inquiry/components/CreateQuoteDialog";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -73,6 +75,7 @@ const LeadDetailPanel = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLogContactModalOpen, setIsLogContactModalOpen] = useState(false);
+  const [isQuotationDialogOpen, setIsQuotationDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -197,12 +200,8 @@ const LeadDetailPanel = ({
                 <Button
                   size="sm"
                   onClick={handleConvertToCLient}
-                  disabled={lead.status !== LeadStatus.Won || isPending}
-                  className={
-                    lead.status !== LeadStatus.Won
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }
+                  disabled={isPending}
+                  className={lead.status !== LeadStatus.Won ? "hidden" : ""}
                 >
                   <Zap className="h-4 w-4 mr-2" />{" "}
                   {isPending ? "Converting..." : "Convert to Client"}
@@ -218,6 +217,15 @@ const LeadDetailPanel = ({
                   Log Contact
                 </Button>
               }
+
+              {lead.status === "Qualified" && (
+                <Button
+                  size="sm"
+                  onClick={() => setIsQuotationDialogOpen(true)}
+                >
+                  <FilePlus className="h-4 w-4 mr-2" /> Create Quotation
+                </Button>
+              )}
             </div>
 
             <Tabs defaultValue="details">
@@ -440,6 +448,14 @@ const LeadDetailPanel = ({
           onClose={handleCloseLogContactModal}
           entityId={lead?.id!}
           entityType="Lead"
+        />
+      )}
+
+      {lead?.id && (
+        <CreateQuotationDialog
+          open={isQuotationDialogOpen}
+          onClose={() => setIsQuotationDialogOpen(false)}
+          entity={{ id: lead?.id, type: "inquiry" }}
         />
       )}
     </>

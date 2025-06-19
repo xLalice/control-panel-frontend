@@ -21,7 +21,7 @@ import {
 import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { InquiryDetails } from "../InquiryDetails/InquiryDetails";
 import { Inquiry, InquiryStatus } from "../../types";
-import { CreateQuoteDialog } from "../CreateQuoteDialog";
+import { CreateQuotationDialog } from "../CreateQuoteDialog";
 import { ScheduleInquiryDialog } from "../ScheduleInquiryDialog";
 import { InquiryListSkeleton } from "../ui/Skeleton";
 import { useInquiriesData } from "./hooks/useInquiriesData";
@@ -279,10 +279,10 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
       {/* Modals/Dialogs */}
       {selectedInquiryId && (
         <>
-          <CreateQuoteDialog
+          <CreateQuotationDialog
             open={createQuoteDialogOpen}
             onClose={() => setCreateQuoteDialogOpen(false)}
-            inquiryId={selectedInquiryId}
+            entity={{id: selectedInquiryId, type: "inquiry"}}
           />
 
           <ScheduleInquiryDialog
