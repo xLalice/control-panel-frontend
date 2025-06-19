@@ -311,6 +311,7 @@ export const checkCustomerExists = async (params: {
   email?: string;
   phoneNumber?: string;
   companyName?: string;
+  clientName?: string;
 }): Promise<InquiryContactResponse> => {
   try {
     const response = await apiClient.post("/inquiries/check-customer", params);
@@ -454,14 +455,50 @@ export const convertInquiryToLead = async (
   try {
     const response = await apiClient.post(`/inquiries/${id}/convert-to-lead`);
     return response.data.data;
-  } catch (err: any) { 
-    console.error("Original error caught in api.ts:", err); 
-    console.error("Error response data in api.ts:", err.response?.data); 
-    const errorMessage = err.response?.data?.message || err.response?.data?.error || "Converting inquiry to lead failed";
+  } catch (err: any) {
+    console.error("Original error caught in api.ts:", err);
+    console.error("Error response data in api.ts:", err.response?.data);
+    const errorMessage =
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Converting inquiry to lead failed";
 
     throw new Error(errorMessage);
   }
 };
+
+export const reviewInquiry = async (id: string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/review`);
+    return response.data;
+  } catch (err: any) {
+    console.error("Original error caught in api.ts:", err);
+    console.error("Error response data in api.ts:", err.response?.data);
+    const errorMessage =
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Converting inquiry to lead failed";
+
+    throw new Error(errorMessage);
+  }
+};
+
+export const closeInquiry = async (id: string): Promise<Inquiry> => {
+  try {
+    const response = await apiClient.post(`/inquiries/${id}/close`);
+    return response.data;
+  } catch (err: any) {
+    console.error("Original error caught in api.ts:", err);
+    console.error("Error response data in api.ts:", err.response?.data);
+    const errorMessage =
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Converting inquiry to lead failed";
+
+    throw new Error(errorMessage);
+  }
+};
+
 
 export const getCategories = async (): Promise<DocumentCategory[]> => {
   try {
