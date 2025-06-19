@@ -17,9 +17,7 @@ export const useInquiryForm = () => {
       isCompany: false,
       companyName: "",
       companyAddress: "",
-      product: "",
       inquiryType: InquiryType.PricingRequest,
-      quantity: 1,
       deliveryMethod: undefined,
       deliveryLocation: "",
       preferredDate: new Date(),
@@ -27,6 +25,7 @@ export const useInquiryForm = () => {
       priority: Priority.Medium,
       remarks: "",
       relatedLeadId: "",
+      items: [{ productId: "", quantity: 1 }]
     },
   });
 

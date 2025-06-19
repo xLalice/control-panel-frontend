@@ -26,15 +26,18 @@ import {
   CheckCircle, 
   AlertCircle,
   Package,
-  Phone,
-  Calendar,
   Target,
-  MessageSquare
+  MessageSquare,
+  Eye,
+  UserPlus,
+  Users,
+  FileText,
+  Truck
 } from 'lucide-react';
 import { getInquiryStatistics } from '@/api/api';
 import { InquiryStatistics } from '../types';
 
-const STATUS_ORDER = ['New', 'Quoted', 'Approved', 'Scheduled', 'Fulfilled', 'Cancelled'] as const;
+const STATUS_ORDER = ['New', 'Reviewed', 'ConvertedToLead', 'AssociatedToClient', 'QuotationGenerated', 'DeliveryScheduled', 'Closed'] as const;
 
 const STATUS_CONFIG = {
   'New': { 
@@ -44,40 +47,47 @@ const STATUS_CONFIG = {
     border: 'border-blue-200',
     text: 'text-blue-800'
   },
-  'Quoted': { 
+  'Reviewed': { 
+    bg: 'bg-gradient-to-br from-purple-50 to-purple-100', 
+    chart: '#8B5CF6', 
+    icon: Eye,
+    border: 'border-purple-200',
+    text: 'text-purple-800'
+  },
+  'ConvertedToLead': { 
+    bg: 'bg-gradient-to-br from-indigo-50 to-indigo-100', 
+    chart: '#6366F1', 
+    icon: UserPlus,
+    border: 'border-indigo-200',
+    text: 'text-indigo-800'
+  },
+  'AssociatedToClient': { 
+    bg: 'bg-gradient-to-br from-cyan-50 to-cyan-100', 
+    chart: '#06B6D4', 
+    icon: Users,
+    border: 'border-cyan-200',
+    text: 'text-cyan-800'
+  },
+  'QuotationGenerated': { 
     bg: 'bg-gradient-to-br from-amber-50 to-yellow-100', 
     chart: '#F59E0B', 
-    icon: Clock,
+    icon: FileText,
     border: 'border-yellow-200',
     text: 'text-yellow-800'
   },
-  'Approved': { 
+  'DeliveryScheduled': { 
+    bg: 'bg-gradient-to-br from-orange-50 to-orange-100', 
+    chart: '#F97316', 
+    icon: Truck,
+    border: 'border-orange-200',
+    text: 'text-orange-800'
+  },
+  'Closed': { 
     bg: 'bg-gradient-to-br from-emerald-50 to-green-100', 
     chart: '#10B981', 
     icon: CheckCircle,
     border: 'border-emerald-200',
     text: 'text-emerald-800'
-  },
-  'Scheduled': { 
-    bg: 'bg-gradient-to-br from-orange-50 to-orange-100', 
-    chart: '#F97316', 
-    icon: Calendar,
-    border: 'border-orange-200',
-    text: 'text-orange-800'
-  },
-  'Fulfilled': { 
-    bg: 'bg-gradient-to-br from-teal-50 to-teal-100', 
-    chart: '#14B8A6', 
-    icon: Package,
-    border: 'border-teal-200',
-    text: 'text-teal-800'
-  },
-  'Cancelled': { 
-    bg: 'bg-gradient-to-br from-red-50 to-red-100', 
-    chart: '#EF4444', 
-    icon: AlertCircle,
-    border: 'border-red-200',
-    text: 'text-red-800'
   },
   'Default': { 
     bg: 'bg-gradient-to-br from-gray-50 to-gray-100', 
@@ -102,6 +112,20 @@ const REFERENCE_SOURCE_COLORS = {
   'Referral': '#8B5CF6',
   'Flyers': '#06B6D4',
   'Other': '#6B7280'
+};
+
+const INQUIRY_TYPE_COLORS = {
+  'PricingRequest': '#3B82F6',
+  'ProductAvailability': '#10B981',
+  'TechnicalQuestion': '#8B5CF6',
+  'DeliveryInquiry': '#F97316',
+  'Other': '#6B7280'
+};
+
+const DELIVERY_METHOD_COLORS = {
+  'Delivery': '#10B981',
+  'Pickup': '#F59E0B',
+  'ThirdParty': '#8B5CF6'
 };
 
 const getStatusConfig = (status: string) => {
@@ -158,7 +182,7 @@ const StatusCard = ({ status, count }: { status: string; count: number }) => {
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className={`text-sm font-medium ${config.text}`}>{status}</p>
+            <p className={`text-sm font-medium ${config.text}`}>{status.replace(/([A-Z])/g, ' $1').trim()}</p>
             <p className="text-2xl font-bold text-gray-900">{count}</p>
           </div>
           <Icon className={`h-5 w-5 ${config.text}`} />
@@ -189,8 +213,9 @@ function InquiryStats() {
         color: REFERENCE_SOURCE_COLORS[item.referenceSource as keyof typeof REFERENCE_SOURCE_COLORS] || '#6B7280'
       })) || [],
       inquiryTypeData: data.byInquiryType?.map(item => ({
-        name: item.inquiryType,
+        name: item.inquiryType.replace(/([A-Z])/g, ' $1').trim(),
         value: item.count,
+        color: INQUIRY_TYPE_COLORS[item.inquiryType as keyof typeof INQUIRY_TYPE_COLORS] || '#6B7280'
       })) || [],
       priorityData: data.byPriority?.map(item => ({
         name: item.priority,
@@ -200,17 +225,18 @@ function InquiryStats() {
       deliveryMethodData: data.byDeliveryMethod?.map(item => ({
         name: item.deliveryMethod,
         value: item.count,
+        color: DELIVERY_METHOD_COLORS[item.deliveryMethod as keyof typeof DELIVERY_METHOD_COLORS] || '#6B7280'
       })) || [],
       statusData: statusCounts.map(item => ({
-        name: item.status,
+        name: item.status.replace(/([A-Z])/g, ' $1').trim(),
         value: item.count,
         color: getStatusConfig(item.status).chart
       })),
       monthlyData: (data.monthlyTrends ?? []).map(item => ({
         month: new Date(item.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         inquiries: item.count,
-        fulfilled: item.fulfilled || 0,
-        cancelled: item.cancelled || 0,
+        converted: item.converted || 0,
+        closed: item.closed || 0,
       })),
       dailyData: (data.dailyTrends ?? []).map(item => ({
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -260,6 +286,13 @@ function InquiryStats() {
 
   const { statusCounts, chartData } = processedData;
 
+  // Calculate active inquiries (everything except Closed)
+  const activeInquiries = statusCounts.filter(s => s.status !== 'Closed').reduce((sum, s) => sum + s.count, 0);
+  
+  // Calculate conversion rate (ConvertedToLead / Total Inquiries)
+  const convertedToLeadCount = statusCounts.find(s => s.status === 'ConvertedToLead')?.count || 0;
+  const conversionRate = data.totalInquiries > 0 ? (convertedToLeadCount / data.totalInquiries) * 100 : 0;
+
   return (
     <div className="space-y-8 p-6">
       {/* Overview Cards */}
@@ -270,29 +303,29 @@ function InquiryStats() {
           icon={MessageSquare}
           trend="up"
           trendValue="+12%"
-          subtitle="This month"
+          subtitle="All time"
         />
         <StatCard
-          title="Conversion Rate"
-          value={`${data.conversionRate.toFixed(1)}%`}
+          title="Lead Conversion Rate"
+          value={`${conversionRate.toFixed(1)}%`}
           icon={Target}
           trend="up"
           trendValue="+2.3%"
-          subtitle="Quote to fulfillment"
+          subtitle="Inquiry to lead"
         />
         <StatCard
           title="Active Inquiries"
-          value={statusCounts.filter(s => !['Fulfilled', 'Cancelled'].includes(s.status)).reduce((sum, s) => sum + s.count, 0)}
+          value={activeInquiries}
           icon={Clock}
           subtitle="Pending processing"
         />
         <StatCard
-          title="Avg Response Time"
-          value="2.4h"
-          icon={Phone}
-          trend="down"
-          trendValue="-18min"
-          subtitle="Time to first quote"
+          title="Closed Inquiries"
+          value={statusCounts.find(s => s.status === 'Closed')?.count || 0}
+          icon={CheckCircle}
+          trend="up"
+          trendValue="+8%"
+          subtitle="Completed"
         />
       </div>
 
@@ -305,7 +338,7 @@ function InquiryStats() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {statusCounts.map(({ status, count }) => (
               <StatusCard key={status} status={status} count={count} />
             ))}
@@ -371,7 +404,7 @@ function InquiryStats() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Fulfillment vs Cancellation</CardTitle>
+                <CardTitle>Closed vs Lead Conversion</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -381,8 +414,8 @@ function InquiryStats() {
                     <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="fulfilled" fill="#10B981" name="Fulfilled" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="cancelled" fill="#EF4444" name="Cancelled" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="closed" fill="#10B981" name="Closed" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="leads" fill="#6366F1" name="Converted to Lead" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -460,15 +493,32 @@ function InquiryStats() {
             </CardHeader>
             <CardContent>
               {chartData.inquiryTypeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={Math.max(300, chartData.inquiryTypeData.length * 60)}>
-                  <BarChart data={chartData.inquiryTypeData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={Math.max(300, chartData.inquiryTypeData.length * 60)}>
+                    <BarChart data={chartData.inquiryTypeData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" allowDecimals={false} />
+                      <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {chartData.inquiryTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {chartData.inquiryTypeData.map((item) => (
+                      <div key={item.name} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <div>
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-lg font-bold">{item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <p className="text-center text-gray-500 py-8">No inquiry type data available.</p>
               )}
@@ -536,15 +586,32 @@ function InquiryStats() {
             </CardHeader>
             <CardContent>
               {chartData.deliveryMethodData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={chartData.deliveryMethodData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#06B6D4" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={chartData.deliveryMethodData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {chartData.deliveryMethodData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {chartData.deliveryMethodData.map((item) => (
+                      <div key={item.name} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <div>
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-xl font-bold">{item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <p className="text-center text-gray-500 py-8">No delivery method data available.</p>
               )}
@@ -573,14 +640,14 @@ function InquiryStats() {
                         const x = cx + (outerRadius + 20) * Math.cos(-midAngle * (Math.PI / 180));
                         const y = cy + (outerRadius + 20) * Math.sin(-midAngle * (Math.PI / 180));
                         return (
-                          <text x={x} y={y} fill={getStatusConfig(name).chart} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="medium">
+                          <text x={x} y={y} fill="currentColor" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="medium">
                             {`${name} (${(percent * 100).toFixed(0)}%)`}
                           </text>
                         );
                       }}
                     >
-                      {chartData.statusData.filter(d => d.value > 0).map((entry) => (
-                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                      {chartData.statusData.filter(d => d.value > 0).map((entry, index) => (
+                        <Cell key={`cell-${entry.name}-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />

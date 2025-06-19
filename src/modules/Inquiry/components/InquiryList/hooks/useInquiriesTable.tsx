@@ -14,10 +14,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Badge,
 } from "@/components/ui";
 import { format } from "date-fns";
-import { useApproveInquiry, useConvertToLead, useFulfillInquiry } from "./useInquiriesMutations";
+import {
+  useCloseInquiry,
+  useConvertToLead,
+  useReviewInquiry,
+} from "./useInquiriesMutations";
+import { InquiryStatusBadge } from "../../InquiryStatusBadge";
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+import { useAssociateInquiry } from "./useAssociateInquiry";
 
 interface UseInquiriesTableProps {
   inquiries: any;
@@ -26,6 +33,7 @@ interface UseInquiriesTableProps {
   openDetailsDialog: (inquiry: Inquiry) => void;
   openCreateQuoteDialog: (inquiryId: string) => void;
   openScheduleInquiryDialog: (inquiryId: string) => void;
+  openAssociateInquiryDialog: (inquiryId: string) => void;
   sorting: SortingState;
   setSorting: (
     updater: SortingState | ((old: SortingState) => SortingState)
@@ -39,12 +47,23 @@ export const useInquiriesTable = ({
   openDetailsDialog,
   openCreateQuoteDialog,
   openScheduleInquiryDialog,
+  openAssociateInquiryDialog,
   sorting,
   setSorting,
 }: UseInquiriesTableProps) => {
-  const approveInquiryMutation = useApproveInquiry();
-  const fulfillInquiryMutation = useFulfillInquiry();
+  const markReviewedMutation = useReviewInquiry();
+  const closeInquiryMutation = useCloseInquiry();
   const convertToLeadMutation = useConvertToLead();
+
+  const navigate = useNavigate();
+
+  const openAssociate = (id: string, type: "client" | "lead") => {
+    if (type === "client") {
+      navigate(`/clients/`, { state: { clientIdToOpen: id } });
+    } else {
+      navigate(`/leads`, { state: { leadIdToOpen: id } });
+    }
+  };
 
   const columns: ColumnDef<Inquiry>[] = useMemo(() => {
     const baseColumns: ColumnDef<Inquiry>[] = [
@@ -86,7 +105,7 @@ export const useInquiriesTable = ({
       {
         id: "product.name",
         accessorKey: "product.name",
-        enableSorting: true,
+        enableSorting: false,
         header: ({ column }) => (
           <Button
             variant="ghost"
@@ -99,47 +118,32 @@ export const useInquiriesTable = ({
             Product
           </Button>
         ),
-        cell: ({ row }) => row.original.product?.name,
+        cell: ({ row }) => {
+          const items = row.original.items;
+
+          const productNames = items
+            .map((item) => item.product.name)
+            .filter((name) => name)
+            .join(", ");
+
+          return productNames || "N/A";
+        },
       },
       {
         id: "status",
         accessorKey: "status",
         enableSorting: true,
-        header: ({ column }) => (
+        header: () => (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="w-full flex justify-between items-center px-2"
-            aria-label={`Sort by Status ${
-              column.getIsSorted() === "asc" ? "descending" : "ascending"
-            }`}
           >
             Status
           </Button>
         ),
         cell: ({ row }) => {
-          const statusColors: Record<string, string> = {
-            [InquiryStatus.New]: "bg-blue-100 text-blue-800",
-            [InquiryStatus.Quoted]: "bg-yellow-100 text-yellow-800",
-            [InquiryStatus.Approved]: "bg-green-100 text-green-800",
-            [InquiryStatus.Scheduled]: "bg-purple-100 text-purple-800",
-            [InquiryStatus.Fulfilled]: "bg-teal-100 text-teal-800",
-            [InquiryStatus.Cancelled]: "bg-red-100 text-red-800",
-          };
-
-          const displayStatus = row.original.status
-            .replace(/([A-Z])/g, " $1")
-            .trim();
-
           return (
-            <Badge
-              className={
-                statusColors[row.original.status] || "bg-gray-100 text-gray-800"
-              }
-              aria-label={`Status: ${displayStatus}`}
-            >
-              {displayStatus}
-            </Badge>
+            <InquiryStatusBadge status={row.original.status as InquiryStatus} />
           );
         },
       },
@@ -165,7 +169,7 @@ export const useInquiriesTable = ({
             : "-",
       },
       {
-        id: "assignedTo.name", 
+        id: "assignedTo.name",
 
         accessorFn: (row: Inquiry) => row.assignedTo?.name || "Unassigned",
         enableSorting: true,
@@ -187,65 +191,156 @@ export const useInquiriesTable = ({
         id: "actions",
         cell: ({ row }) => {
           const inquiry = row.original;
+          const isArchivedState = [
+            InquiryStatus.Closed,
+            InquiryStatus.ConvertedToLead,
+            InquiryStatus.AssociatedToClient,
+          ].includes(inquiry.status as InquiryStatus);
+
           return (
-            inquiry.status !== "Cancelled" ? (<DropdownMenu>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {inquiry.status === "New" && (
-                  <DropdownMenuItem
-                    onClick={() => openCreateQuoteDialog(inquiry.id)}
-                  >
-                    Create Quote
-                  </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openDetailsDialog(inquiry)}>
+                  View Details
+                </DropdownMenuItem>
+
+                {inquiry.status === InquiryStatus.New && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => markReviewedMutation.mutate(inquiry.id)}
+                    >
+                      Mark as Reviewed
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => closeInquiryMutation.mutate(inquiry.id)}
+                      className="text-red-600 focus:bg-red-50"
+                    >
+                      Close (Mark as Junk/Spam)
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {inquiry.status === "Quoted" && (
-                  <DropdownMenuItem
-                    onClick={() => approveInquiryMutation.mutate(inquiry.id)}
-                  >
-                    Approve Inquiry
-                  </DropdownMenuItem>
+
+                {inquiry.status === InquiryStatus.Reviewed && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => convertToLeadMutation.mutate(inquiry.id)}
+                    >
+                      Promote to Lead
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => openAssociateInquiryDialog(inquiry.id)}
+                    >
+                      Associate with Existing Client
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => openAssociateInquiryDialog(inquiry.id)}
+                    >
+                      Associate with Existing Lead
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => openCreateQuoteDialog(inquiry.id)}
+                    >
+                      Generate Quotation Directly
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => closeInquiryMutation.mutate(inquiry.id)}
+                      className="text-red-600 focus:bg-red-50"
+                    >
+                      Close (No Potential)
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {inquiry.status === "Approved" && (
-                  <DropdownMenuItem
-                    onClick={() => openScheduleInquiryDialog(inquiry.id)}
-                  >
-                    Schedule Inquiry
-                  </DropdownMenuItem>
+
+                {inquiry.status === InquiryStatus.QuotationGenerated && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        openScheduleInquiryDialog(inquiry.id)
+                      }
+                    >
+                      Mark Quote Accepted & Schedule
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        closeInquiryMutation.mutate(inquiry.id)
+                      }
+                      className="text-red-600 focus:bg-red-50"
+                    >
+                      Close (Quote Rejected)
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {inquiry.status === "Scheduled" && (
-                  <DropdownMenuItem
-                    onClick={() => fulfillInquiryMutation.mutate(inquiry.id)}
-                  >
-                    Fulfill Inquiry
-                  </DropdownMenuItem>
+
+                {inquiry.status === InquiryStatus.DeliveryScheduled && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => closeInquiryMutation.mutate(inquiry.id)}
+                    >
+                      Mark as Fulfilled & Close
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {(inquiry.status === "Fulfilled" ||
-                  inquiry.status === "Scheduled") && (
-                  <DropdownMenuItem
-                    onClick={() => convertToLeadMutation.mutate(inquiry.id)}
-                  >
-                    Convert to Lead
+
+                {isArchivedState && (
+                  <>
+                    <DropdownMenuSeparator />
+                   {inquiry.status === InquiryStatus.ConvertedToLead && inquiry.leadOriginated && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const leadId = inquiry.leadOriginated!.id; 
+                          if (leadId) { 
+                            openAssociate(leadId, "lead");
+                          }
+                        }}
+                      >
+                        View Associated Lead
+                      </DropdownMenuItem>
+                    )}
+
+                    {inquiry.status === InquiryStatus.AssociatedToClient && inquiry.clientId && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const clientId = inquiry.clientId; 
+                          if (clientId) { 
+                            openAssociate(clientId, "client");
+                          }
+                        }}
+                      >
+                        View Associated Client
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      disabled
+                      className="text-xs text-muted-foreground"
+                    >
+                      Inquiry is Closed
+                    </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600 focus:bg-red-50">
+                    Delete Inquiry
                   </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
-            </DropdownMenu>) :
-            <></>
-          );
+            </DropdownMenu>
+          )
         },
       },
     ];
     return baseColumns;
-  }, [
-    approveInquiryMutation,
-    fulfillInquiryMutation,
-    openDetailsDialog,
-    openCreateQuoteDialog,
-    openScheduleInquiryDialog
-  ]);
+  }, [openDetailsDialog, openCreateQuoteDialog, openScheduleInquiryDialog]);
 
   const table = useReactTable({
     data: inquiries?.data || [],

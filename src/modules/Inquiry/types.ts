@@ -1,7 +1,8 @@
 import { User } from "@/types";
 import { Lead } from "../Leads/types/leads.types";
+import { z } from "zod";
 import { Product } from "../Products/types";
-import {z} from "zod";
+import { Client } from "../Clients/clients.schema";
 
 export interface Inquiry {
   id: string;
@@ -19,13 +20,11 @@ export interface Inquiry {
   referenceSource: string;
   remarks?: string | null;
   status: string;
-  quotedPrice?: number | null;
-  quotedBy?: {
-    name: string;
-  };
-  quotedAt?: Date | string | null;
-  relatedLeadId?: string | null;
-  relatedLead?: Lead | null;
+  leadOriginated?: Lead;
+  lead?: Lead;
+  leadId?: string;
+  client?: Client;
+  clientId?: string;
   createdById: string;
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -33,16 +32,25 @@ export interface Inquiry {
   inquiryType: InquiryType;
   priority?: Priority | null;
   assignedTo?: User;
-  product?: Partial<Product>;
+  items: InquiryItem[];
+}
+
+export interface InquiryItem {
+  inquiryId: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  remarks?: number;
 }
 
 export enum InquiryStatus {
   New = "New",
-  Quoted = "Quoted",
-  Approved = "Approved",
-  Scheduled = "Scheduled",
-  Fulfilled = "Fulfilled",
-  Cancelled = "Cancelled",
+  Reviewed = "Reviewed",
+  ConvertedToLead = "ConvertedToLead",
+  AssociatedToClient = "AssociatedToClient",
+  Closed = "Closed",
+  QuotationGenerated = "QuotationGenerated",
+  DeliveryScheduled = "DeliveryScheduled",
 }
 
 export enum InquiryType {
@@ -59,7 +67,6 @@ export enum Priority {
   High = "High",
   Urgent = "Urgent",
 }
-
 
 // DTO for updating an existing inquiry
 export interface UpdateInquiryDto {
@@ -123,21 +130,20 @@ export interface CountByInquiryTpe {
 }
 
 export interface CountByPriority {
-  priority: string,
+  priority: string;
   count: number;
 }
 
 export interface CountByDeliveryMethod {
-  deliveryMethod: string,
-  count: number
+  deliveryMethod: string;
+  count: number;
 }
 
-
 export interface MonthlyTrend {
-  month: string | Date;
-  count: number;
-  fulfilled: number;
-  cancelled: number;
+  month: Date;
+  count: bigint;
+  converted: bigint;
+  closed: bigint;
 }
 
 interface DailyTrend {
@@ -155,7 +161,7 @@ export interface InquiryStatistics {
   byPriority: CountByPriority[];
   byDeliveryMethod: CountByDeliveryMethod[];
   monthlyTrends?: MonthlyTrend[] | null;
-  dailyTrends?: DailyTrend[] | null
+  dailyTrends?: DailyTrend[] | null;
   conversionRate: number;
 }
 
@@ -180,31 +186,32 @@ export enum ReferenceSource {
   Other = "Other",
 }
 
-export const formSchema = z.object({
-  clientName: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters." }),
-  phoneNumber: z
-    .string()
-    .min(10, { message: "Please enter a valid phone number." }),
-  email: z.string().email({ message: "Please enter a valid email address." }).optional(),
-  isCompany: z.boolean().default(false),
-  companyName: z.string().optional(),
-  companyAddress: z.string().optional(),
-  product: z.string().min(1, { message: "Please select a product." }),
-  inquiryType: z.nativeEnum(InquiryType, {
-    required_error: "Please select an inquiry type.",
-  }),
-  quantity: z.number().positive({ message: "Quantity must be positive." }),
-  deliveryMethod: z.nativeEnum(DeliveryMethod).optional(),
-  deliveryLocation: z
-    .string()
-    .min(1, { message: "Please enter a delivery location." }),
-  preferredDate: z.date({ required_error: "Please select a date." }),
-  referenceSource: z.nativeEnum(ReferenceSource),
-  priority: z.nativeEnum(Priority).optional(),
-  remarks: z.string().optional(),
-  relatedLeadId: z.string().optional(),
+const inquiryItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
 });
 
-export type CreateInquiryDto = z.infer<typeof formSchema>
+export const formSchema = z.object({
+  clientName: z.string().min(1, "Customer name is required"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  isCompany: z.boolean().default(false),
+  companyName: z.string().optional().or(z.literal("")),
+  companyAddress: z.string().optional().or(z.literal("")),
+  inquiryType: z.nativeEnum(InquiryType),
+  deliveryMethod: z.string().optional(),
+  deliveryLocation: z.string().optional(),
+  preferredDate: z.date().nullable(),
+  referenceSource: z.string().optional(),
+  priority: z.nativeEnum(Priority).default(Priority.Medium),
+  remarks: z.string().optional(),
+  relatedLeadId: z.string().optional(),
+
+  items: z.array(inquiryItemSchema).min(1, "At least one item is required"),
+});
+
+export type CreateInquiryDto = z.infer<
+  typeof formSchema & {
+    items: InquiryItem[];
+  }
+>;

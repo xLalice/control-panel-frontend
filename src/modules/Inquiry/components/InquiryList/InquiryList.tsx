@@ -18,10 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui";
-import { convertInquiryToLead } from "@/api/api";
 import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { InquiryDetails } from "../InquiryDetails/InquiryDetails";
-import { Inquiry } from "../../types";
+import { Inquiry, InquiryStatus } from "../../types";
 import { CreateQuoteDialog } from "../CreateQuoteDialog";
 import { ScheduleInquiryDialog } from "../ScheduleInquiryDialog";
 import { InquiryListSkeleton } from "../ui/Skeleton";
@@ -29,6 +28,9 @@ import { useInquiriesData } from "./hooks/useInquiriesData";
 import { useInquiriesTable } from "./hooks/useInquiriesTable";
 import { CustomPagination } from "@/components/CustomPagination";
 import { flexRender } from "@tanstack/react-table";
+import { useConvertToLead } from "./hooks/useInquiriesMutations";
+import { useNavigate } from "react-router-dom";
+import { AssociateEntityDialog } from "../AssociateInquiryDialog";
 
 interface InquiryListProps {
   refreshTrigger: number;
@@ -42,8 +44,12 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
   const [scheduleInquiryDialogOpen, setScheduleInquiryDialogOpen] =
     useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [associateDialogOpen, setAssociateDialogOpen] = useState(false);
   const [selectedInquiryForDetails, setSelectedInquiryForDetails] =
     useState<Inquiry | null>(null);
+
+  const convertToLeadMutation = useConvertToLead();
+  const navigate = useNavigate();
 
   const {
     inquiries,
@@ -76,9 +82,19 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
     setDetailsDialogOpen(true);
   };
 
+  const openAssociateInquiryDialog = (inquiryId: string) => {
+    setSelectedInquiryId(inquiryId);
+    setAssociateDialogOpen(true);
+  };
+
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
     setCurrentPage(1);
+  };
+
+  const handleConvertToLead = async (id: string) => {
+    const response = await convertToLeadMutation.mutateAsync(id);
+    navigate("/leads/", { state: { leadIdToOpen: response.id } });
   };
 
   const { table, columns } = useInquiriesTable({
@@ -88,6 +104,7 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
     openDetailsDialog,
     openCreateQuoteDialog,
     openScheduleInquiryDialog,
+    openAssociateInquiryDialog,
     sorting,
     setSorting,
   });
@@ -128,7 +145,10 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="default">
                     <Filter className="mr-2 h-4 w-4" />
-                    Status: {statusFilter === "all" ? "All" : statusFilter}
+                    Status:{" "}
+                    {statusFilter === "all"
+                      ? "All"
+                      : statusFilter.replace(/([A-Z])/g, " $1").trim()}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -137,31 +157,15 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
                   >
                     All
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusFilterChange("New")}
-                  >
-                    New
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusFilterChange("Quoted")}
-                  >
-                    Quoted
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusFilterChange("Approved")}
-                  >
-                    Approved
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusFilterChange("Scheduled")}
-                  >
-                    Scheduled
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusFilterChange("Fulfilled")}
-                  >
-                    Fulfilled
-                  </DropdownMenuItem>
+                  {Object.values(InquiryStatus).map((status) => {
+                    return (
+                      <DropdownMenuItem
+                        onClick={() => handleStatusFilterChange(status)}
+                      >
+                        {status.replace(/([A-Z])/g, " $1").trim()}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -292,12 +296,19 @@ export function InquiryList({ refreshTrigger }: InquiryListProps) {
       {selectedInquiryForDetails && (
         <InquiryDetails
           inquiry={selectedInquiryForDetails}
-          onConvertToLead={() => {
-            convertInquiryToLead(selectedInquiryForDetails.id);
-            setDetailsDialogOpen(false);
-          }}
+          onConvertToLead={() =>
+            handleConvertToLead(selectedInquiryForDetails.id)
+          }
           onClose={() => setDetailsDialogOpen(false)}
           isOpen={detailsDialogOpen}
+        />
+      )}
+
+      {selectedInquiryId && (
+        <AssociateEntityDialog
+          isOpen={associateDialogOpen}
+          onClose={() => setAssociateDialogOpen(false)}
+          inquiryId={selectedInquiryId}
         />
       )}
     </>
