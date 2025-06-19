@@ -7,8 +7,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/api";
 import { Client, ClientStatus } from "../../clients.schema";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +27,7 @@ import { FormMode } from "../ClientForm/client.schema";
 import { ActionsDropdown } from "./components/ActionsDropdown";
 import { useLocation } from "react-router-dom";
 import { ClientDetailsPanel } from "../ClientDetails/ClientDetails"; 
+import { useClientData } from "./hooks/useClientData";
 
 export const ClientList = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | ClientStatus>("all");
@@ -64,14 +63,7 @@ export const ClientList = () => {
     data: clients,
     refetch,
     isLoading: isClientsLoading,
-  } = useQuery<Client[], Error>({
-    queryKey: ["clients"],
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-      const response = await apiClient.get("/clients");
-      return response.data;
-    },
-  });
+  } = useClientData()
 
   useEffect(() => {
     if (
