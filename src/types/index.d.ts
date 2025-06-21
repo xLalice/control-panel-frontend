@@ -1,16 +1,3 @@
-export interface User {
-  name: string;
-  id: string;
-  email: string;
-  roleId: number;
-  role: Role;
-  isOJT: boolean;
-  ojtStartDate: Date | null;
-  ojtEndDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface Role {
   id: number;
   name: string;

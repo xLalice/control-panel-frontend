@@ -34,7 +34,7 @@ import { useCompanies } from "./hooks/useCompanies";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeadForm } from "./hooks/useLeadForm";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { LeadStatus } from "../../constants/constants";
 import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
 

@@ -20,7 +20,7 @@ const LeadForm = ({ lead, isOpen, onClose, onOpenChange }: LeadFormProps) => {
     onClose();
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
+  const handleButtonClick = () => {
     onOpenChange(true);
   };
 

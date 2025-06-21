@@ -40,7 +40,7 @@ import { useAssignInquiryMutation } from "../hooks/useAssignInquiryMutation";
 import { useEffect, useState } from "react";
 import { InquiryStatusBadge } from "../InquiryStatusBadge";
 import { formatDate } from "../../inquiry.utils";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 
 interface InquiryDetailProps {

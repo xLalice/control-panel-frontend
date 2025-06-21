@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserSkeleton } from "./UserSkeleton";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { memo } from "react";

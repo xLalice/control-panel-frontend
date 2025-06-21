@@ -1,10 +1,8 @@
-// hooks/useLeadMutations.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { apiClient } from "@/api/api";
 import { Lead } from "@/modules/Leads/types/leads.types";
 
-// Payload interfaces
 interface DeleteLeadPayload {
   leadId: string;
 }
@@ -21,7 +19,6 @@ interface AssignLeadPayload {
   assignedToId: string | null;
 }
 
-// Base mutation configuration interface
 interface LeadMutationConfig<TData, TVariables> {
   mutationFn: (variables: TVariables) => Promise<TData>;
   successMessage: string | ((data: TData, variables: TVariables) => string);
@@ -30,7 +27,6 @@ interface LeadMutationConfig<TData, TVariables> {
   onSuccess?: (data: TData, variables: TVariables) => void;
 }
 
-// Generic lead mutation hook
 const useLeadMutation = <TData = any, TVariables = any>(
   config: LeadMutationConfig<TData, TVariables>
 ) => {
@@ -88,7 +84,7 @@ export const useUpdateLeadStatus = () =>
       });
       return response.data;
     },
-    successMessage: (data, variables) => {
+    successMessage: (_, variables) => {
       const { oldStatus, newStatus, leadName } = variables;
       if (oldStatus !== "Won" && newStatus === "Won") {
         return `Lead "${leadName || "Unknown"}" converted to Won!`;
@@ -101,7 +97,7 @@ export const useUpdateLeadStatus = () =>
       ["lead", variables.leadId],
       ["lead-activities", variables.leadId],
     ],
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       const { oldStatus, newStatus } = variables;
       if (oldStatus !== "Won" && newStatus === "Won") {
         setTimeout(() => {

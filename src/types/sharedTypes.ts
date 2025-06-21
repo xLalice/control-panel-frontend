@@ -5,8 +5,8 @@ export type User = {
     id: string;
     email: string;
     name: string;
-    roleId: Role;
-    role: "ADMIN" | "USER" | "SUPERVISOR";
+    roleId: string;
+    role: Role;
     isOJT: boolean;
     ojtStartDate?: string;
     ojtEndDate?: string;

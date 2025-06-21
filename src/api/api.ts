@@ -1,6 +1,6 @@
 import axios from "axios";
 import { LoginFormData } from "../modules/Login";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { Product } from "@/modules/Products/types";
 import {
   InquiryFilterParams,

@@ -9,7 +9,7 @@ import {
   Button,
 } from "@/components/ui";
 import { LeadStatus } from "../constants/constants";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { Controller, UseFormRegister, Control } from "react-hook-form";
 import { X } from "lucide-react";
 import { Filters } from "../types/leads.types";

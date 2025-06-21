@@ -1,5 +1,5 @@
 import { fetchUsers } from "@/api/api";
-import { User } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { useQuery } from "@tanstack/react-query";
 
 export const useUsersData =  () => useQuery<User[]>({

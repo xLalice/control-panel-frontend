@@ -18,7 +18,7 @@ import { Client } from "@/modules/Clients/clients.schema";
 import { FormMode } from "../../ClientForm/client.schema";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle, History } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, AlertTriangle, History } from "lucide-react";
 import {toast} from "react-toastify";
 import { InteractionHistoryDialog } from "../../ClientHistory/ClientHistory";
 

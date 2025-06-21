@@ -20,7 +20,7 @@ export const useQuoteMutation = ({
       const response = await apiClient.post(`/quote`, quotationDetails);
       return response.data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => { 
       queryClient.invalidateQueries({ queryKey: ["quotations"] });
       let entity = variables.quotationDetails.fromEntity;
       if (entity.entityType === "lead") {
