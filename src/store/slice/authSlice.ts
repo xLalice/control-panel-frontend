@@ -1,6 +1,7 @@
 import { login as loginApi, logout as logoutApi, me } from "@/api/api";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { User, LoginSuccess } from "@/types";
+import { LoginSuccess } from "@/types";
+import { User } from "@/types/sharedTypes";
 import { RootState } from "../store";
 
 /* ────────────  async thunks  ──────────── */

@@ -407,12 +407,12 @@ const LeadDetailPanel = ({
           </div>
         )}
 
-        <LeadForm
+        {isEditDialogOpen && <LeadForm
           isOpen={isEditDialogOpen}
           onClose={() => setIsEditDialogOpen(false)}
           onOpenChange={setIsEditDialogOpen}
           lead={lead}
-        />
+        />}
 
         <AlertDialog
           open={isDeleteDialogOpen}
