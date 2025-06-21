@@ -72,7 +72,7 @@ export interface LeadFormData {
 
 export interface LeadFormProps {
   lead?: Lead;
-  users: User[];
   isOpen: boolean;
   onClose: () => void;
+  onOpenChange: (open: boolean) => void;
 }

@@ -14,12 +14,13 @@ import { Controller, UseFormRegister, Control } from "react-hook-form";
 import { X } from "lucide-react";
 import { Filters } from "../types/leads.types";
 import React from "react";
+import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
+import { SkeletonFilters } from "./skeletons/LeadTableSkeletons";
 
 interface LeadFilterProps {
   isFilterOpen: boolean;
   register: UseFormRegister<Filters>;
   control: Control<Filters, any, Filters>;
-  users: User[];
   hasActiveFilters: string | undefined;
   resetFilters: () => void;
 }
@@ -28,11 +29,12 @@ export const LeadFilters: React.FC<LeadFilterProps> = ({
   isFilterOpen,
   register,
   control,
-  users,
   hasActiveFilters,
   resetFilters,
 }) => {
+  const { data: users = [], isLoading } = useUsersData();
   return (
+    !isLoading ? ( 
     <div
       id="filter-panel"
       className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${
@@ -123,5 +125,6 @@ export const LeadFilters: React.FC<LeadFilterProps> = ({
         </div>
       )}
     </div>
+    ) : <SkeletonFilters />
   );
 };

@@ -26,7 +26,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui";
 import { LeadStatus } from "../../constants/constants";
-import { User } from "@/types/sharedTypes";
 import {
   Pencil,
   Trash2,
@@ -58,19 +57,18 @@ import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactHistoryTImeline";
 import { LogContactModal } from "@/components/LogContactModal";
 import { CreateQuotationDialog } from "@/modules/Inquiry/components/CreateQuoteDialog";
+import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
   onClose: () => void;
   isOpen: boolean;
-  users: User[];
 }
 
 const LeadDetailPanel = ({
   leadId,
   onClose,
   isOpen,
-  users,
 }: LeadDetailPanelProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -83,6 +81,7 @@ const LeadDetailPanel = ({
     isLoading: isLeadLoading,
     error: leadError,
   } = useLeadDetails({ leadId });
+  const {data: users = []} = useUsersData();
 
   const deleteLeadMutation = useDeleteLead();
   const updateStatusMutation = useUpdateLeadStatus();
@@ -91,7 +90,7 @@ const LeadDetailPanel = ({
     useConvertToClientMutation();
 
   const handleStatusChange = (newStatus: string) => {
-    if (!lead) return; // Defensive check
+    if (!lead) return; 
     updateStatusMutation.mutate({
       leadId: lead.id,
       oldStatus: lead.status,
@@ -341,7 +340,7 @@ const LeadDetailPanel = ({
                                 <SelectItem value="unassigned">
                                   Unassigned
                                 </SelectItem>
-                                {users.map((user: User) => (
+                                {users.map((user) => (
                                   <SelectItem key={user.id} value={user.id}>
                                     {user.name}
                                   </SelectItem>
@@ -411,8 +410,8 @@ const LeadDetailPanel = ({
         <LeadForm
           isOpen={isEditDialogOpen}
           onClose={() => setIsEditDialogOpen(false)}
+          onOpenChange={setIsEditDialogOpen}
           lead={lead}
-          users={users}
         />
 
         <AlertDialog

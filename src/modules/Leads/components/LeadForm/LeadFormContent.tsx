@@ -36,23 +36,23 @@ import { cn } from "@/lib/utils";
 import { useLeadForm } from "./hooks/useLeadForm";
 import { User } from "@/types";
 import { LeadStatus } from "../../constants/constants";
+import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
 
 interface LeadFormContentProps {
   lead?: Lead;
   onSuccess: () => void | undefined;
   onClose: () => void | undefined;
-  users: User[];
 }
 
 export const LeadFormContent: React.FC<LeadFormContentProps> = ({
   onSuccess,
   onClose,
-  users,
   lead,
 }) => {
   const isEditMode = !!lead;
 
   const { data: companies = [] } = useCompanies();
+  const {data: users = []} = useUsersData();
 
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

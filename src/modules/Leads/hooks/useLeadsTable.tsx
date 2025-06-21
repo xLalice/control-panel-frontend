@@ -6,7 +6,6 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
 import { PAGE_SIZE } from "../constants/constants";
 import { Lead } from "../types/leads.types";
 import { useForm } from "react-hook-form";
@@ -14,7 +13,6 @@ import { Filters } from "../types/leads.types";
 import { Button, Badge } from "@/components/ui";
 import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
-import { fetchUsers } from "@/api/api";
 import { LeadStatus } from "../constants/constants";
 import { useLeadsData } from "./useLeadsData";
 
@@ -59,12 +57,7 @@ export const useLeadsTable = () => {
 
   const filters = watch();
 
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: fetchUsers,
-    refetchOnWindowFocus: false,
-    staleTime: 300000,
-  });
+ 
 
   const {data: leadsData, isLoading, refetch: refetchLeads} = useLeadsData({
     filters,
@@ -368,8 +361,6 @@ export const useLeadsTable = () => {
     leadsData,
     setPage: handlePageChange, 
     page,
-    users,
-    usersLoading,
     refetchLeads,
     setSelectedLeadId,
     setIsDetailOpen

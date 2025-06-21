@@ -1,7 +1,4 @@
-import {
-  SkeletonTableRow,
-  SkeletonFilters,
-} from "./components/skeletons/LeadTableSkeletons";
+import { SkeletonTableRow } from "./components/skeletons/LeadTableSkeletons";
 import { flexRender } from "@tanstack/react-table";
 import {
   Table,
@@ -45,14 +42,25 @@ const LeadsTable = () => {
     leadsData: allLeads,
     setPage,
     page: currentPage,
-    usersLoading,
-    users,
     setSelectedLeadId,
-    setIsDetailOpen
+    setIsDetailOpen,
   } = useLeadsTable();
+
   const location = useLocation();
 
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
+  console.log("LeadsTable render - isCreateFormOpen:", isCreateFormOpen);
+
+  const handleCreateFormClose = () => {
+    console.log("handleCreateFormClose called");
+    setIsCreateFormOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    console.log("handleOpenChange called with:", open);
+    setIsCreateFormOpen(open);
+  };
 
   useEffect(() => {
     if (location.state && (location.state as any).leadIdToOpen) {
@@ -63,10 +71,6 @@ const LeadsTable = () => {
       window.history.replaceState({}, document.title, location.pathname);
     }
   }, [location.state]);
-
-  const handleCreateFormClose = () => {
-    setIsCreateFormOpen(false);
-  };
 
   const handlePageChange = (page: number) => {
     setPage(page);
@@ -85,9 +89,9 @@ const LeadsTable = () => {
             </CardTitle>
             <div className="flex flex-col xs:flex-row gap-2">
               <LeadForm
-                users={users}
                 isOpen={isCreateFormOpen}
                 onClose={handleCreateFormClose}
+                onOpenChange={handleOpenChange}
               />
               <Button
                 variant="outline"
@@ -101,19 +105,13 @@ const LeadsTable = () => {
               </Button>
             </div>
           </div>
-
-          {usersLoading ? (
-            <SkeletonFilters />
-          ) : (
-            <LeadFilters
-              users={users}
-              register={register}
-              control={control}
-              hasActiveFilters={hasActiveFilters}
-              resetFilters={resetFilters}
-              isFilterOpen={isFilterOpen}
-            />
-          )}
+          <LeadFilters
+            register={register}
+            control={control}
+            hasActiveFilters={hasActiveFilters}
+            resetFilters={resetFilters}
+            isFilterOpen={isFilterOpen}
+          />
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -246,7 +244,6 @@ const LeadsTable = () => {
         leadId={selectedLeadId}
         isOpen={isDetailOpen && !!selectedLeadId}
         onClose={handleDetailClose}
-        users={users}
       />
     </div>
   );
