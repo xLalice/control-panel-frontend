@@ -1,52 +1,86 @@
+// src/modules/Clients/components/ClientForm/client.hook.ts
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useCallback, useEffect } from "react";
-import { ClientFormInput, clientUpdateSchema } from "./client.schema";
-import { clientSchema } from "../../clients.schema";
+import {
+  clientCreateSchema,
+  clientUpdateSchema,    
+  ClientCreateInput,     
+  ClientUpdatePayload,   
+  ClientFullData,        
+  ClientFormFullData,  
+} from "./client.schema";
 import { defaultCreateClient, defaultUpdateClient } from "./client.constants";
 import { apiClient } from "@/api/api";
 
+
+type ClientFormData = ClientCreateInput | ClientFormFullData;
+
+
 interface UseClientFormProps {
-  client?: ClientFormInput;
+  client?: ClientFullData; 
   onSuccess?: () => void;
 }
 
 export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
   const queryClient = useQueryClient();
-  const isEditMode = Boolean(client);
-  
-  const form = useForm<ClientFormInput>({
-    resolver: zodResolver(client ? clientUpdateSchema : clientSchema),
+  const isEditMode = Boolean(client?.id); 
+
+  const form = useForm<ClientFormData>({ 
+    resolver: zodResolver(isEditMode ? clientUpdateSchema : clientCreateSchema), 
     defaultValues: isEditMode && client ? defaultUpdateClient(client) : defaultCreateClient,
     mode: "onBlur",
   });
 
   useEffect(() => {
     if (isEditMode && client) {
-      form.reset(defaultUpdateClient(client));
+      form.reset(defaultUpdateClient(client) as ClientFormData);
+    } else if (!isEditMode) {
+      form.reset(defaultCreateClient as ClientFormData);
     }
-  }, [client, isEditMode, form]);
+  }, [client, isEditMode, form]); 
 
   const clientMutation = useMutation({
-    mutationFn: async (data: ClientFormInput) => {
-      const payload = {
-        ...data,
-        isActive: data.isActive ?? true,
+    mutationFn: async (data: ClientFormData) => {
+      const basePayload = {
+        isActive: data.isActive ?? true, 
         primaryEmail: data.primaryEmail?.trim() || null,
         primaryPhone: data.primaryPhone?.trim() || null,
         notes: data.notes?.trim() || null,
+        clientName: data.clientName, 
+        accountNumber: data.accountNumber || null,
+        billingAddressStreet: data.billingAddressStreet || null,
+        billingAddressCity: data.billingAddressCity || null,
+        billingAddressRegion: data.billingAddressRegion || null,
+        billingAddressPostalCode: data.billingAddressPostalCode || null,
+        billingAddressCountry: data.billingAddressCountry || null,
+        shippingAddressStreet: data.shippingAddressStreet || null,
+        shippingAddressCity: data.shippingAddressCity || null,
+        shippingAddressRegion: data.shippingAddressRegion || null,
+        shippingAddressPostalCode: data.shippingAddressPostalCode || null,
+        shippingAddressCountry: data.shippingAddressCountry || null,
+        status: data.status,
       };
 
       if (isEditMode) {
+        const updatePayload: ClientUpdatePayload = {
+          ...(basePayload as ClientUpdatePayload),
+        };
+        const id = (data as ClientFullData).id; 
+        if (!id) {
+          throw new Error("Client ID is missing for update operation.");
+        }
         const response = await apiClient.patch(
-          `/clients/${client?.id}`,
-          payload
+          `/clients/${id}`,
+          updatePayload 
         );
         return response.data;
       } else {
-        const response = await apiClient.post("/clients", payload);
+        const createPayload: ClientCreateInput = basePayload as ClientCreateInput; 
+        const response = await apiClient.post("/clients", createPayload); 
         return response.data;
       }
     },
@@ -58,7 +92,7 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
           ? "Client updated successfully"
           : "Client created successfully"
       );
-      form.reset();
+      form.reset(); 
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -72,8 +106,8 @@ export const useClientForm = ({ client, onSuccess }: UseClientFormProps) => {
   });
 
   const onSubmit = useCallback(
-    (data: ClientFormInput) => {
-      console.log("Onsubmit called");
+    (data: ClientFormData) => { 
+      console.log("Onsubmit called with data:", data);
       clientMutation.mutate(data);
     },
     [clientMutation]

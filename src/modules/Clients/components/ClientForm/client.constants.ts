@@ -1,6 +1,6 @@
-import { ClientFormInput } from "./client.schema";
+import { ClientCreateInput, ClientFullData, ClientFormFullData } from "./client.schema";
 
-export const defaultCreateClient: ClientFormInput = {
+export const defaultCreateClient: ClientCreateInput = {
   clientName: "",
   accountNumber: "",
   primaryEmail: "",
@@ -9,18 +9,35 @@ export const defaultCreateClient: ClientFormInput = {
   billingAddressCity: "",
   billingAddressRegion: "",
   billingAddressPostalCode: "",
-  billingAddressCountry: "",
+  billingAddressCountry: "", 
   shippingAddressStreet: "",
   shippingAddressCity: "",
   shippingAddressRegion: "",
   shippingAddressPostalCode: "",
-  shippingAddressCountry: "",
+  shippingAddressCountry: "", 
   status: "Active",
-  notes: "",
   isActive: true,
+  notes: null, 
 };
 
-export const defaultUpdateClient = (client: ClientFormInput): ClientFormInput => ({
-  ...defaultCreateClient,
-  ...client,
-});
+
+export const defaultUpdateClient = (client: ClientFullData): ClientFormFullData => {
+  return {
+    ...client,
+    accountNumber: client.accountNumber || "",
+    primaryEmail: client.primaryEmail || "",
+    primaryPhone: client.primaryPhone || "",
+    notes: client.notes || null, 
+    billingAddressStreet: client.billingAddressStreet || "",
+    billingAddressCity: client.billingAddressCity || "",
+    billingAddressRegion: client.billingAddressRegion || "",
+    billingAddressPostalCode: client.billingAddressPostalCode || "",
+    billingAddressCountry: client.billingAddressCountry || "",
+    shippingAddressStreet: client.shippingAddressStreet || "",
+    shippingAddressCity: client.shippingAddressCity || "",
+    shippingAddressRegion: client.shippingAddressRegion || "",
+    shippingAddressPostalCode: client.shippingAddressPostalCode || "",
+    shippingAddressCountry: client.shippingAddressCountry || "",
+    convertedFromLeadId: client.convertedFromLeadId || undefined,
+  };
+};
