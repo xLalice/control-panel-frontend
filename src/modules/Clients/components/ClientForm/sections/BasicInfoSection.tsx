@@ -1,20 +1,35 @@
 import React from "react";
 import { Control } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { User, Mail, Phone, Activity } from "lucide-react";
-import { ClientFormInput } from "../client.schema";
-import { ClientStatus, clientStatusEnum } from "@/modules/Clients/clients.schema";
+import {
+  ClientStatus,
+  clientStatusEnum,
+} from "@/modules/Clients/clients.schema";
+import { ClientCreateInput } from "../client.schema";
 
 interface BasicInfoSectionProps {
-  control: Control<ClientFormInput>;
+  control: Control<ClientCreateInput>
   isViewMode?: boolean;
 }
 
-export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ 
-  control, 
-  isViewMode = false 
+export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
+  control,
+  isViewMode = false,
 }) => {
   const statusOptions: ClientStatus[] = clientStatusEnum.options;
 
@@ -22,9 +37,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <User className="h-5 w-5 text-muted-foreground" />
-        <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          Basic Information
+        </h3>
       </div>
-     
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -33,13 +50,18 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <FormItem>
               <FormLabel className="text-sm font-medium text-foreground flex items-center gap-2">
                 <User className="h-4 w-4" />
-                Client Name {!isViewMode && <span className="text-destructive">*</span>}
+                Client Name{" "}
+                {!isViewMode && <span className="text-destructive">*</span>}
               </FormLabel>
               <FormControl>
-                <Input 
-                  placeholder={isViewMode ? "No name provided" : "Enter client name"}
+                <Input
+                  placeholder={
+                    isViewMode ? "No name provided" : "Enter client name"
+                  }
                   {...field}
-                  className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted font-medium' : ''}`}
+                  className={`h-11 ${
+                    isViewMode ? "bg-muted/30 border-muted font-medium" : ""
+                  }`}
                   readOnly={isViewMode}
                 />
               </FormControl>
@@ -47,7 +69,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="primaryEmail"
@@ -60,10 +82,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <FormControl>
                 <Input
                   type="email"
-                  placeholder={isViewMode ? "No email provided" : "Enter email address"}
+                  placeholder={
+                    isViewMode ? "No email provided" : "Enter email address"
+                  }
                   {...field}
                   value={field.value || ""}
-                  className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                  className={`h-11 ${
+                    isViewMode ? "bg-muted/30 border-muted" : ""
+                  }`}
                   readOnly={isViewMode}
                 />
               </FormControl>
@@ -72,7 +98,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           )}
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
@@ -86,10 +112,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <FormControl>
                 <Input
                   type="tel"
-                  placeholder={isViewMode ? "No phone provided" : "Enter phone number"}
+                  placeholder={
+                    isViewMode ? "No phone provided" : "Enter phone number"
+                  }
                   {...field}
                   value={field.value || ""}
-                  className={`h-11 ${isViewMode ? 'bg-muted/30 border-muted' : ''}`}
+                  className={`h-11 ${
+                    isViewMode ? "bg-muted/30 border-muted" : ""
+                  }`}
                   readOnly={isViewMode}
                 />
               </FormControl>
@@ -97,7 +127,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="status"
@@ -116,7 +146,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                   />
                 </FormControl>
               ) : (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select status" />

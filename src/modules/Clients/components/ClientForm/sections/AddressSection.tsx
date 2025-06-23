@@ -4,10 +4,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy, MapPin } from "lucide-react";
-import { ClientFormInput } from "../client.schema";
+import { ClientCreateInput } from "../client.schema";
 
 interface AddressSectionProps {
-  control: Control<ClientFormInput>;
+  control: Control<ClientCreateInput>;
   title: string;
   prefix: 'billing' | 'shipping';
   showCopyButton?: boolean;
@@ -23,7 +23,7 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
   onCopyClick,
   isViewMode = false,
 }) => {
-  const getFieldName = (suffix: string) => `${prefix}Address${suffix}` as keyof ClientFormInput;
+  const getFieldName = (suffix: string) => `${prefix}Address${suffix}` as keyof ClientCreateInput;
 
   return (
     <div className="space-y-6">

@@ -10,14 +10,13 @@ import {
   clientUpdateSchema,    
   ClientCreateInput,     
   ClientUpdatePayload,   
-  ClientFullData,        
-  ClientFormFullData,  
+  ClientFullData,     
 } from "./client.schema";
 import { defaultCreateClient, defaultUpdateClient } from "./client.constants";
 import { apiClient } from "@/api/api";
 
 
-type ClientFormData = ClientCreateInput | ClientFormFullData;
+type ClientFormData = ClientCreateInput | ClientFullData;
 
 
 interface UseClientFormProps {

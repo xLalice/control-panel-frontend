@@ -11,13 +11,13 @@ import { BasicInfoSection } from "./sections/BasicInfoSection";
 import { AddressSection } from "./sections/AddressSection";
 import { NotesSection } from "./sections/NotesSection";
 import { FormActions } from "./sections/FormActions";
-import { ClientFormInput } from "./client.schema";
+import { ClientFullData } from "./client.schema";
 
-// Updated FormMode type to only include create and edit
+
 type FormMode = "create" | "edit";
 
 interface ClientFormProps {
-  client?: ClientFormInput;
+  client?: ClientFullData;
   mode?: FormMode;
   onSuccess?: () => void;
   onClose?: () => void;

@@ -14,6 +14,5 @@ export const clientUpdateSchema = clientSchema.partial();
 export type ClientCreateInput = z.infer<typeof clientCreateSchema>;
 export type ClientUpdatePayload = z.infer<typeof clientUpdateSchema>;
 export type ClientFullData = z.infer<typeof clientSchema>;
-export type ClientFormFullData = z.infer<typeof clientSchema>; 
 
 export type FormMode = 'create' | 'edit';

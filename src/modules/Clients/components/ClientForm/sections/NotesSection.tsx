@@ -3,10 +3,10 @@ import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText } from "lucide-react";
-import { ClientFormInput } from "../client.schema";
+import { ClientCreateInput } from "../client.schema";
 
 interface NotesSectionProps {
-  control: Control<ClientFormInput>;
+  control: Control<ClientCreateInput>;
   isViewMode?: boolean;
 }
 
