@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Logo from "../../assets/logo.png";
-import CompanyPolicyDashboard from "../CompanyPolicy/PolicyDashboard";
+import CompanyPolicyDashboard from "../Stats/Stats";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { logout } from "@/store/slice/authSlice";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
