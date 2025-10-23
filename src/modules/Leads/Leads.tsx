@@ -50,15 +50,11 @@ const LeadsTable = () => {
 
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
-  console.log("LeadsTable render - isCreateFormOpen:", isCreateFormOpen);
-
   const handleCreateFormClose = () => {
-    console.log("handleCreateFormClose called");
     setIsCreateFormOpen(false);
   };
 
   const handleOpenChange = (open: boolean) => {
-    console.log("handleOpenChange called with:", open);
     setIsCreateFormOpen(open);
   };
 

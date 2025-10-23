@@ -42,7 +42,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
       },
       onError: () => {
         form.reset()
-        toast.success("Quotation creation failed");
+        toast.error("Quotation creation failed");
         onClose();
       }
     });

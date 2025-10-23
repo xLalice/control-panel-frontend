@@ -454,7 +454,7 @@ const LeadDetailPanel = ({
         <CreateQuotationDialog
           open={isQuotationDialogOpen}
           onClose={() => setIsQuotationDialogOpen(false)}
-          entity={{ id: lead?.id, type: "inquiry" }}
+          entity={{ id: lead?.id, type: "lead" }}
         />
       )}
     </>

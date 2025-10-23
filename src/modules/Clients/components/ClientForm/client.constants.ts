@@ -1,4 +1,4 @@
-import { ClientCreateInput, ClientFullData, ClientFormFullData } from "./client.schema";
+import { ClientCreateInput, ClientFullData } from "./client.schema";
 
 export const defaultCreateClient: ClientCreateInput = {
   clientName: "",
@@ -21,7 +21,7 @@ export const defaultCreateClient: ClientCreateInput = {
 };
 
 
-export const defaultUpdateClient = (client: ClientFullData): ClientFormFullData => {
+export const defaultUpdateClient = (client: ClientFullData) => {
   return {
     ...client,
     accountNumber: client.accountNumber || "",
