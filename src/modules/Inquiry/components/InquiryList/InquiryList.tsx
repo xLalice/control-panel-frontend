@@ -21,7 +21,7 @@ import {
 import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { InquiryDetails } from "../InquiryDetails/InquiryDetails";
 import { Inquiry, InquiryStatus } from "../../types";
-import { CreateQuotationDialog } from "../CreateQuoteDialog";
+import { CreateQuotationDialog } from "../../../Quotations/components/CreateQuoteDialog/CreateQuoteDialog";
 import { ScheduleInquiryDialog } from "../ScheduleInquiryDialog";
 import { InquiryListSkeleton } from "../ui/Skeleton";
 import { useInquiriesData } from "./hooks/useInquiriesData";

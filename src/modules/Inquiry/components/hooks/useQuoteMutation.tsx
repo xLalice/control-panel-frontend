@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QuotationFormData } from "../../types";
 import { apiClient } from "@/api/api";
 
-interface QuoteMutationVariables {
+export interface QuoteMutationVariables {
   quotationDetails: QuotationFormData;
 }
 
@@ -22,7 +22,7 @@ export const useQuoteMutation = ({
     },
     onSuccess: (_, variables) => { 
       queryClient.invalidateQueries({ queryKey: ["quotations"] });
-      let entity = variables.quotationDetails.fromEntity;
+      const entity = variables.quotationDetails.fromEntity;
       if (entity.entityType === "lead") {
         queryClient.invalidateQueries({ queryKey: ["leads"] });
         queryClient.invalidateQueries({ queryKey: ["leads", entity.id] });
