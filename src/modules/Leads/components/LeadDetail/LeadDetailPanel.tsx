@@ -56,7 +56,7 @@ import { useNavigate } from "react-router-dom";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactHistoryTImeline";
 import { LogContactModal } from "@/components/LogContactModal";
-import { CreateQuotationDialog } from "@/modules/Inquiry/components/CreateQuoteDialog";
+import { CreateQuotationDialog } from "@/modules/Quotations/components/CreateQuoteDialog/CreateQuoteDialog";
 import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
 
 interface LeadDetailPanelProps {
