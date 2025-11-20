@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Header from "./components/Header";
-import Login from "./modules/Login";
+import Login from "./modules/Auth/Login";
 import Dashboard from "./modules/Dashboard/Dashboard";
 import UserManagementPage from "./modules/UserManagement/UserManagement";
 import LeadsTable from "./modules/Leads/Leads";
