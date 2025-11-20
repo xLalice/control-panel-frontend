@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'react-toastify';
 import { Calculator, Calendar, FileText, DollarSign, Plus, Trash2, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { QuotationFormData, quotationSchema } from '../types';
-import { useQuoteMutation } from './hooks/useQuoteMutation';
+import { QuotationFormData, quotationSchema } from '../../../Inquiry/types';
+import { useQuoteMutation } from '../../../Inquiry/components/hooks/useQuoteMutation';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -149,6 +149,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
       form.setValue(`items.${index}.productId`, productId);
       form.setValue(`items.${index}.description`, product.name);
       form.setValue(`items.${index}.unitPrice`, Number(product.basePrice) || 0);
+      form.setValue(`items.${index}.lineTotal`,  Number(product.basePrice) || 0);
     }
   };
 
@@ -156,6 +157,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   const currentDiscount = form.watch('discount') || 0;
   const currentTax = form.watch('tax') || 0;
   const currentTotal = form.watch('total') || 0;
+  const isDisabled = quoteMutation.isPending || currentTotal <= 0;
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -438,7 +440,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                   )}
                 />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-end gap-2">
                   <Button
                     type="button"
                     variant={autoCalculate ? "default" : "outline"}
@@ -540,8 +542,20 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                 Cancel
               </Button>
               <Button 
-                type="submit" 
-                disabled={quoteMutation.isPending || currentTotal <= 0}
+                disabled={isDisabled}
+                className="min-w-[120px]"
+              >
+                {quoteMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Creating...
+                  </div>
+                ) : (
+                  'Create Quotation'
+                )}
+              </Button>
+              <Button 
+                disabled={isDisabled}
                 className="min-w-[120px]"
               >
                 {quoteMutation.isPending ? (
