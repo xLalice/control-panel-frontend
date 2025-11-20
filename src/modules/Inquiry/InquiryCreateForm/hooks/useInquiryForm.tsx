@@ -4,7 +4,7 @@ import {
   InquiryType,
   Priority,
   CreateInquiryDto,
-} from "../../types";
+} from "../../inquiry.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export const useInquiryForm = () => {

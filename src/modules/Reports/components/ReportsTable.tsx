@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { deleteReport } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,11 +11,11 @@ import {
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import DeleteDialog from "./DeleteDialog";
 import { Report } from "@/types";
-import { updateReport } from "@/api/api";
 import { Input } from "@/components/ui/input";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { reportsApi } from "../reports.api";
 
 interface ReportsTableProps {
   reports: Report[];
@@ -32,7 +31,6 @@ export default function ReportsTable({
   const [editedReport, setEditedReport] = useState<Partial<Report>>({});
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  // Permission checks
   const canReadAllReports = useAppSelector((state) =>
     selectUserHasPermission(state, "read:all_reports")
   );
@@ -54,7 +52,7 @@ export default function ReportsTable({
   const handleDelete = async (id: string) => {
     if (!canDeleteAllReports) return;
 
-    await deleteReport(id);
+    await reportsApi.delete(id);
     setReports(reports.filter((report) => report.id !== id));
   };
 
@@ -76,11 +74,10 @@ export default function ReportsTable({
     const reportToUpdate = reports.find((r) => r.id === editingId);
     if (!reportToUpdate) return;
 
-    // Check permissions again before saving
     const isOwnReport = reportToUpdate.reportedBy === currentUser?.id;
     if (!(canUpdateAllReports || (canUpdateOwnReports && isOwnReport))) return;
 
-    const updatedReport = await updateReport(editingId, editedReport);
+    const updatedReport = await reportsApi.update(editingId, editedReport);
     setReports(
       reports.map((r) => (r.id === editingId ? { ...r, ...updatedReport } : r))
     );
@@ -104,7 +101,6 @@ export default function ReportsTable({
     );
   };
 
-  // Filter reports based on permissions
   const visibleReports = reports.filter((report) => {
     if (canReadAllReports) return true;
     if (canReadOwnReports && report.reportedBy === currentUser?.id) return true;

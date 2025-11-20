@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/api";
+import { apiClient } from "@/api/axios";
 import { ActivityLog, EntityReference } from "@/types/sharedTypes";
 import { useQuery } from "@tanstack/react-query";
 

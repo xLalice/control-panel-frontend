@@ -24,10 +24,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { apiClient } from "@/api/api";
 import { LogContactHistoryInput, LogContactHistorySchema, ContactMethodEnum, ContactOutcomeEnum } from "@/types/sharedTypes";
 import { EntityType } from "@/types/sharedTypes";
 import { Phone, Mail, MessageSquare, Calendar, User, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { apiClient } from "@/api/axios";
 
 interface LogContactModalProps {
   isOpen: boolean;

@@ -7,7 +7,7 @@ import {
   ColumnDef,
   SortingState,
 } from "@tanstack/react-table";
-import { Inquiry, InquiryStatus } from "@/modules/Inquiry/types";
+import { Inquiry, InquiryStatus } from "@/modules/Inquiry/inquiry.types";
 import {
   Button,
   DropdownMenu,

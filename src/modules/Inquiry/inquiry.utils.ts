@@ -1,4 +1,4 @@
-import { Priority } from "./types";
+import { Priority } from "./inquiry.types";
 
 export const getPriorityColor = (priority: Priority) => {
   switch (priority) {

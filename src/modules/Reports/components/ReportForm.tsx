@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { createReport } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Report } from "@/types";
+import { reportsApi } from "../reports.api";
 
 interface ReportFormProps {
   onAdd: (newReport: Report) => void;
@@ -31,7 +31,7 @@ export default function ReportForm({ onAdd }: ReportFormProps) {
 
     try {
       setLoading(true);
-      const newReport = await createReport(form);
+      const newReport = await reportsApi.create(form);
       onAdd(newReport);
       setForm({ date: "", department: "", taskDetails: "" });
     } catch (err) {
@@ -47,7 +47,6 @@ export default function ReportForm({ onAdd }: ReportFormProps) {
         <h2 className="text-xl font-semibold mb-4">Submit a Report</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Date Field */}
           <div className="flex flex-col">
             <Label htmlFor="date">Date</Label>
             <Input
@@ -61,7 +60,6 @@ export default function ReportForm({ onAdd }: ReportFormProps) {
             />
           </div>
 
-          {/* Department Dropdown */}
           <div className="flex flex-col">
             <Label>Department</Label>
             <Select
@@ -77,7 +75,6 @@ export default function ReportForm({ onAdd }: ReportFormProps) {
             </Select>
           </div>
 
-          {/* Task Details */}
           <div className="flex flex-col">
             <Label htmlFor="taskDetails">Task Details</Label>
             <Input
@@ -92,7 +89,6 @@ export default function ReportForm({ onAdd }: ReportFormProps) {
             />
           </div>
 
-          {/* Submit Button */}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Submitting..." : "Submit Report"}
           </Button>

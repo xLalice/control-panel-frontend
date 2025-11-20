@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/api/api';
 import { ActivityLog } from '@/types/sharedTypes';
+import { apiClient } from '@/api/axios';
 
 interface UseLeadActivitiesOptions {
   leadId: string | null | undefined;

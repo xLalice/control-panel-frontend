@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/api/api";
 import { Lead, LeadFormData } from "@/modules/Leads/types/leads.types";
 import { toast } from "react-toastify";
+import { apiClient } from "@/api/axios";
 
 interface UseLeadMutationOptions {
   onSuccess?: () => void;

@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { checkCustomerExists } from "@/api/api";
+import { inquiryApi } from "../../inquiry.api";
 
 
 export const useCheckCustomer = ({
@@ -25,7 +25,7 @@ export const useCheckCustomer = ({
       debouncedCompanyName,
     ],
     queryFn: () =>
-      checkCustomerExists({
+      inquiryApi.checkCustomerExists({
         email: debouncedEmail,
         phoneNumber: debouncedPhoneNumber,
         companyName: debouncedCompanyName,

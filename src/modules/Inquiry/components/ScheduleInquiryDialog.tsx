@@ -9,9 +9,9 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from './ui/DatePicker';
-import { scheduleInquiry } from '@/api/api';
 import { toast } from 'react-toastify';
 import { Calendar, Clock, AlertCircle, CheckCircle2, CalendarPlus, MessageSquare } from 'lucide-react';
+import { inquiryApi } from '../inquiry.api';
 
 interface ScheduleInquiryDialogProps {
   open: boolean;
@@ -55,7 +55,7 @@ export const ScheduleInquiryDialog: React.FC<ScheduleInquiryDialogProps> = ({
   }, [open]);
 
   const mutation = useMutation({
-    mutationFn: (scheduledDate: Date) => scheduleInquiry(inquiryId, scheduledDate),
+    mutationFn: (scheduledDate: Date) => inquiryApi.schedule(inquiryId, scheduledDate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inquiries'] });
       onClose();

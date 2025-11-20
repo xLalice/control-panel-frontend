@@ -68,7 +68,6 @@ export enum Priority {
   Urgent = "Urgent",
 }
 
-// DTO for updating an existing inquiry
 export interface UpdateInquiryDto {
   customerName?: string;
   phoneNumber?: string;
@@ -151,7 +150,6 @@ interface DailyTrend {
   count: number;
 }
 
-// Consolidated InquiryStatistics interface
 export interface InquiryStatistics {
   totalInquiries: number;
   byStatus: CountByStatus[];
@@ -241,3 +239,30 @@ export const quotationSchema = z.object({
 });
 
 export type QuotationFormData = z.infer<typeof quotationSchema>;
+
+export interface InquiryContactResponse {
+  exists: boolean;
+  lead?: {
+    id: string;
+    companyId: string;
+    contactPerson?: string;
+    email?: string;
+    phone?: string;
+    status: string;
+    company?: {
+      id: string;
+      name: string;
+    };
+    contactHistory?: {
+      id: string;
+      method: string;
+      summary: string;
+      outcome?: string;
+      timestamp: Date;
+    }[];
+  };
+  company?: {
+    id: string;
+    name: string;
+  };
+}

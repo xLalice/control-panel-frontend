@@ -1,19 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import {
-  createCategory,
-  deleteCategory,
-  getCategories,
-  updateCategory,
-  getDocuments,
-  getDocumentById,
-  uploadDocument,
-  deleteDocument
-} from "@/api/api";
+import { documentsApi } from "../documents.api";
+
 export const useCategories = () => {
   return useQuery({
     queryKey: ["categories"],
-    queryFn: getCategories,
+    queryFn: documentsApi.fetchCategories,
   });
 };
 
@@ -21,7 +13,7 @@ export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createCategory,
+    mutationFn: documentsApi.createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category created successfully");
@@ -46,7 +38,7 @@ export const useUpdateCategory = () => {
     }: {
       id: number;
       data: { name?: string; description?: string };
-    }) => updateCategory(id, data),
+    }) => documentsApi.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category updated successfully");
@@ -65,7 +57,7 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteCategory,
+    mutationFn: documentsApi.deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category deleted successfully");
@@ -84,18 +76,17 @@ export const useDeleteCategory = () => {
   });
 };
 
-// Document hooks
 export const useDocuments = (categoryId?: number) => {
   return useQuery({
     queryKey: ["documents", { categoryId }],
-    queryFn: () => getDocuments(categoryId),
+    queryFn: () => documentsApi.fetch(categoryId),
   });
 };
 
 export const useDocument = (id: number) => {
   return useQuery({
     queryKey: ["document", id],
-    queryFn: () => getDocumentById(id),
+    queryFn: () => documentsApi.getById(id),
     enabled: id > 0,
   });
 };
@@ -104,7 +95,7 @@ export const useUploadDocument = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: uploadDocument,
+    mutationFn: documentsApi.upload,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success(`Document "${data.title}" uploaded successfully`);
@@ -123,7 +114,7 @@ export const useDeleteDocument = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteDocument,
+    mutationFn: documentsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Document deleted successfully");

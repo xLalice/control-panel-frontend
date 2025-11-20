@@ -20,7 +20,7 @@ import {
 } from "@/components/ui";
 import { Search, Filter, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { InquiryDetails } from "../InquiryDetails/InquiryDetails";
-import { Inquiry, InquiryStatus } from "../../types";
+import { Inquiry, InquiryStatus } from "../../inquiry.types";
 import { CreateQuotationDialog } from "../../../Quotations/components/CreateQuoteDialog/CreateQuoteDialog";
 import { ScheduleInquiryDialog } from "../ScheduleInquiryDialog";
 import { InquiryListSkeleton } from "../ui/Skeleton";

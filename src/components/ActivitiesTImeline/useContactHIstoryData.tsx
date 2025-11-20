@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/api"; 
 import { ContactHistory, EntityType } from "@/types/sharedTypes";
+import { apiClient } from "@/api/axios";
 
 interface UseContactHistoryDataProps {
   entityId: string | null | undefined;

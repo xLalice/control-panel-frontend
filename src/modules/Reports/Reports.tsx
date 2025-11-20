@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Added useEffect import
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReportsTable from "./components/ReportsTable";
 import ReportForm from "./components/ReportForm";
@@ -6,10 +6,10 @@ import FilterBar from "./components/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchReports } from "@/api/api";
 import { Report } from "@/types";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { useAppSelector } from "@/store/store";
+import { reportsApi } from "./reports.api";
 
 export default function ReportsPage() {
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
@@ -20,7 +20,7 @@ export default function ReportsPage() {
 
   const { data: reports = [], isLoading } = useQuery<Report[], Error>({
     queryKey: ["reports"],
-    queryFn: fetchReports,
+    queryFn: reportsApi.fetch,
   });
 
   useEffect(() => {

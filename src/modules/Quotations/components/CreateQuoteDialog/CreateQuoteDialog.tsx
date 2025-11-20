@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'react-toastify';
 import { Calculator, Calendar, FileText, DollarSign, Plus, Trash2, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { QuotationFormData, quotationSchema } from '../../../Inquiry/types';
+import { QuotationFormData, quotationSchema } from '../../../Inquiry/inquiry.types';
 import { useQuoteMutation } from '../../../Inquiry/components/hooks/useQuoteMutation';
 
 interface CreateQuotationDialogProps {

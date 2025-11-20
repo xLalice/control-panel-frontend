@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { previewDocument } from "@/api/api";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Img } from "react-image";
+import { documentsApi } from "../documents.api";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs"
 
@@ -42,23 +42,17 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       setError(null);
 
       try {
-        const response = await previewDocument(documentId);
-        console.log("Response:", response);
+        const response = await documentsApi.preview(documentId);
 
-        // Make sure we have mimeType in the response
         if (!response.mimeType) {
-          console.error("Missing MIME type in response:", response);
           throw new Error("Invalid response format: missing MIME type");
         }
 
-        // Create blob from the buffer
         const blob = new Blob([response.buffer], {
           type: response.mimeType,
         });
 
         const url = URL.createObjectURL(blob);
-        console.log("Preview URL:", url);
-        console.log("MIME type:", response.mimeType);
 
         setPreviewData({
           url,
@@ -81,13 +75,12 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
     fetchPreview();
 
-    // Cleanup
     return () => {
       if (previewData?.url) {
         URL.revokeObjectURL(previewData.url);
       }
     };
-  }, [documentId]);
+  }, [documentId, previewData]);
 
   const renderPreview = () => {
     if (loading) return <p className="text-center p-4">Loading preview...</p>;

@@ -1,6 +1,5 @@
 
-
-import { apiClient } from "@/api/api";
+import { apiClient } from "@/api/axios";
 import { Client } from "@/modules/Clients/clients.schema";
 import { useQuery } from "@tanstack/react-query";
 

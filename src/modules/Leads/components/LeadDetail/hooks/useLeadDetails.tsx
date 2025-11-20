@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/api/api';
 import { Lead } from '@/modules/Leads/types/leads.types';
+import { apiClient } from '@/api/axios';
 
 
 

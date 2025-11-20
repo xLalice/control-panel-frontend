@@ -34,8 +34,8 @@ import {
   InquiryType,
   Priority,
   formSchema,
-} from "../types";
-import { InquiryContactResponse } from "@/api/api";
+  InquiryContactResponse,
+} from "../inquiry.types";
 import { useDebounce } from "use-debounce";
 import {
   User,
@@ -52,8 +52,8 @@ import {
   Mail,
   Star,
   ShoppingCart,
-  Trash2, // Fixed: Added missing import
-  Plus,   // Fixed: Added missing import
+  Trash2,
+  Plus,  
 } from "lucide-react";
 import { DatePicker } from "../components/ui/DatePicker";
 import { getPriorityColor } from "../inquiry.utils";

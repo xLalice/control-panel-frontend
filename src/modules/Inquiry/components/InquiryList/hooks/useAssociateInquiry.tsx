@@ -1,10 +1,10 @@
-import { apiClient } from "@/api/api";
+import { apiClient } from "@/api/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
 export const useAssociateInquiry = () => {
   const queryClient = useQueryClient();
-  let mutationFn = async ({
+  const mutationFn = async ({
     id,
     entityId,
     type,

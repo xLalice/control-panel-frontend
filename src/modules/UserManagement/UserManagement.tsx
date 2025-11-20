@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {  useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import {  addUser, deleteUser, updateUser } from "../../api/api";
 import { Plus, Users, Loader2 } from "lucide-react";
 import {
   Card,
@@ -26,6 +25,7 @@ import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { useAppSelector } from "@/store/store";
 import { UserSkeleton } from "./components/UserSkeleton";
 import { useUsersData } from "./hooks/useUsersData";
+import { userApi } from "./user.api";
 
 export default function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function UserManagementPage() {
   const {data: users = [], isLoading, error} = useUsersData();
 
   const addUserMutation = useMutation({
-    mutationFn: addUser,
+    mutationFn: userApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsDialogOpen(false);
@@ -55,7 +55,7 @@ export default function UserManagementPage() {
 
   const updateUserMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UserFormData }) =>
-      updateUser(id, data),
+      userApi.update(id, data),
     onSuccess: (response) => {
       queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
         oldData.map((user) =>
@@ -73,7 +73,7 @@ export default function UserManagementPage() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: deleteUser,
+    mutationFn: userApi.delete,
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
         oldData.filter((user) => user.id !== deletedId)

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/api";
 import { Company } from "@/modules/Leads/types/leads.types";
+import { apiClient } from "@/api/axios";
 
 export const GET_COMPANIES_QUERY_KEY = ["companies"];
 

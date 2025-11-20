@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { Inquiry, CreateInquiryDto } from "../../types";
-import { createInquiry } from "@/api/api";
+import { Inquiry, CreateInquiryDto } from "../../inquiry.types";
 import { toast } from "react-toastify";
+import { inquiryApi } from "../../inquiry.api";
 
 
 export const useCreateInquiryMutation = ({onSuccess}: {onSuccess: () => void}) => {
     return useMutation<Inquiry, Error, CreateInquiryDto>({
-        mutationFn: createInquiry,
+        mutationFn: inquiryApi.create,
         onSuccess: () => {
           onSuccess()
         },

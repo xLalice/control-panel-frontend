@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { apiClient } from "@/api/api";
 import { ActivityLogItem, ContactHistoryItem } from "./clientHistory.types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +11,7 @@ import {Button} from "@/components/ui/button";
 import { getMethodColor, getMethodIcon, getActionColor } from "./clientHistory.utils";
 import { Activity, MessageSquare, Search, User, Clock } from "lucide-react";
 import {format} from 'date-fns';
+import { apiClient } from "@/api/axios";
 
 interface InteractionHistoryProps {
   clientId?: string;

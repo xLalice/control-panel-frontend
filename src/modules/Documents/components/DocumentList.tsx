@@ -28,7 +28,6 @@ import {
   PresentationIcon,
   MoreHorizontalIcon,
 } from "lucide-react";
-import { getDocumentDownloadUrl } from "@/api/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +49,7 @@ import {
 import { formatFileSize, formatDate } from "../utils/utils";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { documentsApi } from "../documents.api";
 
 interface DocumentListProps {
   categoryId?: number;
@@ -251,7 +251,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <a
-                                  href={getDocumentDownloadUrl(document.id)}
+                                  href={documentsApi.getDownloadUrl(document.id)}
                                   download={document.filename}
                                   className="w-full flex items-center cursor-pointer"
                                 >

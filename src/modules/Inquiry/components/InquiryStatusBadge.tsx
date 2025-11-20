@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui";
-import { InquiryStatus } from "../types";
+import { InquiryStatus } from "../inquiry.types";
 
 export const InquiryStatusBadge = ({ status }: { status: InquiryStatus }) => {
   const getStatusColor = (status: InquiryStatus) => {

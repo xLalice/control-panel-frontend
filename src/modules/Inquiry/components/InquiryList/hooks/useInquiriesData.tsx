@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { PaginatedResponse, Inquiry } from "@/modules/Inquiry/types";
-import { getInquiries } from "@/api/api";
+import { PaginatedResponse, Inquiry } from "@/modules/Inquiry/inquiry.types";
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { SortingState } from "@tanstack/react-table";
+import { inquiryApi } from "@/modules/Inquiry/inquiry.api";
 
 interface UseInquiryDataProps {
   refreshTrigger: number;
@@ -43,7 +43,7 @@ export const useInquiriesData = ({ refreshTrigger }: UseInquiryDataProps) => {
     ],
     queryFn: async () => {
 
-      const result = await getInquiries({
+      const result = await inquiryApi.fetch({
         page: currentPage,
         status: statusFilter === "all" ? undefined : statusFilter,
         search: searchTerm || undefined,

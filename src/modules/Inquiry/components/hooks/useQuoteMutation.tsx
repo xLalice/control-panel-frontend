@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QuotationFormData } from "../../types";
-import { apiClient } from "@/api/api";
+import { QuotationFormData } from "../../inquiry.types";
+import { apiClient } from "@/api/axios";
 
 export interface QuoteMutationVariables {
   quotationDetails: QuotationFormData;

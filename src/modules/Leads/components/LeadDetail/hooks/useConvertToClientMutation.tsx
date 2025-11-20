@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/api";
+import { apiClient } from "@/api/axios";
 import { Client } from "@/modules/Clients/clients.schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";

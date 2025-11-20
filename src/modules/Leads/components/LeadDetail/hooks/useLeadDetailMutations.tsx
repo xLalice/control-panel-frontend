@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { apiClient } from "@/api/api";
 import { Lead } from "@/modules/Leads/types/leads.types";
+import { apiClient } from "@/api/axios";
 
 interface DeleteLeadPayload {
   leadId: string;
@@ -42,14 +42,12 @@ const useLeadMutation = <TData = any, TVariables = any>(
         });
       }
 
-      // Show success message
       const message =
         typeof config.successMessage === "function"
           ? config.successMessage(data, variables)
           : config.successMessage;
       toast.success(message);
 
-      // Custom success handler
       config.onSuccess?.(data, variables);
     },
     onError: (error) => {

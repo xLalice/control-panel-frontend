@@ -4,7 +4,7 @@ import {
   InquiryFilterParams,
   UpdateInquiryDto,
   CreateInquiryDto,
-} from "@/modules/Inquiry/types";
+} from "@/modules/Inquiry/inquiry.types";
 
 export interface QuoteDetails {
   basePrice: number;

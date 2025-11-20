@@ -26,7 +26,7 @@ import {
   Hash,
   ShoppingCart,
 } from "lucide-react";
-import { Inquiry, InquiryStatus, Priority } from "../../types";
+import { Inquiry, InquiryStatus, Priority } from "../../inquiry.types";
 import { useNavigate } from "react-router-dom";
 import { getPriorityColor } from "../../inquiry.utils";
 import { Select, SelectItem } from "@/components/ui";

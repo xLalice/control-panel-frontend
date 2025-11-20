@@ -20,16 +20,12 @@ import {
   TAB_TO_CATEGORY_MAP,
   FormProduct,
 } from "./types";
-import {
-  addProduct,
-  deleteProduct,
-  updateProduct,
-} from "@/api/api";
 import { ProductFormFields } from "./components/ProductFormFields";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { ProductDetailModal } from "./components/ProductDetailModal"; 
 import { useProduct } from "./hooks/useProducts";
+import { productsApi } from "./products.api";
 
 const ProductManagementSystem = () => {
   const queryClient = useQueryClient();
@@ -68,7 +64,7 @@ const ProductManagementSystem = () => {
   };
 
   const addMutation = useMutation({
-    mutationFn: (product: Omit<Product, "id">) => addProduct(product),
+    mutationFn: (product: Omit<Product, "id">) => productsApi.add(product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product added successfully");
@@ -81,7 +77,7 @@ const ProductManagementSystem = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateProduct,
+    mutationFn: productsApi.update,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product updated successfully");
@@ -94,7 +90,7 @@ const ProductManagementSystem = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deleteProduct,
+    mutationFn: productsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product deleted successfully");

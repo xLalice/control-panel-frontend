@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { closeInquiry, convertInquiryToLead, reviewInquiry } from "@/api/api";
 import { AxiosError } from "axios";
+import { inquiryApi } from "@/modules/Inquiry/inquiry.api";
 
 interface MutationConfig {
   mutationFn: (id: string) => Promise<any>;
@@ -39,7 +39,7 @@ const useInquiryMutation = (config: MutationConfig) => {
 
 export const useConvertToLead = () =>
   useInquiryMutation({
-    mutationFn: convertInquiryToLead,
+    mutationFn: inquiryApi.convertToLead,
     successMessage: "Inquiry converted to lead successfully",
     errorMessage: "Failed to convert to lead",
     queryKeys: [
@@ -49,14 +49,14 @@ export const useConvertToLead = () =>
 
 export const useReviewInquiry = () => 
   useInquiryMutation({
-    mutationFn: reviewInquiry,
+    mutationFn: inquiryApi.review,
     successMessage: "Inquiry reviewed successfully",
     errorMessage: "Error changing status in the backend. Contact author"
   })
 
 export const useCloseInquiry = () =>
   useInquiryMutation({
-    mutationFn: closeInquiry,
+    mutationFn: inquiryApi.close,
     successMessage: "Inquiry closed successfully",
     errorMessage: "Failed to close inquiry."
   })

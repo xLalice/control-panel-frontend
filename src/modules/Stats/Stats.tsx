@@ -34,9 +34,8 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { apiClient } from "@/api/api";
+import { apiClient } from "@/api/axios";
 
-interface DashboardProps {}
 
 interface Metric {
   title: string;
@@ -89,7 +88,7 @@ const iconMap = {
   Mail,
 };
 
-const Stats: React.FC<DashboardProps> = () => {
+const Stats: React.FC = () => {
   const [timeRange, setTimeRange] = useState("7d");
 
   const {
