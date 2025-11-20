@@ -1,54 +1,45 @@
-import { login as loginApi, logout as logoutApi, me } from "@/api/api";
+import { authApi } from "@/modules/Auth/auth.api"; 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LoginSuccess } from "@/types";
 import { User } from "@/types/sharedTypes";
 import { RootState } from "../store";
 
-/* ────────────  async thunks  ──────────── */
 export const login = createAsyncThunk<
   LoginSuccess,
   { email: string; password: string },
   { rejectValue: string }
 >("auth/login", async (credentials, { rejectWithValue }) => {
   try {
-    return await loginApi(credentials);
+    return await authApi.login(credentials);
   } catch (err: any) {
-    const message =
-      err.response?.data?.message || "Login failed. Please try again.";
-    return rejectWithValue(message);
+    return rejectWithValue(err.message);
   }
 });
-
 
 export const fetchCurrentUser = createAsyncThunk<
   User,
   void,
   { rejectValue: string }
->("auth/me", async (_, thunkApi) => {
+>("auth/me", async (_, { rejectWithValue }) => {
   try {
-    return await me();
+    return await authApi.me();
   } catch (err: any) {
-    return thunkApi.rejectWithValue(
-      err.response?.data?.message ?? "Fetching user failed"
-    );
+    return rejectWithValue(err.message);
   }
 });
 
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/logout",
-  async (_, thunkApi) => {
+  async (_, { rejectWithValue }) => {
     try {
-      await logoutApi();
+      await authApi.logout();
       return;
     } catch (err: any) {
-      return thunkApi.rejectWithValue(
-        err.response?.data?.message ?? "Logout failed"
-      );
+      return rejectWithValue(err.message);
     }
   }
 );
 
-/* ────────────  slice  ──────────── */
 export interface AuthState {
   isAuthenticated: boolean;
   authStatus: "idle" | "loading" | "succeeded" | "failed";
@@ -88,14 +79,13 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, { payload }) => {
         state.authStatus = "failed";
-        state.error = payload ?? "Unknown error";
+        state.error = payload ?? "Unknown error"; 
       });
 
     /* FETCH ME */
     builder
       .addCase(fetchCurrentUser.pending, (state) => {
         state.authStatus = "loading";
-        state.isAuthInitialized = false;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.authStatus = "succeeded";
@@ -107,7 +97,7 @@ const authSlice = createSlice({
         state.authStatus = "failed";
         state.isAuthenticated = false;
         state.user = null;
-        state.isAuthInitialized = true; 
+        state.isAuthInitialized = true;
       });
 
     /* LOGOUT */
