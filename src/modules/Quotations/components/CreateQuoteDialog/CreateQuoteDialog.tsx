@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { QuotationFormData, quotationSchema } from '@/modules/Inquiry/inquiry.types';
 import { useCreateQuotation } from '../../hooks/useQuoteMutation';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -35,11 +36,14 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
 
   const { data: products = [] } = useProduct();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { mutate: createQuotation, isPending } = useCreateQuotation({
     onSuccess: () => {
       form.reset()
       toast.success("Quotation successfully created");
+      queryClient.invalidateQueries({ queryKey: [entity.type, entity.id]});
+      queryClient.invalidateQueries({ queryKey: ['quotations', entity.type, entity.id]});
       onClose();
     },
     onError: () => {
@@ -54,7 +58,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
     defaultValues: {
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       leadId: entity.type === 'lead' ? entity.id : null,
-      clientId: entity.type === 'client'  ? entity.id : null,
+      clientId: entity.type === 'client' ? entity.id : null,
       subtotal: 0,
       discount: 0,
       tax: 0,
