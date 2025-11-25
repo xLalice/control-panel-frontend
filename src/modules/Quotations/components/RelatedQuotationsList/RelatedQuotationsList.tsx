@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { quotesApi } from "../../quotes.api";
 import { CreateQuotationDialog } from "../CreateQuoteDialog/CreateQuoteDialog";
 import { Button } from "@/components/ui/button";
@@ -35,22 +35,36 @@ interface Props {
 export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Props) => {
     const [isCreateOpen, setCreateOpen] = useState(false);
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     const { data: quotes, isLoading } = useQuery({
         queryKey: ['quotations', entityType, entityId],
         queryFn: () => quotesApi.fetch({ [`${entityType}Id`]: entityId })
     });
 
-    const handlePreviewPdf = async (id: string) => {
+    const handlePdfAction = async (id: string, quoteNumber: string, action: 'preview' | 'download') => {
         try {
             const response = await apiClient.get(`/quotes/${id}/pdf`, {
                 responseType: 'blob'
             });
-            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-            window.open(url, '_blank');
-        } catch {
-            toast.error("Failed to load PDF preview");
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+
+            if (action === 'preview') {
+                window.open(url, '_blank');
+            } else {
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `${quoteNumber}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to retrieve PDF");
         }
     };
 
@@ -64,6 +78,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
         deleteQuote(id, {
             onSuccess: () => {
                 toast.success("Quotation deleted successfully");
+
             },
             onError: (err) => {
                 toast.error(err.message || "Failed to delete");
@@ -119,7 +134,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handlePreviewPdf(quote.id);
+                                        handlePdfAction(quote.id, quote.quotationNumber, 'preview');
                                     }}
                                     title="Quick Preview PDF"
                                 >
@@ -140,8 +155,23 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                                             View Details
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem onClick={() => handlePreviewPdf(quote.id)}>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                handlePdfAction(quote.id, quote.quotationNumber, 'download');
+                                            }}
+                                        >
                                             <FileDown className="mr-2 h-4 w-4" /> Download PDF
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                            disabled={isDeleting}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(quote.id);
+                                            }}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            {isDeleting ? "Deleting..." : "Delete"}
                                         </DropdownMenuItem>
 
                                         <DropdownMenuSeparator />
