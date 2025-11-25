@@ -110,7 +110,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                         >
                             <div
                                 className="cursor-pointer flex-1"
-                                onClick={() => navigate(`/sales/quotations/${quote.id}`)}
+                                onClick={() => navigate(`/quotations/${quote.id}`)}
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono font-medium text-blue-600 hover:underline">
