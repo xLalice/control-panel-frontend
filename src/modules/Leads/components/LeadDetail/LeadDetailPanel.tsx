@@ -40,7 +40,6 @@ import {
   Zap,
   Briefcase,
   NotebookPen,
-  FilePlus,
 } from "lucide-react";
 import LeadForm from "../LeadForm/LeadForm";
 import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
@@ -58,6 +57,7 @@ import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactH
 import { LogContactModal } from "@/components/LogContactModal";
 import { CreateQuotationDialog } from "@/modules/Quotations/components/CreateQuoteDialog/CreateQuoteDialog";
 import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
+import { RelatedQuotationsList } from "@/modules/Quotations/components/RelatedQuotationsList/RelatedQuotationsList";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -216,15 +216,6 @@ const LeadDetailPanel = ({
                   Log Contact
                 </Button>
               }
-
-              {lead.status === "Qualified" && (
-                <Button
-                  size="sm"
-                  onClick={() => setIsQuotationDialogOpen(true)}
-                >
-                  <FilePlus className="h-4 w-4 mr-2" /> Create Quotation
-                </Button>
-              )}
             </div>
 
             <Tabs defaultValue="details">
@@ -232,6 +223,7 @@ const LeadDetailPanel = ({
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="activity">Activity Timeline</TabsTrigger>
                 <TabsTrigger value="contact">Contact History</TabsTrigger>
+                <TabsTrigger value="quotations">Quotations</TabsTrigger>
               </TabsList>
 
               <TabsContent value="details" className="space-y-4">
@@ -398,6 +390,9 @@ const LeadDetailPanel = ({
               </TabsContent>
               <TabsContent value="contact" className="space-y-4">
                 <ContactHistoryTimeline entityId={lead.id} entityType="Lead" />
+              </TabsContent>
+              <TabsContent value="quotations" className="space-y-4">
+                <RelatedQuotationsList entityId={lead.id} entityType="lead" showButton={lead.status === LeadStatus.Qualified} />
               </TabsContent>
             </Tabs>
           </>

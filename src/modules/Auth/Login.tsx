@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/logo.png";
+import Logo from "@/assets/logo.png"
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { selectIsAuthenticated, selectAuthError, login, clearError } from "@/store/slice/authSlice";
 import { Loader } from "@/components/ui/Loader";
@@ -59,7 +59,6 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     await dispatch(login(data)).unwrap();
     toast.success("Logged in successfully");
-    navigate("/dashboard");
   };
 
   return (

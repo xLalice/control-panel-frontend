@@ -224,10 +224,8 @@ const quotationItemSchema = z.object({
 });
 
 export const quotationSchema = z.object({
-  fromEntity: z.object({
-    id: z.string(),
-    entityType: z.enum(["lead", "client", "inquiry"])
-  }),
+  leadId: z.string().nullable().optional(),
+  clientId: z.string().nullable().optional(),
   validUntil: z.date().min(new Date(), "Valid until date must be in the future"),
   subtotal: z.number().min(0, "Subtotal must be a positive number"),
   discount: z.number().min(0).optional(),

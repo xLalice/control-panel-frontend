@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'react-toastify';
 import { Calculator, Calendar, FileText, DollarSign, Plus, Trash2, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { QuotationFormData, quotationSchema } from '../../../Inquiry/inquiry.types';
-import { useQuoteMutation } from '../../../Inquiry/components/hooks/useQuoteMutation';
+import { QuotationFormData, quotationSchema } from '@/modules/Inquiry/inquiry.types';
+import { useCreateQuotation } from '../../hooks/useQuoteMutation';
+import { useNavigate } from 'react-router-dom';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -25,36 +26,35 @@ interface CreateQuotationDialogProps {
   }
 }
 
-export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ 
-  open, 
+export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
+  open,
   onClose,
-  entity
+  entity,
 }) => {
   const [autoCalculate, setAutoCalculate] = useState(true);
 
-    const { data: products = [] } = useProduct();
+  const { data: products = [] } = useProduct();
+  const navigate = useNavigate();
 
-    const quoteMutation = useQuoteMutation({
-      onSuccess: () => {
-        form.reset()
-        toast.success("Quotation successfully created");
-        onClose();
-      },
-      onError: () => {
-        form.reset()
-        toast.error("Quotation creation failed");
-        onClose();
-      }
-    });
+  const { mutate: createQuotation, isPending } = useCreateQuotation({
+    onSuccess: () => {
+      form.reset()
+      toast.success("Quotation successfully created");
+      onClose();
+    },
+    onError: () => {
+      form.reset()
+      toast.error("Quotation creation failed");
+      onClose();
+    }
+  });
 
   const form = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
     defaultValues: {
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      fromEntity: {
-        id: entity.id,
-        entityType: entity.type
-      },
+      leadId: entity.type === 'lead' ? entity.id : null,
+      clientId: entity.type === 'client'  ? entity.id : null,
       subtotal: 0,
       discount: 0,
       tax: 0,
@@ -72,20 +72,20 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
       ],
     },
   });
-  
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
   });
-  
+
   const watchedItems = form.watch('items');
   const watchedDiscount = form.watch('discount');
   const watchedTax = form.watch('tax');
-  
+
   useEffect(() => {
     if (autoCalculate) {
       let newSubtotal = 0;
-      
+
       watchedItems.forEach((item, index) => {
         const lineTotal = (item.quantity || 0) * (item.unitPrice || 0);
         if (form.getValues(`items.${index}.lineTotal`) !== lineTotal) {
@@ -96,14 +96,14 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
         }
         newSubtotal += lineTotal;
       });
-      
+
       if (form.getValues('subtotal') !== newSubtotal) {
         form.setValue('subtotal', newSubtotal, {
           shouldValidate: false,
           shouldDirty: true,
         });
       }
-      
+
       const total = newSubtotal + (watchedTax || 0) - (watchedDiscount || 0);
       if (form.getValues('total') !== Math.max(0, total)) {
         form.setValue('total', Math.max(0, total), {
@@ -113,12 +113,6 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
       }
     }
   }, [watchedItems, watchedDiscount, watchedTax, autoCalculate, form]);
-  
-  
-  
-  const onSubmit = (data: QuotationFormData) => {
-    quoteMutation.mutate({ quotationDetails: data });
-  };
 
   const handleClose = () => {
     form.reset();
@@ -149,16 +143,32 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
       form.setValue(`items.${index}.productId`, productId);
       form.setValue(`items.${index}.description`, product.name);
       form.setValue(`items.${index}.unitPrice`, Number(product.basePrice) || 0);
-      form.setValue(`items.${index}.lineTotal`,  Number(product.basePrice) || 0);
+      form.setValue(`items.${index}.lineTotal`, Number(product.basePrice) || 0);
     }
+  };
+
+  const handleSubmitLogic = (formData: QuotationFormData, actionType: 'close' | 'continue') => {
+    createQuotation(formData, {
+      onSuccess: (newQuote) => {
+        toast.success("Quote draft created");
+
+        if (actionType === 'close') {
+          onClose();
+        } else {
+          onClose();
+          navigate(`/quotations/${newQuote.id}`);
+        }
+      },
+      onError: (err) => toast.error(err.message)
+    });
   };
 
   const currentSubtotal = form.watch('subtotal') || 0;
   const currentDiscount = form.watch('discount') || 0;
   const currentTax = form.watch('tax') || 0;
   const currentTotal = form.watch('total') || 0;
-  const isDisabled = quoteMutation.isPending || currentTotal <= 0;
-  
+  const isDisabled = isPending || currentTotal <= 0;
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -168,17 +178,16 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
             Create Quotation
           </DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
-            {/* Quote Details Section */}
+          <form className="space-y-6">
+
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <h3 className="font-medium">Quotation Details</h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -202,7 +211,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex items-end">
                   {form.watch('validUntil') && (
                     <Badge variant="outline" className="mb-2">
@@ -238,7 +247,6 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                 {fields.map((field, index) => (
                   <Card key={field.id} className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                      {/* Product Selection */}
                       <div className="md:col-span-3">
                         <FormField
                           control={form.control}
@@ -414,7 +422,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="tax"
@@ -491,7 +499,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <h3 className="font-medium">Notes</h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -510,7 +518,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="internalNotes"
@@ -530,41 +538,45 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                 />
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleClose}
-                disabled={quoteMutation.isPending}
+                disabled={isPending}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
+                type="button"
                 disabled={isDisabled}
                 className="min-w-[120px]"
+                onClick={() => handleSubmitLogic(form.getValues(), 'close')}
               >
-                {quoteMutation.isPending ? (
+                {isPending ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Creating...
+                    Saving...
                   </div>
                 ) : (
-                  'Create Quotation'
+                  'Save & Close'
                 )}
               </Button>
-              <Button 
+              <Button
                 disabled={isDisabled}
+                type="button"
                 className="min-w-[120px]"
+                onClick={() => handleSubmitLogic(form.getValues(), 'continue')}
               >
-                {quoteMutation.isPending ? (
+                {isPending ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Creating...
+                    Saving...
                   </div>
                 ) : (
-                  'Create Quotation'
+                  'Save & Continue'
                 )}
               </Button>
             </div>
