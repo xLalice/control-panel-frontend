@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { Loader } from "./ui/Loader";
+import { Loader } from "../../components/ui/Loader";
 import { selectIsAuthenticated } from "@/store/slice/authSlice";
 import { useAppSelector } from "@/store/store";
 

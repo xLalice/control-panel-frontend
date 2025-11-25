@@ -13,7 +13,7 @@ import UserManagementPage from "./modules/UserManagement/UserManagement";
 import LeadsTable from "./modules/Leads/Leads";
 import ReportsPage from "./modules/Reports/Reports";
 import ProductManagementSystem from "./modules/Products/Products";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./modules/Auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./modules/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./modules/Documents/components/DocumentLayout";
