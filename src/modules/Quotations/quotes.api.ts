@@ -20,6 +20,11 @@ export const quotesApi = {
             apiClient.get(`/quotes?${params}`),
             "Fetch failed"
         );
-    }
+    },
 
+    delete: (id: string) => apiRequest(apiClient.delete(`/quotes/${id}`), "Deleting quotation failed"),
+
+    update: (id: string) => apiRequest(apiClient.patch(`/quotes/${id}`), "Updating quotation failed"),
+
+    send: (id: string) => apiRequest(apiClient.post(`/quotes/${id}/send`), "Sending to customer failed")
 }
