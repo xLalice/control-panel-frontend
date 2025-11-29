@@ -1,3 +1,5 @@
+import { Lead } from "../Leads/types/leads.types";
+
 export enum QuotationStatus {
     Draft = 'DRAFT',
     Sent =  'SENT',
@@ -24,6 +26,8 @@ export interface Quotation {
   };
   
   items: QuotationItem[];
+
+  lead?: Partial<Lead>;
 }
 
 export interface QuotationItem {

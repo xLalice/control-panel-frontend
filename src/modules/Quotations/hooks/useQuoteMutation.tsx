@@ -1,32 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QuotationFormData } from "../../Inquiry/inquiry.types";
 import { quotesApi } from "../quotes.api";
+import { quotationKeys } from "./useQuotesQueries";
 
 export interface QuoteMutationVariables {
   quotationDetails: QuotationFormData;
 }
 
-export const useCreateQuotation = ({
-  onSuccess,
-  onError
-}: {
-  onSuccess: () => void,
-  onError: () => void
-}) => {
-  return useMutation<any, Error, QuotationFormData>({
-    mutationFn: async (data) => {
-      const response = await quotesApi.create(data);
-      return response;
-    },
+export const useCreateQuotation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: quotesApi.create,
     onSuccess: () => {
-      onSuccess?.();
+      queryClient.invalidateQueries({ queryKey: quotationKeys.lists() });
     },
-    onError: (error: Error) => {
-      console.error("Creating quote failed: ", error);
-      onError?.();
-    }
-  })
-}
+  });
+};
 
 export const useDeleteQuotation = () => {
   const queryClient = useQueryClient();
@@ -34,18 +24,19 @@ export const useDeleteQuotation = () => {
   return useMutation({
     mutationFn: quotesApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      queryClient.invalidateQueries({ queryKey: quotationKeys.lists() });
     },
   });
 };
 
-export const useSendQuotation = () => {
+export const useSendQuotation = (id: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: quotesApi.send,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      queryClient.invalidateQueries({ queryKey: quotationKeys.lists()});
+      queryClient.invalidateQueries({ queryKey: quotationKeys.detail(id)})
     }
   });
 };
