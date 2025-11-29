@@ -15,29 +15,8 @@ import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { LeadStatus } from "../constants/constants";
 import { useLeadsData } from "./useLeadsData";
+import { useScreenSize } from "./useScreenSize";
 
-const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState("L");
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setScreenSize("S");
-      } else if (window.innerWidth < 1024) {
-        setScreenSize("M");
-      } else {
-        setScreenSize("L");
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize();
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return screenSize;
-};
 
 export const useLeadsTable = () => {
   const [page, setPage] = useState(1);
