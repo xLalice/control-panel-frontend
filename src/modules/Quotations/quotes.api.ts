@@ -6,8 +6,15 @@ import { Quotation } from "./quotes.types";
 export const quotesApi = {
     create: (data: QuotationFormData) => apiRequest(apiClient.post(`/quotes`, data), "Creating quotation failed"),
 
-    fetch: (filters?: Record<string, string>) => {
-        const params = new URLSearchParams(filters).toString();
+    fetch: (filters?: Record<string, string | undefined>) => {
+        const params = new URLSearchParams();
+
+        Object.entries(filters || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "") {
+                params.append(key, value);
+            }
+        });
+
         return apiRequest<{
             data: Quotation[],
             meta: {
@@ -17,10 +24,12 @@ export const quotesApi = {
                 totalPages: number
             }
         }>(
-            apiClient.get(`/quotes?${params}`),
+            apiClient.get(`/quotes?${params.toString()}`),
             "Fetch failed"
         );
     },
+
+    fetchById: (id: string) => apiRequest(apiClient.get(`/quotes/${id}`), "Fetching quote failed"),
 
     delete: (id: string) => apiRequest(apiClient.delete(`/quotes/${id}`), "Deleting quotation failed"),
 
