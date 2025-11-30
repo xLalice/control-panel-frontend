@@ -1,14 +1,21 @@
 import { ColumnDef, SortingState } from "@tanstack/react-table";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuotations } from "./useQuotesQueries";
-import { Quotation } from "../quotes.types";
+import { Quotation, QuotationStatus } from "../quotes.types";
 import { BadgeStatus } from "../components/BadgeStatus";
 import { Link } from "react-router-dom";
 import { SortableHeader } from "@/components/SortableHeader";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export const useQuotesTable = () => {
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState<SortingState>([]);
+    const [status, setStatus] = useState<QuotationStatus | "ALL">("ALL");
+    const [searchTerm, setSearchTerm] = useState<string | undefined>(undefined);
+
+    const debouncedSearch = useDebounce(searchTerm, 500);
+
+
 
     const sortParam = sorting
         .map((s) => `${s.id}:${s.desc ? "desc" : "asc"}`)
@@ -16,8 +23,14 @@ export const useQuotesTable = () => {
 
     const { data, isLoading } = useQuotations({
         page: page.toString(),
-        sort: sortParam || undefined 
+        sort: sortParam || undefined,
+        ...(status !== 'ALL' && { status }),
+        ...(debouncedSearch && { search: debouncedSearch })
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch]);
 
     const columns = useMemo<ColumnDef<Quotation>[]>(
         () => [
@@ -55,7 +68,7 @@ export const useQuotesTable = () => {
                 accessorKey: "total",
                 header: ({ column }) => <SortableHeader column={column} title="Total" />,
                 cell: ({ row }) => (
-                    <div className="font-mono text-right">
+                    <div className="font-mono flex">
                         ₱{row.original.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
                 ),
@@ -78,5 +91,9 @@ export const useQuotesTable = () => {
         setPage,
         sorting,
         setSorting,
+        status,
+        setStatus,
+        searchTerm,
+        setSearchTerm
     };
 };

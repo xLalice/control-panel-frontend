@@ -17,6 +17,8 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui";
+import { QuotationStatus } from "./quotes.types";
 
 export const QuotationsList = () => {
   const {
@@ -28,6 +30,10 @@ export const QuotationsList = () => {
     setPage,
     sorting,
     setSorting,
+    status,
+    setStatus,
+    searchTerm,
+    setSearchTerm
   } = useQuotesTable();
 
   const table = useReactTable({
@@ -46,10 +52,35 @@ export const QuotationsList = () => {
         <h1 className="text-3xl font-bold">Quotations</h1>
       </div>
 
-      <div className="relative w-full sm:w-72">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-        <Input placeholder="Search..." className="pl-8" />
+      <div className="flex justify-between">
+        <div>
+          <Tabs
+            value={status}
+            onValueChange={(val) => {
+              setStatus(val as QuotationStatus | "ALL");
+              setPage(1);
+            }}
+          >
+            <TabsList>
+              <TabsTrigger value="ALL">All</TabsTrigger>
+              <TabsTrigger value={QuotationStatus.Draft}>Drafts</TabsTrigger>
+              <TabsTrigger value={QuotationStatus.Sent}>Sent</TabsTrigger>
+              <TabsTrigger value={QuotationStatus.Accepted}>Accepted</TabsTrigger>
+              <TabsTrigger value={QuotationStatus.Rejected}>Rejected</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search..."
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8" />
+        </div>
       </div>
+
 
       <div className="border rounded-md bg-white shadow-sm">
         <Table>
@@ -61,15 +92,15 @@ export const QuotationsList = () => {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          
+
           <TableBody>
             {isLoading ? (
               <TableRow>
