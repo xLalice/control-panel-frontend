@@ -1,10 +1,10 @@
 import { Lead } from "../Leads/types/leads.types";
 
 export enum QuotationStatus {
-    Draft = 'DRAFT',
-    Sent =  'SENT',
-    Accepted =  'ACCEPTED',
-    Rejected =  'REJECTED'
+    Draft = 'Draft',
+    Sent =  'Sent',
+    Accepted =  'Accepted',
+    Rejected =  'Rejected'
 }
 
 export interface Quotation {
