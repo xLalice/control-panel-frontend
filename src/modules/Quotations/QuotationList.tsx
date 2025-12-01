@@ -19,11 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { QuotationStatus } from "./quotes.types";
+import { quotationColumns } from "./components/Columns";
 
 export const QuotationsList = () => {
   const {
     data,
-    columns,
     isLoading,
     meta,
     page,
@@ -38,7 +38,7 @@ export const QuotationsList = () => {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: quotationColumns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     state: { sorting },
@@ -104,13 +104,13 @@ export const QuotationsList = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={quotationColumns.length} className="h-24 text-center">
                   <Loader />
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={quotationColumns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
