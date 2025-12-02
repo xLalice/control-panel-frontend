@@ -25,12 +25,14 @@ interface CreateQuotationDialogProps {
     id: string;
     type: "client" | "lead" | "inquiry"
   }
+  defaultValues: QuotationFormData;
 }
 
 export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   open,
   onClose,
   entity,
+  defaultValues
 }) => {
   const [autoCalculate, setAutoCalculate] = useState(true);
 
@@ -42,8 +44,8 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
     onSuccess: () => {
       form.reset()
       toast.success("Quotation successfully created");
-      queryClient.invalidateQueries({ queryKey: [entity.type, entity.id]});
-      queryClient.invalidateQueries({ queryKey: ['quotations', entity.type, entity.id]});
+      queryClient.invalidateQueries({ queryKey: [entity.type, entity.id] });
+      queryClient.invalidateQueries({ queryKey: ['quotations', entity.type, entity.id] });
       onClose();
     },
     onError: () => {
@@ -74,6 +76,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
           lineTotal: 0,
         }
       ],
+      ...(defaultValues ? { ...defaultValues } : {})
     },
   });
 

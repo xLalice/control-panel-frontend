@@ -1,7 +1,7 @@
 import { apiClient } from "@/api/axios";
 import { apiRequest } from "@/api/request";
 import { QuotationFormData } from "../Inquiry/inquiry.types";
-import { Quotation } from "./quotes.types";
+import { Quotation, QuotationStatus } from "./quotes.types";
 
 export const quotesApi = {
     create: (data: QuotationFormData) => apiRequest(apiClient.post(`/quotes`, data), "Creating quotation failed"),
@@ -33,7 +33,7 @@ export const quotesApi = {
 
     delete: (id: string) => apiRequest(apiClient.delete(`/quotes/${id}`), "Deleting quotation failed"),
 
-    update: (id: string) => apiRequest(apiClient.patch(`/quotes/${id}`), "Updating quotation failed"),
+    update: (id: string, data: Partial<QuotationFormData> & { status?: QuotationStatus }) => apiRequest(apiClient.patch(`/quotes/${id}`, data), "Updating quotation failed"),
 
     send: (id: string) => apiRequest(apiClient.post(`/quotes/${id}/send`), "Sending to customer failed")
 }
