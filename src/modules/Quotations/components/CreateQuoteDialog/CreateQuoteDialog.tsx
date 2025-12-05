@@ -16,7 +16,6 @@ import { useEffect, useState } from 'react';
 import { QuotationFormData, quotationSchema } from '@/modules/Inquiry/inquiry.types';
 import { useCreateQuotation } from '../../hooks/useQuoteMutation';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -25,7 +24,7 @@ interface CreateQuotationDialogProps {
     id: string;
     type: "client" | "lead" | "inquiry"
   }
-  defaultValues: QuotationFormData;
+  defaultValues?: QuotationFormData;
 }
 
 export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
@@ -38,22 +37,8 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
 
   const { data: products = [] } = useProduct();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  const { mutate: createQuotation, isPending } = useCreateQuotation({
-    onSuccess: () => {
-      form.reset()
-      toast.success("Quotation successfully created");
-      queryClient.invalidateQueries({ queryKey: [entity.type, entity.id] });
-      queryClient.invalidateQueries({ queryKey: ['quotations', entity.type, entity.id] });
-      onClose();
-    },
-    onError: () => {
-      form.reset()
-      toast.error("Quotation creation failed");
-      onClose();
-    }
-  });
+  const { mutate: createQuotation, isPending } = useCreateQuotation();
 
   const form = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
@@ -124,6 +109,19 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   const handleClose = () => {
     form.reset();
     onClose();
+  };
+
+  const onSubmit = (data: QuotationFormData) => {
+    createQuotation(data, {
+      onSuccess: () => {
+        form.reset();
+        toast.success("Quotation successfully created");
+        onClose();
+      },
+      onError: (error) => {
+        toast.error(error.message || "Quotation creation failed");
+      }
+    });
   };
 
 
