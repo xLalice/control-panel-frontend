@@ -26,13 +26,10 @@ import { toast } from "react-toastify";
 
 
 interface QuotationsListProps {
-  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectedId: React.Dispatch<React.SetStateAction<string | undefined>>;
-
-
+  onQuoteSelect: (id: string) => void;
 }
 
-export const QuotationsList: React.FC<QuotationsListProps> = ({ setIsDialogOpen, setSelectedId }) => {
+export const QuotationsList: React.FC<QuotationsListProps> = ({ onQuoteSelect }) => {
   const {
     data,
     isLoading,
@@ -49,9 +46,8 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({ setIsDialogOpen,
 
 
   const handleRowClick = useCallback((id: string) => {
-    setIsDialogOpen(true);
-    setSelectedId(id)
-  }, [setIsDialogOpen, setSelectedId])
+    onQuoteSelect(id);
+  }, [onQuoteSelect]);
 
   const handleDownloadPdf = useCallback(async (id: string, quotationNumber: string) => {
     try {

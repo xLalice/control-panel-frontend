@@ -151,7 +151,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-                                        <DropdownMenuItem onClick={() => navigate(`/sales/quotations/${quote.id}`)}>
+                                        <DropdownMenuItem onClick={() => navigate(`/quotes/${quote.id}`)}>
                                             View Details
                                         </DropdownMenuItem>
 
@@ -176,7 +176,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
 
                                         <DropdownMenuSeparator />
 
-                                        {quote.status === 'DRAFT' && (
+                                        {quote.status === 'Draft' && (
                                             <>
                                                 <DropdownMenuItem onClick={() => navigate(`/sales/quotations/${quote.id}/edit`)}>
                                                     <Pencil className="mr-2 h-4 w-4" /> Edit

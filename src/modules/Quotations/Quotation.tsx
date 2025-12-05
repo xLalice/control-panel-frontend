@@ -1,20 +1,34 @@
-import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { QuotationsList } from "./QuotationList";
 import { QuotationDetailPanel } from "./components/QuotationDetailPanel/QuotationDetailPanel";
 
 export const QuotationsPage = () => {
-    const [selectedId, setSelectedId] = useState<string>();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { id } = useParams(); 
+    const navigate = useNavigate();
+
+    const isDialogOpen = !!id;
+
+    const handleClose = () => {
+        navigate("/quotes");
+    };
+
+    const handleOpen = (newId: string) => {
+        navigate(`/quotes/${newId}`);
+    };
 
     return (
         <>
+            <QuotationsList 
+                onQuoteSelect={handleOpen} 
+            />
 
-            <QuotationsList setIsDialogOpen={setIsDialogOpen} setSelectedId={setSelectedId}/>
-
-            {selectedId && <QuotationDetailPanel id={selectedId} onClose={() => {
-                setSelectedId(undefined)
-                setIsDialogOpen(false);
-            }} isOpen={isDialogOpen} />}
+            {id && (
+                <QuotationDetailPanel 
+                    id={id} 
+                    onClose={handleClose} 
+                    isOpen={isDialogOpen} 
+                />
+            )}
         </>
-    )
+    );
 };

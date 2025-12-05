@@ -69,7 +69,8 @@ const AppContent = () => {
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/attendance/admin" element={<AdminAttendancePage />} />
           <Route path="/clients" element={<ClientList />} />
-          <Route path="/quotes" element={<QuotationsPage/>} /> 
+          <Route path="/quotes" element={<QuotationsPage />}/>
+          <Route path="/quotes/:id" element={<QuotationsPage />} />
         </Route>
         <Route
           path="*"
