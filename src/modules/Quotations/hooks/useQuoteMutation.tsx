@@ -8,16 +8,25 @@ export interface QuoteMutationVariables {
   quotationDetails: QuotationFormData;
 }
 
-export const useCreateQuotation = ({ onSuccess, onError }: { onSuccess: () => void; onError: () => void }) => {
+export const useCreateQuotation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: quotesApi.create,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: quotationKeys.lists() });
-      onSuccess?.();
+
+      if (variables.leadId) {
+        queryClient.invalidateQueries({
+          queryKey: ['quotations', 'lead', variables.leadId]
+        });
+      }
+      else if (variables.clientId) {
+        queryClient.invalidateQueries({
+          queryKey: ['quotations', 'client', variables.clientId]
+        });
+      }
     },
-    onError: () => onError?.()
   });
 };
 
@@ -54,7 +63,7 @@ export const useUpdateQuotation = () => {
     }) => quotesApi.update(id, data),
     onSuccess: (_, variable) => {
       queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.id) })
-      queryClient.invalidateQueries({ queryKey: quotationKeys.lists()})
+      queryClient.invalidateQueries({ queryKey: quotationKeys.lists() })
     }
   })
 }
