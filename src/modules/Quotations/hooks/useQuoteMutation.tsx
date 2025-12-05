@@ -59,7 +59,7 @@ export const useUpdateQuotation = () => {
   return useMutation({
     mutationFn: ({ id, data }: {
       id: string;
-      data: Partial<QuotationFormData> & { status: QuotationStatus };
+      data: Partial<QuotationFormData> & { status?: QuotationStatus };
     }) => quotesApi.update(id, data),
     onSuccess: (_, variable) => {
       queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.id) })

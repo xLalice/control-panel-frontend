@@ -14,8 +14,9 @@ import { toast } from 'react-toastify';
 import { Calculator, Calendar, FileText, DollarSign, Plus, Trash2, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { QuotationFormData, quotationSchema } from '@/modules/Inquiry/inquiry.types';
-import { useCreateQuotation } from '../../hooks/useQuoteMutation';
+import { useCreateQuotation, useUpdateQuotation } from '../../hooks/useQuoteMutation';
 import { useNavigate } from 'react-router-dom';
+import ClipLoader from "react-spinners/ClipLoader";
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -23,8 +24,8 @@ interface CreateQuotationDialogProps {
   entity: {
     id: string;
     type: "client" | "lead" | "inquiry"
-  }
-  defaultValues?: QuotationFormData;
+  };
+  defaultValues?: Partial<QuotationFormData> & { id?: string };
 }
 
 export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
@@ -38,12 +39,17 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   const { data: products = [] } = useProduct();
   const navigate = useNavigate();
 
-  const { mutate: createQuotation, isPending } = useCreateQuotation();
+  const isEditMode = !!defaultValues?.id;
+
+  const { mutate: createQuotation, isPending: isCreating } = useCreateQuotation();
+  const { mutate: updateQuotation, isPending: isUpdating } = useUpdateQuotation();
+
+  const isPending = isCreating || isUpdating;
 
   const form = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
     defaultValues: {
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      validUntil: defaultValues?.validUntil || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       leadId: entity.type === 'lead' ? entity.id : null,
       clientId: entity.type === 'client' ? entity.id : null,
       subtotal: 0,
@@ -61,7 +67,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
           lineTotal: 0,
         }
       ],
-      ...(defaultValues ? { ...defaultValues } : {})
+      ...defaultValues
     },
   });
 
@@ -77,31 +83,26 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   useEffect(() => {
     if (autoCalculate) {
       let newSubtotal = 0;
-
       watchedItems.forEach((item, index) => {
-        const lineTotal = (item.quantity || 0) * (item.unitPrice || 0);
+        const qty = Number(item.quantity) || 0;
+        const price = Number(item.unitPrice) || 0;
+        const lineTotal = qty * price;
+
         if (form.getValues(`items.${index}.lineTotal`) !== lineTotal) {
-          form.setValue(`items.${index}.lineTotal`, lineTotal, {
-            shouldValidate: false,
-            shouldDirty: true,
-          });
+          form.setValue(`items.${index}.lineTotal`, lineTotal, { shouldValidate: false });
         }
         newSubtotal += lineTotal;
       });
 
       if (form.getValues('subtotal') !== newSubtotal) {
-        form.setValue('subtotal', newSubtotal, {
-          shouldValidate: false,
-          shouldDirty: true,
-        });
+        form.setValue('subtotal', newSubtotal, { shouldValidate: false });
       }
 
-      const total = newSubtotal + (watchedTax || 0) - (watchedDiscount || 0);
-      if (form.getValues('total') !== Math.max(0, total)) {
-        form.setValue('total', Math.max(0, total), {
-          shouldValidate: false,
-          shouldDirty: true,
-        });
+      const total = newSubtotal + (Number(watchedTax) || 0) - (Number(watchedDiscount) || 0);
+      const safeTotal = Math.max(0, total);
+
+      if (form.getValues('total') !== safeTotal) {
+        form.setValue('total', safeTotal, { shouldValidate: false });
       }
     }
   }, [watchedItems, watchedDiscount, watchedTax, autoCalculate, form]);
@@ -138,25 +139,39 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
   };
 
   const handleSubmitLogic = (formData: QuotationFormData, actionType: 'close' | 'continue') => {
-    createQuotation(formData, {
-      onSuccess: (newQuote) => {
-        toast.success("Quote draft created");
 
-        if (actionType === 'close') {
-          onClose();
-        } else {
-          onClose();
-          navigate(`/quotations/${newQuote.id}`);
-        }
-      },
-      onError: (err) => toast.error(err.message)
-    });
+    const handleSuccess = (quoteId: string) => {
+      toast.success(isEditMode ? "Quotation updated" : "Quote draft created");
+      if (actionType === 'close') {
+        onClose();
+      } else {
+        onClose();
+        navigate(`/sales/quotations/${quoteId}`);
+      }
+    };
+
+    const handleError = (err: Error) => toast.error(err.message);
+
+    if (isEditMode && defaultValues?.id) {
+      updateQuotation({
+        id: defaultValues.id,
+        data: formData
+      }, {
+        onSuccess: (updatedQuote) => handleSuccess(updatedQuote.id),
+        onError: handleError
+      });
+    } else {
+      createQuotation(formData, {
+        onSuccess: (newQuote) => handleSuccess(newQuote.id),
+        onError: handleError
+      });
+    }
   };
 
-  const currentSubtotal = form.watch('subtotal') || 0;
-  const currentDiscount = form.watch('discount') || 0;
-  const currentTax = form.watch('tax') || 0;
-  const currentTotal = form.watch('total') || 0;
+  const currentSubtotal = Number(form.watch('subtotal')) || 0;
+  const currentDiscount = Number(form.watch('discount')) || 0;
+  const currentTax = Number(form.watch('tax')) || 0;
+  const currentTotal = Number(form.watch('total')) || 0;
   const isDisabled = isPending || currentTotal <= 0;
 
   return (
@@ -529,7 +544,6 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4">
               <Button
                 type="button"
@@ -542,32 +556,29 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
               <Button
                 type="button"
                 disabled={isDisabled}
-                className="min-w-[120px]"
+                className="min-w-[140px]" 
                 onClick={() => handleSubmitLogic(form.getValues(), 'close')}
               >
                 {isPending ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Saving...
+                    <ClipLoader size={16} color="#ffffff" />
+                    <span>Saving...</span>
                   </div>
-                ) : (
-                  'Save & Close'
-                )}
+                ) : (isEditMode ? 'Update & Close' : 'Save & Close')}
               </Button>
+
               <Button
                 disabled={isDisabled}
                 type="button"
-                className="min-w-[120px]"
+                className="min-w-[140px]"
                 onClick={() => handleSubmitLogic(form.getValues(), 'continue')}
               >
                 {isPending ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Saving...
+                    <ClipLoader size={16} color="#ffffff" />
+                    <span>Saving...</span>
                   </div>
-                ) : (
-                  'Save & Continue'
-                )}
+                ) : (isEditMode ? 'Update & View' : 'Save & Continue')}
               </Button>
             </div>
           </form>
