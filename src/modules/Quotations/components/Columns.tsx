@@ -21,7 +21,7 @@ export const getQuotationColumns = (actions: ColumnActions): ColumnDef<Quotation
         accessorKey: "quotationNumber",
         header: ({ column }) => <SortableHeader column={column} title="Quote #" />,
         cell: ({ row }) => (
-            <span onClick={() => actions.onRowClick(row.original.id)} className="text-cyan-400">
+            <span onClick={() => actions.onRowClick(row.original.id)} className="text-blue-600 cursor-pointer">
                 {row.original.quotationNumber}
             </span>
         ),
