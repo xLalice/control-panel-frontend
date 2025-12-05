@@ -111,21 +111,6 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
     onClose();
   };
 
-  const onSubmit = (data: QuotationFormData) => {
-    createQuotation(data, {
-      onSuccess: () => {
-        form.reset();
-        toast.success("Quotation successfully created");
-        onClose();
-      },
-      onError: (error) => {
-        toast.error(error.message || "Quotation creation failed");
-      }
-    });
-  };
-
-
-
   const addItem = () => {
     append({
       productId: '',
