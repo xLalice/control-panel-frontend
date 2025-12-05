@@ -43,14 +43,8 @@ import {
 } from "lucide-react";
 import LeadForm from "../LeadForm/LeadForm";
 import LeadDetailSkeleton from "../skeletons/LeadDetailSkeleton";
-import { useLeadDetails } from "./hooks/useLeadDetails";
 import { ActivitiesTimeline } from "@/components/ActivitiesTImeline/ActivitiesTImeline";
-import {
-  useAssignLead,
-  useDeleteLead,
-  useUpdateLeadStatus,
-} from "./hooks/useLeadDetailMutations";
-import { useConvertToClientMutation } from "./hooks/useConvertToClientMutation";
+import { useConvertToClient, useAssignLead, useDeleteLead, useUpdateLeadStatus, useLeadDetails } from "../../hooks/useLeadsHooks";
 import { useNavigate } from "react-router-dom";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactHistoryTImeline";
@@ -80,44 +74,39 @@ const LeadDetailPanel = ({
     data: lead,
     isLoading: isLeadLoading,
     error: leadError,
-  } = useLeadDetails({ leadId });
-  const {data: users = []} = useUsersData();
+  } = useLeadDetails(leadId);
+  const { data: users = [] } = useUsersData();
 
   const deleteLeadMutation = useDeleteLead();
   const updateStatusMutation = useUpdateLeadStatus();
   const updateAssignmentMutation = useAssignLead();
   const { mutateAsync: convertToClientMutation, isPending } =
-    useConvertToClientMutation();
+    useConvertToClient();
 
   const handleStatusChange = (newStatus: string) => {
-    if (!lead) return; 
+    if (!lead) return;
     updateStatusMutation.mutate({
-      leadId: lead.id,
-      oldStatus: lead.status,
-      newStatus: newStatus,
-      leadName: lead.name,
+      id: lead.id,
+      status: newStatus
     });
   };
 
   const handleAssignmentChange = (userId: string | null) => {
     if (!lead) return;
     updateAssignmentMutation.mutate({
-      leadId: lead.id,
-      assignedToId: userId === "unassigned" ? null : userId,
+      id: lead.id,
+      userId: userId === "unassigned" ? null : userId
     });
   };
 
   const handleDeleteLead = () => {
     if (!lead) return;
-    deleteLeadMutation.mutate(
-      { leadId: lead.id },
-      {
-        onSuccess: () => {
-          onClose();
-          setIsDeleteDialogOpen(false);
-        },
-      }
-    );
+    deleteLeadMutation.mutate(lead.id, {
+      onSuccess: () => {
+        onClose();
+        setIsDeleteDialogOpen(false);
+      },
+    });
   };
 
   const handleConvertToCLient = async () => {
@@ -129,9 +118,7 @@ const LeadDetailPanel = ({
       onClose();
     } else if (lead.status === LeadStatus.Won) {
       try {
-        const newClient = await convertToClientMutation({
-          leadId: lead.id,
-        });
+        const newClient = await convertToClientMutation(lead.id);
         if (newClient.id) {
           navigate("/clients", {
             state: { clientIdToOpen: newClient.id },
@@ -436,11 +423,11 @@ const LeadDetailPanel = ({
           </AlertDialogContent>
         </AlertDialog>
       </SlideInPanel>
-      {isLogContactModalOpen && (
+      {isLogContactModalOpen && lead && ( 
         <LogContactModal
           isOpen={isLogContactModalOpen}
           onClose={handleCloseLogContactModal}
-          entityId={lead?.id!}
+          entityId={lead.id}
           entityType="Lead"
         />
       )}

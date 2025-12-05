@@ -30,7 +30,7 @@ import {
 } from "@/components/ui";
 import React from "react";
 import { Company, Lead } from "../../types/leads.types";
-import { useCompanies } from "./hooks/useCompanies";
+import { useCompanies } from "../../hooks/useLeadsHooks";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeadForm } from "./hooks/useLeadForm";
