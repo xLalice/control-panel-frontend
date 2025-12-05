@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { quotesApi } from "../../quotes.api";
 import { CreateQuotationDialog } from "../CreateQuoteDialog/CreateQuoteDialog";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/Loader";
@@ -8,15 +6,12 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
     MoreHorizontal,
     Eye,
-    Pencil,
     Trash2,
-    Send,
     FileDown
 } from "lucide-react";
 import { useState } from "react";
@@ -25,6 +20,7 @@ import { toast } from "react-toastify";
 import { apiClient } from "@/api/axios";
 import { BadgeStatus } from "../BadgeStatus";
 import { useDeleteQuotation } from "../../hooks/useQuoteMutation";
+import { useRelatedQuotations } from "../../hooks/useQuotesQueries";
 
 interface Props {
     entityId: string;
@@ -36,10 +32,7 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
     const [isCreateOpen, setCreateOpen] = useState(false);
     const navigate = useNavigate();
 
-    const { data: quotes, isLoading } = useQuery({
-        queryKey: ['quotations', entityType, entityId],
-        queryFn: () => quotesApi.fetch({ [`${entityType}Id`]: entityId })
-    });
+    const { data: quotes, isLoading } = useRelatedQuotations(entityType, entityId);
 
     const handlePdfAction = async (id: string, quoteNumber: string, action: 'preview' | 'download') => {
         try {
@@ -173,28 +166,6 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                                             <Trash2 className="mr-2 h-4 w-4" />
                                             {isDeleting ? "Deleting..." : "Delete"}
                                         </DropdownMenuItem>
-
-                                        <DropdownMenuSeparator />
-
-                                        {quote.status === 'Draft' && (
-                                            <>
-                                                <DropdownMenuItem onClick={() => navigate(`/sales/quotations/${quote.id}/edit`)}>
-                                                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => {/* Trigger Send Dialog */ }}>
-                                                    <Send className="mr-2 h-4 w-4" /> Send to Customer
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    className="text-red-600"
-                                                    onClick={() => {
-                                                        if (confirm("Are you sure?")) deleteQuote(quote.id)
-                                                    }}
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
