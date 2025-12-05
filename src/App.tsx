@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "./store/store";
 import { useEffect } from "react";
 import { ClientList } from "./modules/Clients/components/ClientList/ClientList";
-import { QuotationsList } from "./modules/Quotations/QuotationList";
+import { QuotationsPage } from "./modules/Quotations/Quotation";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,7 +69,7 @@ const AppContent = () => {
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/attendance/admin" element={<AdminAttendancePage />} />
           <Route path="/clients" element={<ClientList />} />
-          <Route path="/quotes" element={<QuotationsList />} /> 
+          <Route path="/quotes" element={<QuotationsPage/>} /> 
         </Route>
         <Route
           path="*"

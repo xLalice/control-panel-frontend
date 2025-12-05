@@ -35,5 +35,10 @@ export const quotesApi = {
 
     update: (id: string, data: Partial<QuotationFormData> & { status?: QuotationStatus }) => apiRequest(apiClient.patch(`/quotes/${id}`, data), "Updating quotation failed"),
 
-    send: (id: string) => apiRequest(apiClient.post(`/quotes/${id}/send`), "Sending to customer failed")
+    send: (id: string) => apiRequest(apiClient.post(`/quotes/${id}/send`), "Sending to customer failed"),
+
+    downloadPdf: (id: string) => 
+        apiClient.get(`/quotes/${id}/pdf`, { 
+            responseType: 'blob'
+        }),
 }

@@ -17,14 +17,6 @@ import {
   TableHead,
   TableBody,
   TableCell,
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
 } from "@/components/ui";
 import {
   Pencil,
@@ -45,22 +37,25 @@ import { QuotationItem, QuotationStatus } from "../../quotes.types";
 import { CreateQuotationDialog } from "../CreateQuoteDialog/CreateQuoteDialog";
 import { toast } from "react-toastify";
 import { apiClient } from "@/api/axios";
+import { ConfirmationDialog } from "@/components/AlertDialog";
 
 interface QuotationDetailPanelProps {
-  quotationId: string | null;
+  id: string | null;
   onClose: () => void;
   isOpen: boolean;
 }
 
 export const QuotationDetailPanel = ({
-  quotationId,
+  id,
   onClose,
   isOpen,
 }: QuotationDetailPanelProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
 
-  const { data: quote, isLoading, error } = useQuotation(quotationId!);
+  const { data: quote, isLoading, error } = useQuotation(id!);
 
   const { mutate: deleteQuote, isPending: isDeleting } = useDeleteQuotation();
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateQuotation();
@@ -71,13 +66,33 @@ export const QuotationDetailPanel = ({
     deleteQuote(quote.id, {
       onSuccess: () => {
         setIsDeleteOpen(false);
+        toast.success("Quote deleted")
         onClose();
       },
+      onError: () => {
+        toast.error("Failed to delete quote");
+      }
     });
   };
 
+  const handleSend = () => {
+    if (!quote) return;
+
+    sendQuote(quote.id, {
+      onSuccess: () => {
+        setIsSendConfirmOpen(false);
+        toast.success("Quote sent to customer");
+        onClose();
+      },
+      onError: () => {
+        toast.error("Failed to send to customer");
+      }
+    })
+  }
+
   const handleDownloadPdf = async () => {
     try {
+      setIsDownloading(true)
       const response = await apiClient.get(`/quotes/${quote?.id}/pdf`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
@@ -86,17 +101,19 @@ export const QuotationDetailPanel = ({
       document.body.appendChild(link);
       link.click();
       link.remove();
+      setIsDownloading(false);
     } catch {
+      setIsDownloading(false);
       toast.error("Failed to download PDF");
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "DRAFT": return "bg-gray-500 hover:bg-gray-600";
-      case "SENT": return "bg-blue-500 hover:bg-blue-600";
-      case "ACCEPTED": return "bg-green-500 hover:bg-green-600";
-      case "REJECTED": return "bg-red-500 hover:bg-red-600";
+      case "Draft": return "bg-gray-500 hover:bg-gray-600";
+      case "Sent": return "bg-blue-500 hover:bg-blue-600";
+      case "Accepted": return "bg-green-500 hover:bg-green-600";
+      case "Rejected": return "bg-red-500 hover:bg-red-600";
       default: return "bg-gray-500";
     }
   };
@@ -125,9 +142,7 @@ export const QuotationDetailPanel = ({
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      if (confirm("Send to customer? This will lock the quote.")) sendQuote(quote.id)
-                    }}
+                    onClick={() => setIsSendConfirmOpen(true)}
                     disabled={isSending}
                   >
                     <Send className="h-4 w-4 mr-2" /> {isSending ? 'Sending...' : 'Send to Customer'}
@@ -154,7 +169,7 @@ export const QuotationDetailPanel = ({
                     className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
                     onClick={() => updateStatus({
                       id: quote.id,
-                      data: { status: QuotationStatus.Rejected } 
+                      data: { status: QuotationStatus.Rejected }
                     })}
                     disabled={isUpdating}
                   >
@@ -163,8 +178,8 @@ export const QuotationDetailPanel = ({
                 </>
               )}
 
-              <Button variant="ghost" size="sm" onClick={handleDownloadPdf}>
-                <Download className="h-4 w-4 mr-2" /> PDF
+              <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className={isDownloading ? 'disabled ' : ""}>
+                <Download className="h-4 w-4 mr-2" /> {isDownloading ? "Downloading..." : "PDF"}
               </Button>
             </div>
 
@@ -293,26 +308,31 @@ export const QuotationDetailPanel = ({
               />
             )}
 
-            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Quotation?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    Quotation <strong>{quote.quotationNumber}</strong>.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmationDialog
+              open={isDeleteOpen}
+              onOpenChange={setIsDeleteOpen}
+              title="Delete Quotation?"
+              description={
+                <span>
+                  This action cannot be undone. This will permanently delete
+                  Quotation <strong>{quote?.quotationNumber}</strong>.
+                </span>
+              }
+              confirmText="Delete"
+              variant="destructive"
+              isLoading={isDeleting}
+              onConfirm={handleDelete}
+            />
+
+            <ConfirmationDialog
+              open={isSendConfirmOpen}
+              onOpenChange={setIsSendConfirmOpen}
+              title="Send to Customer?"
+              description="This will lock the quotation and email the PDF."
+              confirmText="Send Email"
+              isLoading={isSending}
+              onConfirm={handleSend}
+            />
 
           </>
         )}

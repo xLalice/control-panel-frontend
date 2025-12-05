@@ -19,9 +19,20 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { QuotationStatus } from "./quotes.types";
-import { quotationColumns } from "./components/Columns";
+import { getQuotationColumns } from "./components/Columns";
+import React, { useCallback, useMemo } from "react";
+import { quotesApi } from "./quotes.api";
+import { toast } from "react-toastify";
 
-export const QuotationsList = () => {
+
+interface QuotationsListProps {
+  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedId: React.Dispatch<React.SetStateAction<string | undefined>>;
+
+
+}
+
+export const QuotationsList: React.FC<QuotationsListProps> = ({ setIsDialogOpen, setSelectedId }) => {
   const {
     data,
     isLoading,
@@ -36,9 +47,35 @@ export const QuotationsList = () => {
     setSearchTerm
   } = useQuotesTable();
 
+
+  const handleRowClick = useCallback((id: string) => {
+    setIsDialogOpen(true);
+    setSelectedId(id)
+  }, [setIsDialogOpen, setSelectedId])
+
+  const handleDownloadPdf = useCallback(async (id: string, quotationNumber: string) => {
+    try {
+      const response = await quotesApi.downloadPdf(id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute('download', `${quotationNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to downlaod PDF")
+    }
+  }, []);
+
+
+  const columns = useMemo(() => getQuotationColumns({ onRowClick: handleRowClick, onDownload: handleDownloadPdf }), [handleRowClick, handleDownloadPdf]);
+
   const table = useReactTable({
     data,
-    columns: quotationColumns,
+    columns: columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     state: { sorting },
@@ -75,7 +112,7 @@ export const QuotationsList = () => {
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search..."
-            value={searchTerm} 
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8" />
         </div>
@@ -104,13 +141,13 @@ export const QuotationsList = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={quotationColumns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   <Loader />
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={quotationColumns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
