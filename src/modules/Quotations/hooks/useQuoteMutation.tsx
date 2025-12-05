@@ -54,6 +54,7 @@ export const useUpdateQuotation = () => {
     }) => quotesApi.update(id, data),
     onSuccess: (_, variable) => {
       queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.id) })
+      queryClient.invalidateQueries({ queryKey: quotationKeys.lists()})
     }
   })
 }
