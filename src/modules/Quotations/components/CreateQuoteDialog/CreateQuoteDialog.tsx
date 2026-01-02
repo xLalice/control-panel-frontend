@@ -312,7 +312,16 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                                   type="number"
                                   min="1"
                                   {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value) || 1)}
+                                  onChange={(e) => {
+                                    const newQuantity = Number(e.target.value) || 1;
+                                    field.onChange(newQuantity);
+
+                                    if (autoCalculate) {
+                                      const currentPrice = form.getValues(`items.${index}.unitPrice`) || 0;
+                                      const newLineTotal = newQuantity * currentPrice;
+                                      form.setValue(`items.${index}.lineTotal`, newLineTotal);
+                                    }
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -337,7 +346,16 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
                                     step="0.01"
                                     className="pl-8"
                                     {...field}
-                                    onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                                    onChange={(e) => {
+                                      const newPrice = Number(e.target.value) || 0;
+                                      field.onChange(newPrice);
+
+                                      if (autoCalculate) {
+                                        const currentQty = form.getValues(`items.${index}.quantity`) || 0;
+                                        const newLineTotal = currentQty * newPrice;
+                                        form.setValue(`items.${index}.lineTotal`, newLineTotal);
+                                      }
+                                    }}
                                   />
                                 </div>
                               </FormControl>
@@ -556,7 +574,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
               <Button
                 type="button"
                 disabled={isDisabled}
-                className="min-w-[140px]" 
+                className="min-w-[140px]"
                 onClick={() => handleSubmitLogic(form.getValues(), 'close')}
               >
                 {isPending ? (
