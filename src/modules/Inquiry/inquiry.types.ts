@@ -218,19 +218,19 @@ export type CreateInquiryDto = z.infer<
 const quotationItemSchema = z.object({
   productId: z.string().min(1, "Product is required"),
   description: z.string().min(1, "Description is required"),
-  quantity: z.number().min(1, "Quantity must be at least 1"),
-  unitPrice: z.number().min(0, "Unit price must be a positive number"),
-  lineTotal: z.number().min(0, "Line total must be calculated"),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+  unitPrice: z.coerce.number().min(0),
+  lineTotal: z.coerce.number(),
 });
 
 export const quotationSchema = z.object({
   leadId: z.string().nullable().optional(),
   clientId: z.string().nullable().optional(),
   validUntil: z.date().min(new Date(), "Valid until date must be in the future"),
-  subtotal: z.number().min(0, "Subtotal must be a positive number"),
-  discount: z.number().min(0).optional(),
-  tax: z.number().min(0).optional(),
-  total: z.number().min(0, "Total must be a positive number"),
+  subtotal: z.coerce.number(),
+  discount: z.coerce.number().optional().default(0),
+  tax: z.coerce.number().optional().default(0),
+  total: z.coerce.number(),
   notesToCustomer: z.string().optional(),
   internalNotes: z.string().optional(),
   items: z.array(quotationItemSchema).min(1, "At least one item is required"),

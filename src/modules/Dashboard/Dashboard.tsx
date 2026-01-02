@@ -1,16 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Bell,
   Menu,
-  Users,
-  DollarSign,
-  BarChart,
-  Tag,
-  Mail,
-  FileText,
-  Clock,
   Loader,
-  Briefcase,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -29,7 +21,8 @@ import Logo from "../../assets/logo.png";
 import CompanyPolicyDashboard from "../Stats/Stats";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { logout } from "@/store/slice/authSlice";
-import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { getMenuItems } from "./MenuItems";
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -37,112 +30,10 @@ const App: React.FC = () => {
   const isAuthInitialized = useAppSelector(
     (state) => state.auth.isAuthInitialized
   );
+  const perms = useUserPermissions();
 
-  // Permission checks
-  const canManageUsers = useAppSelector((state) =>
-    selectUserHasPermission(state, "manage:users")
-  );
-  const canReadUsers = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:users")
-  );
-  const canReadAllLeads = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:all_leads")
-  );
-  const canReadOwnLeads = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:own_leads")
-  );
-  const canReadAssignedLeads = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:assigned_leads")
-  );
-  const canReadReports = useAppSelector(
-    (state) =>
-      selectUserHasPermission(state, "read:own_reports") ||
-      selectUserHasPermission(state, "read:all_reports")
-  );
-  const canManageProducts = useAppSelector((state) =>
-    selectUserHasPermission(state, "manage:products")
-  );
-  const canReadProducts = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:products")
-  );
-  const canReadDocuments = useAppSelector((state) =>
-    selectUserHasPermission(state, "read:documents")
-  );
-  const canReadAttendance = useAppSelector(
-    (state) =>
-      selectUserHasPermission(state, "read:own_attendance") ||
-      selectUserHasPermission(state, "read:all_attendance")
-  );
-  const canReadInquiries = useAppSelector(
-    (state) =>
-      selectUserHasPermission(state, "read:own_inquiries") ||
-      selectUserHasPermission(state, "read:assigned_inquiries") ||
-      selectUserHasPermission(state, "read:all_inquiries")
-  );
+  const menuItems = useMemo(() => getMenuItems(perms), [perms]);
 
-  interface MenuItem {
-    name: string;
-    route: string;
-    icon: JSX.Element;
-    visible: boolean;
-  }
-
-  const menuItems: MenuItem[] = [
-  {
-    name: "Dashboard",
-    route: "/dashboard",
-    icon: <BarChart className="h-4 w-4" />,
-    visible: true,
-  },
-  {
-    name: "Leads",
-    route: "/leads",
-    icon: <DollarSign className="h-4 w-4" />,
-    visible: canReadAllLeads || canReadOwnLeads || canReadAssignedLeads,
-  },
-  {
-    name: "Inquiries",
-    route: "/inquiries",
-    icon: <Mail className="h-4 w-4" />,
-    visible: canReadInquiries,
-  },
-  {
-    name: "Clients", 
-    route: "/clients",
-    icon: <Briefcase className="h-4 w-4" />, // Or Handshake
-    visible: true, 
-  },
-  {
-    name: "Products", 
-    route: "/products",
-    icon: <Tag className="h-4 w-4" />,
-    visible: canManageProducts || canReadProducts,
-  },
-  {
-    name: "Documents", 
-    route: "/documents",
-    icon: <FileText className="h-4 w-4" />,
-    visible: canReadDocuments,
-  },
-  {
-    name: "View Reports", 
-    route: "/reports",
-    icon: <BarChart className="h-4 w-4" />,
-    visible: canReadReports,
-  },
-  {
-    name: "Attendance", 
-    route: "/attendance",
-    icon: <Clock className="h-4 w-4" />,
-    visible: canReadAttendance,
-  },
-  {
-    name: "User Management",
-    route: "/user-management",
-    icon: <Users className="h-4 w-4" />,
-    visible: canManageUsers || canReadUsers,
-  },
-];
 
   const handleNavigation = (route: string) => {
     if (route.startsWith("http")) {
@@ -157,7 +48,7 @@ const App: React.FC = () => {
       await dispatch(logout());
       toast.success("Logged out successfully");
       navigate("/login");
-    } catch (error) {
+    } catch {
       toast.error("Logout failed");
     }
   };
