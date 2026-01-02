@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { quotesApi } from "../quotes.api";
+import { Quotation } from "../quotes.types";
 
 export const quotationKeys = {
     all: ['quotations'] as const,
@@ -19,7 +20,7 @@ export const useQuotations = (filters: Record<string, string | undefined> = {}) 
 };
 
 export const useQuotation = (id: string) => {
-  return useQuery({
+  return useQuery<Quotation>({
     queryKey: quotationKeys.detail(id),
     queryFn: () => quotesApi.fetchById(id), 
     enabled: !!id, 
