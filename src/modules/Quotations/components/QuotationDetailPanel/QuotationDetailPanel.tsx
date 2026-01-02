@@ -201,7 +201,6 @@ export const QuotationDetailPanel = ({
                   onClick={() => {
                     const type = quote.clientId ? 'clients' : 'leads';
                     const id = quote.clientId ? quote.clientId : quote.leadId;
-                    console.log(`${type}/${id}`)
                     navigate(`/${type}/${id}`)
                   }}
                 >
