@@ -102,8 +102,8 @@ export const RelatedQuotationsList = ({ entityId, entityType, showButton }: Prop
                             className="flex justify-between items-center p-4 border-b last:border-0 hover:bg-gray-50 transition-colors group"
                         >
                             <div
-                                className="cursor-pointer flex-1"
-                                onClick={() => navigate(`/quotations/${quote.id}`)}
+                                className="cursor-pointer flex flex-1"
+                                onClick={() => navigate(`/quotes/${quote.id}`)}
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono font-medium text-blue-600 hover:underline">
