@@ -22,7 +22,11 @@ import { useLeadsTable } from "./hooks/useLeadsTable";
 import { LeadFilters } from "./components/LeadFilters";
 import { useEffect, useState } from "react";
 import { CustomPagination } from "@/components/CustomPagination";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+
+interface LeadsPageLocationState {
+  leadIdToOpen?: string;
+}
 
 const LeadsTable = () => {
   const {
@@ -47,6 +51,7 @@ const LeadsTable = () => {
   } = useLeadsTable();
 
   const location = useLocation();
+  const { id } = useParams();
 
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
@@ -59,14 +64,19 @@ const LeadsTable = () => {
   };
 
   useEffect(() => {
-    if (location.state && (location.state as any).leadIdToOpen) {
-      const idFromState = (location.state as any).leadIdToOpen;
-      setSelectedLeadId(idFromState);
+    const state = location.state as LeadsPageLocationState;
+
+    if (id) {
+      setSelectedLeadId(id);
+      setIsDetailOpen(true);
+    }
+    else if (state?.leadIdToOpen) {
+      setSelectedLeadId(state.leadIdToOpen);
       setIsDetailOpen(true);
 
       window.history.replaceState({}, document.title, location.pathname);
     }
-  }, [location.state]);
+  }, [id, location.state, location.pathname, setSelectedLeadId, setIsDetailOpen]);
 
   const handlePageChange = (page: number) => {
     setPage(page);
@@ -112,9 +122,8 @@ const LeadsTable = () => {
         <CardContent>
           <div className="overflow-x-auto">
             <div
-              className={`rounded-md border transition-opacity duration-200 ${
-                isDetailOpen ? "md:opacity-100 opacity-50" : "opacity-100"
-              }`}
+              className={`rounded-md border transition-opacity duration-200 ${isDetailOpen ? "md:opacity-100 opacity-50" : "opacity-100"
+                }`}
               role="region"
               aria-label="Leads table"
               tabIndex={0}

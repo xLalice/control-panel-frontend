@@ -29,6 +29,7 @@ import {
   Clock,
   Calendar,
   User as UserIcon,
+  User,
 } from "lucide-react";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { useQuotation } from "../../hooks/useQuotesQueries";
@@ -38,6 +39,7 @@ import { CreateQuotationDialog } from "../CreateQuoteDialog/CreateQuoteDialog";
 import { toast } from "react-toastify";
 import { apiClient } from "@/api/axios";
 import { ConfirmationDialog } from "@/components/AlertDialog";
+import { useNavigate } from "react-router-dom";
 
 interface QuotationDetailPanelProps {
   id: string | null;
@@ -60,6 +62,7 @@ export const QuotationDetailPanel = ({
   const { mutate: deleteQuote, isPending: isDeleting } = useDeleteQuotation();
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateQuotation();
   const { mutate: sendQuote, isPending: isSending } = useSendQuotation();
+  const navigate = useNavigate();
 
   const handleDelete = () => {
     if (!quote) return;
@@ -183,13 +186,32 @@ export const QuotationDetailPanel = ({
               </Button>
             </div>
 
-            <div className="mb-6 flex items-center justify-between bg-muted/50 p-3 rounded-lg border">
+            <div className="flex flex-col justify-between  py-3 bg-white border-b">
+
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Current Status:</span>
+                <span className="text-sm text-muted-foreground">Current Status:</span>
                 <Badge className={getStatusColor(quote.status)}>{quote.status}</Badge>
               </div>
-              <div className="text-xs text-muted-foreground">
-                Created: {new Date(quote.createdAt).toLocaleDateString()}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">For:</span>
+                <Button
+                  variant="link"
+                  className="p-0 h-auto font-semibold text-blue-600"
+                  onClick={() => {
+                    const type = quote.clientId ? 'clients' : 'leads';
+                    const id = quote.clientId ? quote.clientId : quote.leadId;
+                    console.log(`${type}/${id}`)
+                    navigate(`/${type}/${id}`)
+                  }}
+                >
+                  <User className="w-4 h-4 mr-1" />
+                  {quote.client?.clientName || quote.lead?.name}
+                </Button>
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                Created: 1/3/2026
               </div>
             </div>
 
