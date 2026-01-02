@@ -14,10 +14,15 @@ export interface Quotation {
   
   createdAt: string; 
   updatedAt: string;
-  validUntil: string; 
+  validUntil: Date; 
   
   subtotal: number;
   total: number;
+  discount: number;
+  tax: number;
+
+  issueDate: Date;
+  notesToCustomer: string;
 
   clientId?: string;
   client?: {
@@ -27,6 +32,7 @@ export interface Quotation {
   
   items: QuotationItem[];
 
+  leadId?: string;
   lead?: Partial<Lead>;
 }
 
@@ -36,4 +42,5 @@ export interface QuotationItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  productId: string;
 }
