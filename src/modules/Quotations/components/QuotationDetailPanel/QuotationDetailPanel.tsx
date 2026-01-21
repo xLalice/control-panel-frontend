@@ -30,6 +30,7 @@ import {
   Calendar,
   User as UserIcon,
   User,
+  FileCheck
 } from "lucide-react";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { useQuotation } from "../../hooks/useQuotesQueries";
@@ -40,6 +41,9 @@ import { toast } from "react-toastify";
 import { apiClient } from "@/api/axios";
 import { ConfirmationDialog } from "@/components/AlertDialog";
 import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "@/utils/currency";
+import { getStatusColor } from "../../quotes.utils";
+import { ConvertQuoteToOrderDialog } from "../ConvertQuoteToOrderDialog";
 
 interface QuotationDetailPanelProps {
   id: string | null;
@@ -56,6 +60,7 @@ export const QuotationDetailPanel = ({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
+  const [isConvertToSalesOrder, setIsConvertToSalesOrder] = useState(false);
 
   const { data: quote, isLoading, error } = useQuotation(id!);
 
@@ -110,19 +115,6 @@ export const QuotationDetailPanel = ({
       toast.error("Failed to download PDF");
     }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Draft": return "bg-gray-500 hover:bg-gray-600";
-      case "Sent": return "bg-blue-500 hover:bg-blue-600";
-      case "Accepted": return "bg-green-500 hover:bg-green-600";
-      case "Rejected": return "bg-red-500 hover:bg-red-600";
-      default: return "bg-gray-500";
-    }
-  };
-
-  const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val);
 
   return (
     <>
@@ -181,7 +173,21 @@ export const QuotationDetailPanel = ({
                 </>
               )}
 
-              <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className={isDownloading ? 'disabled ' : ""}>
+              {quote.status === QuotationStatus.Accepted && (
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => updateStatus({
+                    id: quote.id,
+                    data: { status: QuotationStatus.Accepted }
+                  })}
+                  disabled={isUpdating}
+                >
+                  <FileCheck className="h-4 w-4 mr-2" /> Convert to Sales Order
+                </Button>
+              )}
+
+              <Button variant="ghost" size="sm" onClick={handleDownloadPdf} className={isDownloading ? 'disabled ' : "border-black border"}>
                 <Download className="h-4 w-4 mr-2" /> {isDownloading ? "Downloading..." : "PDF"}
               </Button>
             </div>
@@ -355,6 +361,13 @@ export const QuotationDetailPanel = ({
               onConfirm={handleSend}
             />
 
+            {isConvertToSalesOrder && (
+                <ConvertQuoteToOrderDialog
+                    open={isConvertToSalesOrder}
+                    onClose={() => setIsConvertToSalesOrder(false)}
+                    quotation={quote}
+                />
+            )}
           </>
         )}
       </SlideInPanel>
