@@ -1,21 +1,23 @@
+import { Client } from "../Clients/clients.schema";
 import { Lead } from "../Leads/types/leads.types";
 
 export enum QuotationStatus {
-    Draft = 'Draft',
-    Sent =  'Sent',
-    Accepted =  'Accepted',
-    Rejected =  'Rejected'
+  Draft = 'Draft',
+  Sent = 'Sent',
+  Accepted = 'Accepted',
+  Rejected = 'Rejected',
+  Converted = "Converted"
 }
 
 export interface Quotation {
   id: string;
   quotationNumber: string;
   status: QuotationStatus;
-  
-  createdAt: string; 
+
+  createdAt: string;
   updatedAt: string;
-  validUntil: Date; 
-  
+  validUntil: Date;
+
   subtotal: number;
   total: number;
   discount: number;
@@ -25,11 +27,8 @@ export interface Quotation {
   notesToCustomer: string;
 
   clientId?: string;
-  client?: {
-    id: string;
-    clientName: string;
-  };
-  
+  client?: Client;
+
   items: QuotationItem[];
 
   leadId?: string;
