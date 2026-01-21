@@ -25,6 +25,7 @@ import { useAppDispatch } from "./store/store";
 import { useEffect } from "react";
 import { ClientList } from "./modules/Clients/components/ClientList/ClientList";
 import { QuotationsPage } from "./modules/Quotations/Quotation";
+import { ROUTES } from "./routes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +38,7 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const showHeader = !["/", "/login", "/dashboard"].includes(location.pathname);
+  const showHeader = ![ROUTES.LOGIN, ROUTES.DASHBOARD].includes(location.pathname as typeof ROUTES.LOGIN | typeof ROUTES.DASHBOARD);
 
   return (
     <>
@@ -48,34 +49,35 @@ const AppContent = () => {
         <Route
           path="/"
           element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+            isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : <Login />
           }
         />
         <Route
-          path="/login"
+          path={ROUTES.LOGIN}
           element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+            isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : <Login />
           }
         />
-        \
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/user-management" element={<UserManagementPage />} />
-          <Route path="/leads" element={<LeadsTable />} />
-          <Route path="/leads/:id" element={<LeadsTable />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/products" element={<ProductManagementSystem />} />
-          <Route path="/inquiries" element={<InquiryManagement />} />
-          <Route path="/documents" element={<DocumentLayout />} />
-          <Route path="/attendance" element={<AttendancePage />} />
-          <Route path="/attendance/admin" element={<AdminAttendancePage />} />
-          <Route path="/clients" element={<ClientList />} />
-          <Route path="/quotes" element={<QuotationsPage />}/>
-          <Route path="/quotes/:id" element={<QuotationsPage />} />
+          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+          <Route path={ROUTES.USER_MANAGEMENT} element={<UserManagementPage />} />
+          <Route path={ROUTES.LEADS} element={<LeadsTable />} />
+          <Route path={`${ROUTES.LEADS}/:id`} element={<LeadsTable />} />
+          <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+          <Route path={ROUTES.PRODUCTS} element={<ProductManagementSystem />} />
+          <Route path={ROUTES.INQUIRIES} element={<InquiryManagement />} />
+          <Route path={ROUTES.DOCUMENTS} element={<DocumentLayout />} />
+          <Route path={ROUTES.ATTENDANCE} element={<AttendancePage />} />
+          <Route path={ROUTES.ADMIN_ATTENDANCE} element={<AdminAttendancePage />} />
+          <Route path={ROUTES.CLIENTS} element={<ClientList />} />
+          <Route path={ROUTES.QUOTES} element={<QuotationsPage />} />
+          <Route path={`${ROUTES.QUOTES}/:id`} element={<QuotationsPage />} />
         </Route>
         <Route
           path="*"
-          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
+          element={
+            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN} />
+          }
         />
       </Routes>
     </>
