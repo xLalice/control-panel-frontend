@@ -8,6 +8,7 @@ import {
   FileText,
   Calendar,
   NotebookPen,
+  FilePlus, 
 } from "lucide-react";
 import { SlideInPanel } from "@/components/SlideInPanel/SlideInPanel";
 import { Client } from "../../clients.schema";
@@ -25,12 +26,14 @@ import { ActivitiesTimeline } from "@/components/ActivitiesTImeline/ActivitiesTI
 import { ContactHistoryTimeline } from "@/components/ActivitiesTImeline/ContactHistoryTImeline";
 import { LogContactModal } from "@/components/LogContactModal";
 
+import { CreateQuotationDialog } from "@/modules/Quotations/components/CreateQuoteDialog/CreateQuoteDialog";
+import { RelatedQuotationsList } from "@/modules/Quotations/components/RelatedQuotationsList/RelatedQuotationsList";
+
 interface ClientDetailsPanelProps {
   client?: Client;
   isOpen: boolean;
   onClose: () => void;
 }
-
 const InfoRow: React.FC<{
   icon: React.ReactNode;
   label: string;
@@ -100,10 +103,12 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!client) return null;
-
   const [isLogContactModalOpen, setIsLogContactModalOpen] = useState(false);
+  const [isCreateQuoteOpen, setIsCreateQuoteOpen] = useState(false); 
+  const navigate = useNavigate();
 
+  if (!client) return null;
+  
   const clientName = client.clientName;
   const initials = clientName
     .split(" ")
@@ -112,14 +117,20 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
     .toUpperCase()
     .slice(0, 2);
 
-  const navigate = useNavigate();
-
   const handleOpenLogContactModal = () => {
     setIsLogContactModalOpen(true);
   };
 
   const handleCloseLogContactModal = () => {
     setIsLogContactModalOpen(false);
+  };
+
+  const handleOpenCreateQuote = () => {
+    setIsCreateQuoteOpen(true);
+  };
+
+  const handleCloseCreateQuote = () => {
+    setIsCreateQuoteOpen(false);
   };
 
   const headerContent = (
@@ -141,14 +152,26 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
           )}
         </div>
       </div>
-      <Button
-        onClick={handleOpenLogContactModal}
-        variant="secondary"
-        className="bg-white/20 text-white hover:bg-white/30"
-      >
-        <NotebookPen className="mr-2 h-4 w-4" />
-        Log Contact
-      </Button>
+      
+      <div className="flex gap-2 ml-auto">
+        <Button
+            onClick={handleOpenCreateQuote}
+            variant="secondary"
+            className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border border-emerald-400/30"
+        >
+            <FilePlus className="mr-2 h-4 w-4" />
+            Create Quote
+        </Button>
+
+        <Button
+            onClick={handleOpenLogContactModal}
+            variant="secondary"
+            className="bg-white/20 text-white hover:bg-white/30"
+        >
+            <NotebookPen className="mr-2 h-4 w-4" />
+            Log Contact
+        </Button>
+      </div>
     </div>
   );
 
@@ -162,13 +185,13 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
         <Tabs defaultValue="details">
           <TabsList className="mb-4">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="quotations">Quotations</TabsTrigger> 
             <TabsTrigger value="activities">Activity Timeline</TabsTrigger>
             <TabsTrigger value="contact">Contact History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
-            <div className="space-y-8">
-              {/* Contact Information */}
+             <div className="space-y-8">
               <section>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <User className="w-5 h-5" />
@@ -195,7 +218,6 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
 
               <Separator />
 
-              {/* Address Information */}
               <section>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
@@ -296,6 +318,17 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
               </section>
             </div>
           </TabsContent>
+
+          <TabsContent value="quotations">
+             <div className="mt-4">
+                <RelatedQuotationsList 
+                    entityId={client.id} 
+                    entityType="client" 
+                    showButton={true} 
+                />
+             </div>
+          </TabsContent>
+
           <TabsContent value="activities">
             <ActivitiesTimeline entityId={client.id} entityType="Client" />
           </TabsContent>
@@ -311,6 +344,17 @@ export const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
           onClose={handleCloseLogContactModal}
           entityId={client.id}
           entityType="Client"
+        />
+      )}
+
+      {isCreateQuoteOpen && (
+        <CreateQuotationDialog
+            open={isCreateQuoteOpen}
+            onClose={handleCloseCreateQuote}
+            entity={{
+                id: client.id,
+                type: "client"
+            }}
         />
       )}
     </>
