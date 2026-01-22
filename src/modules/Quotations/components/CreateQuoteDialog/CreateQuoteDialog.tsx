@@ -17,6 +17,7 @@ import { QuotationFormData, quotationSchema } from '@/modules/Inquiry/inquiry.ty
 import { useCreateQuotation, useUpdateQuotation } from '../../hooks/useQuoteMutation';
 import { useNavigate } from 'react-router-dom';
 import ClipLoader from "react-spinners/ClipLoader";
+import { ROUTES } from '@/routes';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -146,7 +147,7 @@ export const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({
         onClose();
       } else {
         onClose();
-        navigate(`/sales/quotations/${quoteId}`);
+        navigate(ROUTES.QUOTE_DETAIL(quoteId));
       }
     };
 

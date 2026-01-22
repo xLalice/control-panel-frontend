@@ -1,6 +1,7 @@
 import z from "zod";
 
-export const SalesOrderForm = z.object({
+export const convertToSalesOrderPayload = z.object({
+    quotationId: z.string(),
     deliveryDate: z.date({
         required_error: "A delivery date is required.",
     }),
@@ -13,4 +14,4 @@ export const SalesOrderForm = z.object({
     notes: z.string().optional(),
 });
 
-export type SalesOrderFormType = z.infer<typeof SalesOrderForm>
+export type SalesOrderFormType = z.infer<typeof convertToSalesOrderPayload>

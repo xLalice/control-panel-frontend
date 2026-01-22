@@ -4,6 +4,7 @@ import { quotesApi } from "../quotes.api";
 import { quotationKeys } from "./useQuotesQueries";
 import { QuotationStatus } from "../quotes.types";
 import { leadKeys } from "@/modules/Leads/lead.keys";
+import { SalesOrderFormType } from "@/modules/SalesOrder/salesOrder.schema";
 
 export interface QuoteMutationVariables {
   quotationDetails: QuotationFormData;
@@ -70,6 +71,17 @@ export const useUpdateQuotation = () => {
       if (status === QuotationStatus.Accepted || status === QuotationStatus.Rejected) {
         queryClient.invalidateQueries({queryKey: leadKeys.list()})
       }
+    }
+  })
+}
+
+export const useConvertToSalesOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SalesOrderFormType) => quotesApi.convertToSalesOrder(data),
+    onSuccess: (_, variable) => {
+      queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.quotationId)})
     }
   })
 }

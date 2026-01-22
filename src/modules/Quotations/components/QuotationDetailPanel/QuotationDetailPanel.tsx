@@ -177,10 +177,7 @@ export const QuotationDetailPanel = ({
                 <Button
                   size="sm"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => updateStatus({
-                    id: quote.id,
-                    data: { status: QuotationStatus.Accepted }
-                  })}
+                  onClick={() => setIsConvertToSalesOrder(true)}
                   disabled={isUpdating}
                 >
                   <FileCheck className="h-4 w-4 mr-2" /> Convert to Sales Order

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2, AlertTriangle } from "lucide-react";
 
@@ -33,8 +32,8 @@ import { Separator } from "@/components/ui/separator";
 import { Quotation } from "../quotes.types";
 import { formatCurrency } from "@/utils/currency";
 import { toast } from "react-toastify";
-import { SalesOrderForm, SalesOrderFormType } from "@/modules/SalesOrder/salesOrder.schema";
-import { useCreateSalesOrder } from "@/modules/SalesOrder/hooks/useSalesOrderMutations";
+import { SalesOrderFormType, convertToSalesOrderPayload } from "@/modules/SalesOrder/salesOrder.schema";
+import { useConvertToSalesOrder } from "../hooks/useQuoteMutation";
 
 interface ConvertQuoteToOrderDialogProps {
     open: boolean;
@@ -47,14 +46,15 @@ export const ConvertQuoteToOrderDialog = ({
     onClose,
     quotation,
 }: ConvertQuoteToOrderDialogProps) => {
-    const { mutate: createOrder, isPending } = useCreateSalesOrder();
+    const { mutate: convertToSalesOrder , isPending } = useConvertToSalesOrder();
 
-    const form = useForm<z.infer<typeof SalesOrderForm>>({
-        resolver: zodResolver(SalesOrderForm),
+    const form = useForm<SalesOrderFormType>({
+        resolver: zodResolver(convertToSalesOrderPayload),
         defaultValues: {
             deliveryAddress: "",
             paymentTerms: "Cash on Delivery",
             notes: "",
+            quotationId: quotation.id
         },
     });
 
@@ -85,7 +85,12 @@ export const ConvertQuoteToOrderDialog = ({
                 defaultAddress = quotation.lead.company?.name || "";
             }
 
-            form.setValue("deliveryAddress", defaultAddress);
+            form.reset({
+                quotationId: quotation.id,
+                deliveryAddress: defaultAddress,
+                paymentTerms: "Cash on Delivery",
+                notes: "", 
+            });
         }
     }, [open, quotation, form]);
 
@@ -93,15 +98,13 @@ export const ConvertQuoteToOrderDialog = ({
 
         const payload = {
             quotationId: quotation.id,
-            clientId: quotation.clientId,
             deliveryDate: values.deliveryDate,
             deliveryAddress: values.deliveryAddress,
             paymentTerms: values.paymentTerms,
             notes: values.notes,
-            items: quotation.items
         };
 
-        createOrder(payload, {
+        convertToSalesOrder(payload, {
             onSuccess: () => {
                 toast.success(`Sales Order created successfully from ${quotation.quotationNumber}`);
                 onClose();
@@ -130,8 +133,11 @@ export const ConvertQuoteToOrderDialog = ({
                     </div>
                 </div>
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Form {...form} >
+                    <form
+                        onSubmit={form.handleSubmit(onSubmit, (errors) => console.log("Validation Fail:", errors))}
+                        className="space-y-4"
+                    >
 
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
@@ -180,7 +186,7 @@ export const ConvertQuoteToOrderDialog = ({
                                 control={form.control}
                                 name="paymentTerms"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="flex flex-col">
                                         <FormLabel>Payment Terms</FormLabel>
                                         <FormControl>
                                             <Input placeholder="e.g. COD, 30 Days, PDC" {...field} />
