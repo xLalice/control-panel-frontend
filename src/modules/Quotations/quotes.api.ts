@@ -3,6 +3,7 @@ import { apiRequest } from "@/api/request";
 import { QuotationFormData } from "../Inquiry/inquiry.types";
 import { Quotation, QuotationStatus } from "./quotes.types";
 import { API_ROUTES } from "@/api/apiRoutes";
+import { SalesOrderFormType } from "../SalesOrder/salesOrder.schema";
 
 export const quotesApi = {
     create: (data: QuotationFormData) =>
@@ -50,4 +51,6 @@ export const quotesApi = {
         apiClient.get(API_ROUTES.QUOTES.PDF(id), {
             responseType: "blob",
         }),
+
+    convertToSalesOrder: (data: SalesOrderFormType) => apiRequest(apiClient.post(API_ROUTES.QUOTES.CONVERT(data.quotationId), data), "Converting to sales order failed")
 };
