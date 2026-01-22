@@ -33,19 +33,8 @@ import { Separator } from "@/components/ui/separator";
 import { Quotation } from "../quotes.types";
 import { formatCurrency } from "@/utils/currency";
 import { toast } from "react-toastify";
-
-const formSchema = z.object({
-    deliveryDate: z.date({
-        required_error: "A delivery date is required.",
-    }),
-    deliveryAddress: z.string().min(5, {
-        message: "Delivery address is required (min 5 chars).",
-    }),
-    paymentTerms: z.string().min(2, {
-        message: "Payment terms are required (e.g. COD, 30 Days).",
-    }),
-    notes: z.string().optional(),
-});
+import { SalesOrderForm, SalesOrderFormType } from "@/modules/SalesOrder/salesOrder.schema";
+import { useCreateSalesOrder } from "@/modules/SalesOrder/hooks/useSalesOrderMutations";
 
 interface ConvertQuoteToOrderDialogProps {
     open: boolean;
@@ -60,8 +49,8 @@ export const ConvertQuoteToOrderDialog = ({
 }: ConvertQuoteToOrderDialogProps) => {
     const { mutate: createOrder, isPending } = useCreateSalesOrder();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof SalesOrderForm>>({
+        resolver: zodResolver(SalesOrderForm),
         defaultValues: {
             deliveryAddress: "",
             paymentTerms: "Cash on Delivery",
@@ -78,7 +67,7 @@ export const ConvertQuoteToOrderDialog = ({
                     quotation.client.shippingAddressStreet,
                     quotation.client.shippingAddressCity,
                     quotation.client.shippingAddressRegion
-                ].filter(Boolean); 
+                ].filter(Boolean);
 
                 if (shippingParts.length > 0) {
                     defaultAddress = shippingParts.join(", ");
@@ -100,7 +89,7 @@ export const ConvertQuoteToOrderDialog = ({
         }
     }, [open, quotation, form]);
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const onSubmit = (values: SalesOrderFormType) => {
 
         const payload = {
             quotationId: quotation.id,
