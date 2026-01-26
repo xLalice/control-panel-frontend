@@ -69,7 +69,7 @@ export const useUpdateQuotation = () => {
 
       const status = variable.data.status;
       if (status === QuotationStatus.Accepted || status === QuotationStatus.Rejected) {
-        queryClient.invalidateQueries({queryKey: leadKeys.list()})
+        queryClient.invalidateQueries({ queryKey: leadKeys.list() })
       }
     }
   })
@@ -81,7 +81,8 @@ export const useConvertToSalesOrder = () => {
   return useMutation({
     mutationFn: (data: SalesOrderFormType) => quotesApi.convertToSalesOrder(data),
     onSuccess: (_, variable) => {
-      queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.quotationId)})
+      queryClient.invalidateQueries({ queryKey: quotationKeys.all })
+      queryClient.invalidateQueries({ queryKey: quotationKeys.detail(variable.quotationId) })
     }
   })
 }
