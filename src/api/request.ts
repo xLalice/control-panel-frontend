@@ -8,7 +8,16 @@ export const apiRequest = async <T>(
     const response = await request;
     return response.data;
   } catch (error: any) {
-    const message = error.response?.data?.message || fallbackMessage;
-    throw new Error(message);
+    const serverData = error.response?.data || {};
+
+    const message = serverData.message || serverData.error || fallbackMessage;
+
+    const customError = new Error(message);
+
+    (customError as any).details = serverData.details;
+
+    (customError as any).response = error.response;
+
+    throw customError;
   }
 };
