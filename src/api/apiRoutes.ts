@@ -8,6 +8,11 @@ export const API_ROUTES = {
   },
   SALES_ORDER: {
     ROOT: "/sales-order",
+  },
+  PRODUCTS: {
+    ROOT: "/products",
+    DETAIL: (id: string | number) => `/products/${id}`,
+    ADJUST_STOCK: (id: string | number) => `/products/${id}/stock/adjust` 
   }
 } as const;
 
