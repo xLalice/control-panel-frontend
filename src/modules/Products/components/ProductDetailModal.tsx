@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Product, FormProduct } from "../types";
+import { Product, FormProduct } from "../product.types";
 import { ProductFormFields } from "./ProductFormFields";
 import { TrashIcon } from "lucide-react";
 

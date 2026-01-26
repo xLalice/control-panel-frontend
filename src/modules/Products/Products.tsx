@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {  useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,13 +19,15 @@ import {
   defaultProduct,
   TAB_TO_CATEGORY_MAP,
   FormProduct,
-} from "./types";
+  AdjustStockPayload,
+} from "./product.types";
 import { ProductFormFields } from "./components/ProductFormFields";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
-import { ProductDetailModal } from "./components/ProductDetailModal"; 
+import { ProductDetailModal } from "./components/ProductDetailModal";
 import { useProduct } from "./hooks/useProducts";
 import { productsApi } from "./products.api";
+import { AdjustStockDialog } from "./components/AdjustStockDialog";
 
 const ProductManagementSystem = () => {
   const queryClient = useQueryClient();
@@ -38,6 +40,7 @@ const ProductManagementSystem = () => {
   const [newProduct, setNewProduct] = useState<FormProduct>({
     ...defaultProduct,
   });
+  const [productToAdjust, setProductToAdjust] = useState<Product | null>(null);
   const [sortField, setSortField] = useState<keyof Product>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const canWriteProducts = useAppSelector((state) =>
@@ -49,6 +52,8 @@ const ProductManagementSystem = () => {
     isLoading,
     refetch
   } = useProduct();
+
+  console.log(products);
 
   const handleSort = (field: keyof Product) => {
     if (sortField === field) {
@@ -97,6 +102,20 @@ const ProductManagementSystem = () => {
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete product: ${error.message}`);
+    },
+  });
+
+  const stockMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: AdjustStockPayload }) => 
+      productsApi.adjustStock(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Stock adjusted successfully");
+      setProductToAdjust(null);
+    },
+    onError: (error: Error) => {
+      const details = (error as any).details; 
+      toast.error(details || error.message || "Failed to adjust stock");
     },
   });
 
@@ -163,6 +182,10 @@ const ProductManagementSystem = () => {
     setIsProductModalOpen(true);
   };
 
+  const handleStockConfirm = (productId: string, data: AdjustStockPayload) => {
+    stockMutation.mutate({ id: productId, data });
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
@@ -216,6 +239,7 @@ const ProductManagementSystem = () => {
               onSort={handleSort}
               canEdit={canWriteProducts}
               canDelete={canWriteProducts}
+              onAdjustStock={(product) => setProductToAdjust(product)}
             />
           </TabsContent>
         ))}
@@ -260,6 +284,14 @@ const ProductManagementSystem = () => {
         isLoading={updateMutation.isPending}
         onDelete={handleDeleteProduct}
         viewOnly={isViewOnly}
+      />
+
+      <AdjustStockDialog
+        isOpen={!!productToAdjust}
+        onClose={() => setProductToAdjust(null)}
+        product={productToAdjust}
+        onConfirm={handleStockConfirm}
+        isLoading={stockMutation.isPending}
       />
     </div>
   );

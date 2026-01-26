@@ -8,8 +8,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Edit } from "lucide-react";
-import { Product, Category } from "../types";
+import { ArrowUpDown, Edit, PackagePlus } from "lucide-react";
+import { Product, Category } from "../product.types";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 
@@ -18,6 +18,7 @@ interface ProductTableProps {
   onView: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
+  onAdjustStock: (product: Product) => void;
   isLoading: boolean;
   onSort: (field: keyof Product) => void;
   canEdit?: boolean;
@@ -28,12 +29,17 @@ export const ProductTable = ({
   products,
   onView,
   onEdit,
+  onAdjustStock,
   isLoading,
   onSort,
   canEdit
 }: ProductTableProps) => {
   const canReadProducts = useAppSelector((state) =>
     selectUserHasPermission(state, "read:all_reports")
+  );
+
+  const canAdjustStock = useAppSelector((state) =>
+    selectUserHasPermission(state, "manage:products")
   );
 
   if (!canReadProducts) {
@@ -83,6 +89,8 @@ export const ProductTable = ({
     }
   };
 
+  console.log(products);
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -108,6 +116,7 @@ export const ProductTable = ({
               >
                 Category <ArrowUpDown className="inline h-4 w-4 ml-1" />
               </TableHead>
+              <TableHead className="text-center">Stock Level</TableHead>
               <TableHead
                 className="text-right cursor-pointer"
                 onClick={() => onSort("basePrice")}
@@ -142,23 +151,41 @@ export const ProductTable = ({
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.description}</TableCell>
                 <TableCell>{formatCategory(product.category)}</TableCell>
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={Number(product.quantityOnHand) <= (Number(product.reorderLevel) || 10) ? "text-red-600 font-bold" : ""}>
+                      {Number(product.quantityOnHand).toLocaleString()}
+                    </span>
+                    {canAdjustStock && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary"
+                        title="Adjust Stock"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAdjustStock(product);
+                        }}
+                      >
+                        <PackagePlus className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
-                  {`₱${product.basePrice.toLocaleString()} ${
-                    product.pricingUnit ? `/ ${product.pricingUnit}` : ""
-                  }`}
+                  {`₱${product.basePrice.toLocaleString()} ${product.pricingUnit ? `/ ${product.pricingUnit}` : ""
+                    }`}
                 </TableCell>
                 <TableCell className="text-right">
                   {product.pickUpPrice
-                    ? `₱${product.pickUpPrice.toLocaleString()} ${
-                        product.unit && `/ ${product.unit}`
-                      }`
+                    ? `₱${product.pickUpPrice.toLocaleString()} ${product.unit && `/ ${product.unit}`
+                    }`
                     : "N/A"}
                 </TableCell>
                 <TableCell className="text-right">
                   {product.deliveryPrice
-                    ? `₱${product.deliveryPrice.toLocaleString()} ${
-                        product.unit && `/ ${product.unit}`
-                      }`
+                    ? `₱${product.deliveryPrice.toLocaleString()} ${product.unit && `/ ${product.unit}`
+                    }`
                     : "N/A"}
                 </TableCell>
                 <TableCell
