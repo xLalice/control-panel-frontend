@@ -1,5 +1,5 @@
 import React from "react";
-import { Category, FormProduct, PricingUnit } from "../types";
+import { Category, FormProduct, PricingUnit } from "../product.types";
 import {
   Select,
   SelectTrigger,

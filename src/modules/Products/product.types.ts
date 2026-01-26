@@ -39,6 +39,9 @@ export interface Product {
   color?: string;
   size?: string;
   additionalAttributes?: object;
+
+  quantityOnHand?: number;
+  reorderLevel?: number;
 }
 
 export const defaultProduct: FormProduct = {
@@ -86,4 +89,16 @@ export interface FormProduct {
   color?: string;
   size?: string;
   additionalAttributes?: object;
+}
+
+export enum MovementType {
+  IN = "IN",
+  OUT = "OUT",
+  ADJUSTMENT = "ADJUSTMENT",
+}
+
+export interface AdjustStockPayload {
+  type: MovementType;
+  quantity: number;
+  reason: string;
 }

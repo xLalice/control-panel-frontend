@@ -1,7 +1,7 @@
 import { User } from "@/types/sharedTypes";
 import { Lead } from "../Leads/types/leads.types";
 import { z } from "zod";
-import { Product } from "../Products/types";
+import { Product } from "../Products/product.types";
 import { Client } from "../Clients/clients.schema";
 
 export interface Inquiry {
