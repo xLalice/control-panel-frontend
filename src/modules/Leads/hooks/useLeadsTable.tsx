@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { PAGE_SIZE } from "../constants/constants";
+import { PAGE_SIZE } from "@/constants";
 import { Lead } from "../types/leads.types";
 import { useForm } from "react-hook-form";
 import { Filters } from "../types/leads.types";
@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { LeadStatus } from "../constants/constants";
 import { useLeadsData } from "./useLeadsData";
-import { useScreenSize } from "./useScreenSize";
+import { useScreenSize } from "../../../hooks/useScreenSize";
 
 
 export const useLeadsTable = () => {

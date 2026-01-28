@@ -13,6 +13,7 @@ import UserManagementPage from "./modules/UserManagement/UserManagement";
 import LeadsTable from "./modules/Leads/Leads";
 import ReportsPage from "./modules/Reports/Reports";
 import ProductManagementSystem from "./modules/Products/Products";
+import SalesOrdersTable from "./modules/SalesOrder/SalesOrder";
 import ProtectedRoute from "./modules/Auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./modules/Inquiry/InquiryManagement";
@@ -72,6 +73,7 @@ const AppContent = () => {
           <Route path={ROUTES.CLIENTS} element={<ClientList />} />
           <Route path={ROUTES.QUOTES} element={<QuotationsPage />} />
           <Route path={`${ROUTES.QUOTES}/:id`} element={<QuotationsPage />} />
+          <Route path={ROUTES.SALES_ORDERS} element={<SalesOrdersTable />} />
         </Route>
         <Route
           path="*"

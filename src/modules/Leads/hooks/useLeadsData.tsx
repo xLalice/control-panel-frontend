@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Filters, Lead } from "../types/leads.types";
 import { SortingState } from "@tanstack/react-table";
-import { PAGE_SIZE } from "../constants/constants";
+import { PAGE_SIZE } from "@/constants";
 import { apiClient } from "@/api/axios";
 export const useLeadsData = ({
   filters,

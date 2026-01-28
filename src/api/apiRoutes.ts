@@ -8,6 +8,7 @@ export const API_ROUTES = {
   },
   SALES_ORDER: {
     ROOT: "/sales-order",
+    DETAIL: (id: string ) => `/sales-order/${id}`
   },
   PRODUCTS: {
     ROOT: "/products",

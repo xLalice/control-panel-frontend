@@ -22,5 +22,4 @@ export enum LeadSource {
   OTHER = "Other"
 }
 
-export const PAGE_SIZE = 20;
 

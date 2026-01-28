@@ -13,6 +13,7 @@ export const ROUTES = {
     CLIENTS: "/clients",
     QUOTES: "/quotes",
     QUOTE_DETAIL: (id: string | number) => `/quotes/${id}`,
+    SALES_ORDERS: "/sales-orders",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

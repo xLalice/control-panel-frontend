@@ -1,6 +1,8 @@
+import { ROUTES } from "@/routes";
 import {
     BarChart, DollarSign, Mail, Briefcase, Tag, FileText, Clock, Users,
-    ScrollText
+    ScrollText,
+    Truck
 } from "lucide-react";
 
 interface UserPermissions {
@@ -20,61 +22,67 @@ interface UserPermissions {
 export const getMenuItems = (perms: UserPermissions) => [
     {
         name: "Dashboard",
-        route: "/dashboard",
+        route: ROUTES.DASHBOARD,
         icon: <BarChart className="h-4 w-4" />,
         visible: true,
     },
     {
         name: "Leads",
-        route: "/leads",
+        route: ROUTES.LEADS,
         icon: <DollarSign className="h-4 w-4" />,
         visible: perms.canReadAllLeads || perms.canReadOwnLeads || perms.canReadAssignedLeads,
     },
     {
         name: "Inquiries",
-        route: "/inquiries",
+        route: ROUTES.INQUIRIES,
         icon: <Mail className="h-4 w-4" />,
         visible: perms.canReadInquiries,
     },
     {
         name: "Quotations",
-        route: "/quotes", 
+        route: ROUTES.QUOTES,
         icon: <ScrollText className="h-4 w-4" />,
         visible: perms.canReadAllLeads || perms.canReadOwnLeads || perms.canReadAssignedLeads,
     },
     {
+        name: "Sales Orders",
+        route: ROUTES.SALES_ORDERS,
+        icon: <Truck className="h-4 w-4" />,
+        visible: perms.canReadAllLeads || perms.canReadOwnLeads || perms.canReadAssignedLeads,
+    },
+    {
         name: "Clients",
-        route: "/clients",
+        route: ROUTES.CLIENTS,
         icon: <Briefcase className="h-4 w-4" />,
         visible: true,
     },
     {
         name: "Products",
-        route: "/products",
+        route: ROUTES.PRODUCTS,
         icon: <Tag className="h-4 w-4" />,
         visible: perms.canManageProducts || perms.canReadProducts,
     },
     {
         name: "Documents",
-        route: "/documents",
+        route: ROUTES.DOCUMENTS,
         icon: <FileText className="h-4 w-4" />,
         visible: perms.canReadDocuments,
     },
     {
         name: "View Reports",
-        route: "/reports",
+        route: ROUTES.REPORTS,
         icon: <BarChart className="h-4 w-4" />,
         visible: perms.canReadReports,
     },
     {
         name: "Attendance",
-        route: "/attendance",
+        route: ROUTES.ATTENDANCE,
         icon: <Clock className="h-4 w-4" />,
         visible: perms.canReadAttendance,
     },
     {
         name: "User Management",
-        route: "/user-management",
+        route: ROUTES.USER_MANAGEMENT,
         icon: <Users className="h-4 w-4" />,
         visible: perms.canManageUsers || perms.canReadUsers,
     },

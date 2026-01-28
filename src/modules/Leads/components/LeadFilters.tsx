@@ -15,12 +15,12 @@ import { X } from "lucide-react";
 import { Filters } from "../types/leads.types";
 import React from "react";
 import { useUsersData } from "@/modules/UserManagement/hooks/useUsersData";
-import { SkeletonFilters } from "./skeletons/LeadTableSkeletons";
+import { SkeletonFilters } from "../../../components/TableSkeleton";
 
 interface LeadFilterProps {
   isFilterOpen: boolean;
   register: UseFormRegister<Filters>;
-  control: Control<Filters, any, Filters>;
+  control: Control;
   hasActiveFilters: string | undefined;
   resetFilters: () => void;
 }

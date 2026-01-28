@@ -1,4 +1,4 @@
-import { SkeletonTableRow } from "./components/skeletons/LeadTableSkeletons";
+import { SkeletonTableRow } from "../../components/TableSkeleton";
 import { flexRender } from "@tanstack/react-table";
 import {
   Table,
@@ -14,7 +14,7 @@ import {
   Button,
   Skeleton,
 } from "@/components/ui";
-import { PAGE_SIZE } from "./constants/constants";
+import { PAGE_SIZE } from "@/constants";
 import { Filter } from "lucide-react";
 import LeadForm from "./components/LeadForm/LeadForm";
 import LeadDetailPanel from "./components/LeadDetail/LeadDetailPanel";
