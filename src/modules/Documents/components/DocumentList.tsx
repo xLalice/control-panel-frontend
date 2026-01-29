@@ -50,6 +50,7 @@ import { formatFileSize, formatDate } from "../utils/utils";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
 import { documentsApi } from "../documents.api";
+import { Document } from "../document.types";
 
 interface DocumentListProps {
   categoryId?: number;
@@ -211,7 +212,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map((document) => (
+              {documents.map((document: Document) => (
                 <TableRow key={document.id} className="hover:bg-gray-50">
                   <TableCell>{getFileIcon(document.fileType)}</TableCell>
                   <TableCell

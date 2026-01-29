@@ -10,6 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { selectCurrentUser } from '@/store/slice/authSlice';
 import { useAppSelector } from '@/store/store';
+import { DocumentCategory } from '../document.types';
 
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -44,7 +45,7 @@ export const DocumentUpload: React.FC = () => {
         form.reset({
           title: '',
           categoryId: '',
-          file: undefined, 
+          file: undefined,
         });
       },
     });
@@ -95,7 +96,7 @@ export const DocumentUpload: React.FC = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories?.map((category) => (
+                      {categories?.map((category: DocumentCategory) => (
                         <SelectItem key={category.id} value={String(category.id)}>
                           {category.name}
                         </SelectItem>
@@ -113,18 +114,19 @@ export const DocumentUpload: React.FC = () => {
             <FormField
               control={form.control}
               name="file"
-              render={({ field: { onChange, value, ...fieldProps } }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
-                      {...fieldProps}
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
+
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          onChange(file);
-                        }
+                        field.onChange(file ?? undefined);
                       }}
                     />
                   </FormControl>

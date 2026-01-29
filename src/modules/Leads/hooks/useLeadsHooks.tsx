@@ -97,7 +97,7 @@ export const useConvertToClient = () => {
 
   return useMutation({
     mutationFn: leadsApi.convertToClient,
-    onSuccess: (newClient, leadId) => {
+    onSuccess: (_,leadId) => {
       queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
       queryClient.invalidateQueries({ queryKey: leadKeys.detail(leadId) });
 

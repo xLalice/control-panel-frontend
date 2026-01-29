@@ -17,6 +17,7 @@ import {
 import { Button } from "../../components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Attendance } from "./types";
 
 export default function AttendancePage() {
   const [date, setDate] = useState<Date>(new Date());
@@ -37,10 +38,9 @@ export default function AttendancePage() {
     endDate,
   });
 
-  // Get today's attendance record if any
   const today = new Date().toISOString().split("T")[0];
   const currentAttendance =
-    attendanceRecords.find((record) => record.date.split("T")[0] === today) ||
+    attendanceRecords.find((record: Attendance) => record.date.split("T")[0] === today) ||
     null;
 
   return (
@@ -110,7 +110,7 @@ export default function AttendancePage() {
                         <p className="text-sm text-green-600 font-medium mb-1">On Time</p>
                         <p className="text-2xl font-bold text-green-700">
                           {
-                            attendanceRecords.filter((r) => r.status === "PRESENT")
+                            attendanceRecords.filter((r: Attendance) => r.status === "PRESENT")
                               .length
                           }
                         </p>
@@ -120,7 +120,7 @@ export default function AttendancePage() {
                         <p className="text-sm text-yellow-600 font-medium mb-1">Late</p>
                         <p className="text-2xl font-bold text-yellow-700">
                           {
-                            attendanceRecords.filter((r) => r.status === "LATE")
+                            attendanceRecords.filter((r: Attendance) => r.status === "LATE")
                               .length
                           }
                         </p>
@@ -130,7 +130,7 @@ export default function AttendancePage() {
                         <p className="text-sm text-purple-600 font-medium mb-1">Total Hours</p>
                         <p className="text-2xl font-bold text-purple-700">
                           {attendanceRecords
-                            .reduce((total, r) => total + (r.totalHours || 0), 0)
+                            .reduce((total: number, r: Attendance) => total + (r.totalHours || 0), 0)
                             .toFixed(1)}
                         </p>
                       </div>

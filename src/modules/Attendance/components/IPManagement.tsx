@@ -135,7 +135,7 @@ export const IPManagement: React.FC<IPManagementProps> = ({ userId }) => {
                   </TableCell>
                 </TableRow>
               ) : (
-                allowedIPs.map((ip) => (
+                allowedIPs.map((ip: AllowedIP) => (
                   <TableRow key={ip.id}>
                     <TableCell>{ip.ipAddress}</TableCell>
                     <TableCell>{ip.description || "N/A"}</TableCell>

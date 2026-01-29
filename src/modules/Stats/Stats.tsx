@@ -25,68 +25,14 @@ import {
 import {
   TrendingUp,
   TrendingDown,
-  Users,
-  DollarSign,
   FileText,
   Calendar,
   Clock,
   Target,
   Phone,
-  Mail,
 } from "lucide-react";
 import { apiClient } from "@/api/axios";
-
-
-interface Metric {
-  title: string;
-  value: string;
-  change: string;
-  trend: "up" | "down";
-  icon: string;
-  color: string;
-}
-
-
-interface SalesPipelineItem {
-  status: string;
-  count: number;
-  value: number;
-}
-
-interface InquirySource {
-  source: string;
-  count: number;
-  color: string;
-}
-
-interface ProductPerformanceItem {
-  category: string;
-  inquiries: number;
-  quotations: number;
-  revenue: number | { s: number; e: number; d: number[] };
-}
-
-
-interface RecentActivityItem {
-  id: string;
-  type: string;
-  action: string;
-  detail: string;
-  time: string;
-  icon: string;
-}
-
-
-const iconMap = {
-  DollarSign,
-  Target,
-  Users,
-  FileText,
-  Calendar,
-  Clock,
-  Phone,
-  Mail,
-};
+import { DashboardData, iconMap, Metric } from "./stats.types";
 
 const Stats: React.FC = () => {
   const [timeRange, setTimeRange] = useState("7d");
@@ -96,18 +42,19 @@ const Stats: React.FC = () => {
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<DashboardData>({
     queryKey: ["dashboard", timeRange],
     queryFn: async () => {
-      const response = await apiClient.get("/dashboard");
+      const response = await apiClient.get("/dashboard", {
+        params: { timeRange },
+      });
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 1,
   });
 
-  // Loading state
   if (isLoading && !dashboardData) {
     return (
       <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
@@ -116,11 +63,6 @@ const Stats: React.FC = () => {
         </div>
       </div>
     );
-  }
-
-  // Error state (will still show mock data due to fallbackData)
-  if (error) {
-    console.warn("Dashboard API error:", error);
   }
 
   const {
@@ -133,43 +75,16 @@ const Stats: React.FC = () => {
     recentActivity = [],
   } = dashboardData || {};
 
-  // Transform sales pipeline data for horizontal bar chart
-  const transformedSalesPipeline = salesPipeline.map(
-    (item: SalesPipelineItem) => ({
-      status: item.status,
-      count: item.count,
-      value: item.value,
-    })
-  );
-
-  // Transform product performance data to handle the revenue object structure
-  const transformedProductPerformance = productPerformance.map(
-    (item: ProductPerformanceItem) => ({
-      category: item.category,
-      inquiries: item.inquiries,
-      quotations: item.quotations,
-      revenue:
-        typeof item.revenue === "object" && item.revenue.d
-          ? item.revenue.d[0] || 0
-          : item.revenue || 0,
-    })
-  );
-
-  // Create mock revenue trend data if empty
-  const revenueTrendData =
+  const chartRevenueData =
     revenueData.length > 0
       ? revenueData
       : [
           { month: "Jan", revenue: 0, target: 50000 },
-          { month: "Feb", revenue: 0, target: 55000 },
-          { month: "Mar", revenue: 0, target: 60000 },
-          { month: "Apr", revenue: 0, target: 65000 },
-          { month: "May", revenue: 0, target: 70000 },
-          { month: "Jun", revenue: 0, target: 75000 },
+          { month: "Feb", revenue: 0, target: 50000 },
+          { month: "Mar", revenue: 0, target: 50000 },
         ];
 
-  // Create mock attendance data if empty
-  const attendanceData =
+  const chartAttendanceData =
     attendance.length > 0
       ? attendance
       : [
@@ -182,8 +97,7 @@ const Stats: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Business Dashboard
@@ -192,8 +106,8 @@ const Stats: React.FC = () => {
             Overview of your business performance
           </p>
           {error && (
-            <p className="text-orange-600 text-sm mt-1">
-              ⚠️ Using cached data - API temporarily unavailable
+            <p className="text-orange-600 text-sm mt-1 flex items-center">
+              <span className="mr-2">⚠️</span> Using cached data - API temporarily unavailable
             </p>
           )}
         </div>
@@ -205,7 +119,7 @@ const Stats: React.FC = () => {
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 timeRange === range
                   ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
               }`}
             >
               {range}
@@ -220,11 +134,11 @@ const Stats: React.FC = () => {
         </div>
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric: Metric, index: number) => {
           const IconComponent =
-            iconMap[metric.icon as keyof typeof iconMap] || Target;
+            iconMap[metric.icon] || Target;
+            
           return (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
@@ -254,7 +168,7 @@ const Stats: React.FC = () => {
                     </div>
                   </div>
                   <div
-                    className={`p-3 rounded-full ${metric.color} bg-opacity-10`}
+                    className={`p-3 rounded-full ${metric.color.replace('text-', 'bg-').replace('600', '100')}`}
                   >
                     <IconComponent className={`h-6 w-6 ${metric.color}`} />
                   </div>
@@ -265,9 +179,7 @@ const Stats: React.FC = () => {
         })}
       </div>
 
-      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Trend */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -278,12 +190,12 @@ const Stats: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={revenueTrendData}>
+              <AreaChart data={chartRevenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip
-                  formatter={(value) => [`₱${value.toLocaleString()}`, ""]}
+                  formatter={(value: number) => [`₱${value.toLocaleString()}`, ""]}
                 />
                 <Legend />
                 <Area
@@ -309,7 +221,6 @@ const Stats: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Sales Pipeline */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -320,19 +231,20 @@ const Stats: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={transformedSalesPipeline} layout="horizontal">
+              <BarChart data={salesPipeline} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
-                <YAxis dataKey="status" type="category" width={100} />
+                <YAxis dataKey="status" type="category" width={100} fontSize={12} />
                 <Tooltip
-                  formatter={(value, name) => {
+                  cursor={{ fill: "transparent" }}
+                  formatter={(value: number, name: string) => {
                     if (name === "count") return [value, "Count"];
                     if (name === "value")
                       return [`₱${value.toLocaleString()}`, "Value"];
                     return [value, name];
                   }}
                 />
-                <Bar dataKey="count" fill="#10b981" />
+                <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -357,12 +269,14 @@ const Stats: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ source, count }) => `${source}: ${count}`}
+                  label={({ source, percent }) => 
+                    percent > 0.1 ? `${source} ${(percent * 100).toFixed(0)}%` : ''
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
                 >
-                  {inquirySources.map((entry: InquirySource, index: number) => (
+                  {inquirySources.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -383,14 +297,14 @@ const Stats: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={transformedProductPerformance}>
+              <BarChart data={productPerformance}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
+                <XAxis dataKey="category" fontSize={12} tickLine={false} />
+                <YAxis fontSize={12} tickLine={false} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="inquiries" fill="#3b82f6" name="Inquiries" />
-                <Bar dataKey="quotations" fill="#10b981" name="Quotations" />
+                <Bar dataKey="inquiries" fill="#3b82f6" name="Inquiries" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="quotations" fill="#10b981" name="Quotations" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -407,7 +321,7 @@ const Stats: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={attendanceData}>
+              <BarChart data={chartAttendanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="day" />
                 <YAxis />
@@ -443,27 +357,32 @@ const Stats: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentActivity.map((activity: RecentActivityItem) => {
-              const IconComponent =
-                iconMap[activity.icon as keyof typeof iconMap] || Calendar;
-              return (
-                <div
-                  key={activity.id}
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="p-2 rounded-full bg-blue-100">
-                    <IconComponent className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">
-                      {activity.action}
-                    </p>
-                    <p className="text-sm text-gray-600">{activity.detail}</p>
-                  </div>
-                  <span className="text-xs text-gray-500">{activity.time}</span>
-                </div>
-              );
-            })}
+            {recentActivity.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-4">No recent activity found.</p>
+            ) : (
+                recentActivity.map((activity) => {
+                const IconComponent =
+                    iconMap[activity.icon] || Calendar;
+                    
+                return (
+                    <div
+                    key={activity.id}
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                    <div className="p-2 rounded-full bg-blue-50">
+                        <IconComponent className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                        {activity.action}
+                        </p>
+                        <p className="text-sm text-gray-600 line-clamp-1">{activity.detail}</p>
+                    </div>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">{activity.time}</span>
+                    </div>
+                );
+                })
+            )}
           </div>
         </CardContent>
       </Card>

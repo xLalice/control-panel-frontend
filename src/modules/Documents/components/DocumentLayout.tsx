@@ -9,6 +9,7 @@ import { useCategories } from "../hooks/useDocuments";
 import { Loader } from "@/components/ui/Loader";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { DocumentCategory } from "../document.types";
 
 export const DocumentLayout: React.FC = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
@@ -99,7 +100,7 @@ export const DocumentLayout: React.FC = () => {
                             All Documents
                           </button>
                         </li>
-                        {categories?.map((category) => (
+                        {categories?.map((category: DocumentCategory) => (
                           <li key={category.id}>
                             <button
                               className={`w-full text-left px-3 py-2 rounded-md ${

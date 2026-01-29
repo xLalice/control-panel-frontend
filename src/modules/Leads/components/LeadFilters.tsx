@@ -20,7 +20,7 @@ import { SkeletonFilters } from "../../../components/TableSkeleton";
 interface LeadFilterProps {
   isFilterOpen: boolean;
   register: UseFormRegister<Filters>;
-  control: Control;
+  control: Control<Filters>;
   hasActiveFilters: string | undefined;
   resetFilters: () => void;
 }

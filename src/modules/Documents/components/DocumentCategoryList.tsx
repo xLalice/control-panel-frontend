@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAppSelector } from "@/store/store";
 import { selectUserHasPermission } from "@/store/slice/authSlice";
+import { DocumentCategory } from "../document.types";
 
 export const DocumentCategoryList: React.FC = () => {
   const { data: categories, isLoading } = useCategories();
@@ -139,7 +140,7 @@ export const DocumentCategoryList: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((category) => (
+              {categories.map((category: DocumentCategory) => (
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>{category.description || "-"}</TableCell>

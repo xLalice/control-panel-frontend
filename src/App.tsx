@@ -18,7 +18,7 @@ import ProtectedRoute from "./modules/Auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InquiryManagement } from "./modules/Inquiry/InquiryManagement";
 import { DocumentLayout } from "./modules/Documents/components/DocumentLayout";
-import AttendancePage from "./modules/Attendance";
+import AttendancePage from "./modules/Attendance/Attendace";
 import AdminAttendancePage from "./modules/Attendance/admin";
 import { fetchCurrentUser, selectIsAuthenticated } from "./store/slice/authSlice";
 import { useSelector } from "react-redux";
