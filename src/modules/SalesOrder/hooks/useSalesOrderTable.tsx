@@ -58,14 +58,11 @@ export const useSalesOrderTable = () => {
         cell: ({ row }) => <span className="font-medium text-blue-600 truncate max-w-[150px] block">{row.original.client?.clientName}</span>,
       },
       {
-        id: "total",
-        accessorFn: (row) => {
-          if (!row.items) return 0;
-          return row.items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
-        },
+        id: "total", 
+        accessorKey: "totalAmount",
         header: ({ column }) => <SortableHeader column={column} title="Total" />,
         cell: ({ getValue }) => (
-          <div className=" font-medium">
+          <div className="text-right font-medium">
             {formatCurrency(getValue() as number)}
           </div>
         ),
