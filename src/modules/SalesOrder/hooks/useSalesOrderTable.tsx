@@ -34,7 +34,11 @@ export const useSalesOrderTable = () => {
 
   const filters = watch();
 
-  const { data, isLoading } = useSalesOrdersQuery();
+  const { data, isLoading } = useSalesOrdersQuery({
+    page,
+    sorting,
+    filters,
+  });
 
   const resetFilters = () => reset({ search: "", status: undefined });
   const hasActiveFilters = !!(filters.search || filters.status);
@@ -61,7 +65,7 @@ export const useSalesOrderTable = () => {
         },
         header: ({ column }) => <SortableHeader column={column} title="Total" />,
         cell: ({ getValue }) => (
-          <div className="text-right font-medium">
+          <div className=" font-medium">
             {formatCurrency(getValue() as number)}
           </div>
         ),
@@ -99,7 +103,7 @@ export const useSalesOrderTable = () => {
   }, [screenSize]);
 
   const table = useReactTable({
-    data: data || [],
+    data: data?.orders || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

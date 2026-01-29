@@ -41,6 +41,7 @@ const SalesOrdersTable = () => {
 
   const totalItems = data?.total || 0;
   const totalPages = Math.ceil(totalItems / 10);
+  
   return (
     <div className="mx-auto p-6">
       <Card className="w-full border-0 shadow-sm">
@@ -82,7 +83,7 @@ const SalesOrdersTable = () => {
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="bg-gray-50/50">
+                  <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <TableHead key={header.id}>
                         {header.isPlaceholder

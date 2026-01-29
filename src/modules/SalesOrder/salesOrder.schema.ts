@@ -1,6 +1,7 @@
 import z from "zod";
 import { Client } from "../Clients/clients.schema";
 import { Product } from "../Products/product.types";
+import { SortingState } from "@tanstack/react-table";
 
 export const convertToSalesOrderPayload = z.object({
     quotationId: z.string(),
@@ -60,7 +61,12 @@ export type SalesOrderItem = {
     totalPrice: number;
 }
 
+type SalesOrderStatusFilter = SalesOrderStatus | "all";
+
 export type SalesOrderFilters = {
   search: string;
-  status?: SalesOrderStatus;
+  status?: SalesOrderStatusFilter;
 };
+
+
+export interface SalesOrderQueryOptions { page: number, sorting: SortingState, filters: SalesOrderFilters }
